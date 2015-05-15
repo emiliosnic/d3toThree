@@ -90,7 +90,7 @@ _this.init = function(){
 		// If this is a circle
 		if (arguments[0] == "circle"){
 			observerFactory.observe(
-				observerFactory.type("each").expectArray().then(function(value){
+				observerFactory.type("each").expectKeyType(typeof[]).then(function(value){
 					[].forEach.call(value, function (item) { 
 						_this.model.content.push(item);
 					})
@@ -138,7 +138,6 @@ _this.init = function(){
 
 	_this.select = function(node) { 
 		console.log("---------------------------- SELECT ----------------------------");
-		console.log(arguments);
 		return _d3.select(node); 
 	}
 /*

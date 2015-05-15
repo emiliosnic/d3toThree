@@ -109,11 +109,9 @@
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   // add the tooltip area to the webpage
-  /*
   var tooltip = d3to3.select("body").append("div")
       .attr("class", "tooltip")
       .style("opacity", 0);
-      */
   // load data
     // change string (from CSV) into number format
     d3_data.forEach(function(d) {
@@ -152,8 +150,8 @@
         .attr("r", 8)
         .attr("cx", xMap)
         .attr("cy", yMap)
-        .style("fill", function(d) { return color(cValue(d));}) ;
-/*        .on("mouseover", function(d) {
+        .style("fill", function(d) { return color(cValue(d));}) 
+        .on("mouseover", function(d) {
             tooltip.transition()
                  .duration(200)
                  .style("opacity", .9);
@@ -167,7 +165,6 @@
                  .duration(500)
                  .style("opacity", 0);
         });
-*/
 d3to3.to3D("#d3_panel");
 
   </script>

@@ -1,13 +1,7 @@
 
-function ObserverFactory(){
-}
+function ObserverFactory(){}
 
 ObserverFactory.queue = [];
-// Objects should be in the form of
-/*
-	caller: 'attr',
-	content: ''
-*/
 
 /**
 * TODO: 
@@ -32,8 +26,8 @@ ObserverFactory.prototype.then = function(callback) {
 	return this;
 };
 
-ObserverFactory.prototype.expectArray = function(key) {
-	this.expectedType = (typeof []);
+ObserverFactory.prototype.expectKeyType = function(keyType) {
+	this.expectedType = keyType;
 	return this;
 };
 
@@ -97,4 +91,18 @@ var extend = function(base,extension){
 			base[k] = extension[k]
 	}
 	return base;
+}
+
+function componentToHex(c) {
+	var hex = c.toString(16);
+	return hex.length == 1 ? "0" + hex : hex;
+}
+
+var convertToHex = function(input){
+	var color = input.substring(0, input.length - 2);
+	color = color.replace(/ /g,'');
+
+	var rgb = color.split(',');
+
+    return "#" + componentToHex(parseInt(rgb[0])) + componentToHex(parseInt(rgb[1])) + componentToHex(parseInt(rgb[2]));
 }

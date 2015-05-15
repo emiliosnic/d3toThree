@@ -3,7 +3,8 @@ var d3to3 = (function () {
 	var _this = {},
 		_d3   = {};
 
-	_this.loaded = false; 
+	_this.loaded = false;
+
 	_this.model = { 
 		axis: { x: [], y: [] }, 
 		content: [],
@@ -12,17 +13,8 @@ var d3to3 = (function () {
 			height: null 
 		}
 	}; 
-	_this.view = {
-		container: null,
-		camera: null,
-		scene: null,
-		renderer: null,
-		group: new THREE.Group()
-	}; 
-
 
 	observerFactory = new ObserverFactory();
-
 
 	// ... ;
 _this.initializer = ({
@@ -116,7 +108,7 @@ _this.init = function(){
 		// If this is a circle
 		if (arguments[0] == "circle"){
 			observerFactory.observe(
-				observerFactory.type("each").expectArray().then(function(value){
+				observerFactory.type("each").expectKeyType(typeof[]).then(function(value){
 					[].forEach.call(value, function (item) { 
 						_this.model.content.push(item);
 					})
@@ -164,7 +156,6 @@ _this.init = function(){
 
 	_this.select = function(node) { 
 		console.log("---------------------------- SELECT ----------------------------");
-		console.log(arguments);
 		return _d3.select(node); 
 	}
 /*
@@ -340,26 +331,17 @@ _this.json                     = function(url, callback) { return _d3.json(url, 
 _this.html                     = function(url, callback) { return _d3.html(url, callback);                  }
 ;
 _this.to3D = function(d3id){
+	
+	// Create Three 	
+	var container, 
+		camera, 
+		camera = new THREE.PerspectiveCamera( 115, (_this.model.canvas.width || window.innerWidth) / (_this.model.canvas.height || window.innerHeight), 1, 1000);
+		renderer = new THREE.WebGLRenderer({ antialias: true }),
+		scene = new THREE.Scene(),
+		group = new THREE.Group();
 
 	(function () {
-		var configureCanvas = function () {
-			_this.view.container = document.getElementById('custom_panel');
-
-			_this.view.scene = new THREE.Scene();
-			_this.view.camera = new THREE.PerspectiveCamera( 50, (_this.model.canvas.width || window.innerWidth) / (_this.model.canvas.height || window.innerHeight), 1, 1000 );
-			_this.view.camera.position.set(0, -50, 600 );
-			_this.view.scene.add(_this.view.camera);
-			_this.view.scene.add(_this.view.group);
-
-			_this.view.renderer = new THREE.WebGLRenderer( { antialias: true } );
-			_this.view.renderer.setClearColor( 0x00ffff );
-			_this.view.renderer.setPixelRatio(window.devicePixelRatio );
-			_this.view.renderer.setSize(_this.model.canvas.width || window.innerWidth,_this.model.canvas.height || window.innerHeight);
-			_this.view.container.appendChild( _this.view.renderer.domElement );
-
-			// Run renderer
-			_this.view.renderer.render( _this.view.scene, _this.view.camera );
-
+		var configureCanvas = function () {	
 		};
 
 		var removeSVG = function () {
@@ -368,7 +350,7 @@ _this.to3D = function(d3id){
 		};
 
 		var constructMeshes = function () {
-			console.log(_this.model.content);
+			// console.log(_this.model.content);
 		};
 		
 		configureCanvas();
@@ -377,28 +359,139 @@ _this.to3D = function(d3id){
 
 	}());
 
-	renderScene = ({
-		render: function () {
-			console.log("render screen")
+	// Also add controllers for on mouse etc
+
+	// Create a recyclable graph object
 
 
+	container = document.getElementById('custom_panel');
+
+	function init() {
 
 
+		console.log(_this.model.content);
+
+		_this.model.content.forEach(function (item) {
+			var radius = item.r.baseVal.value,
+				offsetX = item.cx.baseVal.value,
+				offsetY = item.cy.baseVal.value;
+				color = convertToHex(item.style.cssText.slice(10));
+
+				var x,y;
+
+				// Center width
+				if (offsetX <= _this.model.canvas.width) {
+					x = - (_this.model.canvas.width/2 - offsetX);
+				} else {
+					x = (_this.model.canvas.width/2 - offsetX);
+				}
+
+				// Center height
+				if (offsetY <= _this.model.canvas.height) {
+					y = (_this.model.canvas.height/2 - offsetY);
+				} else {
+					y = - (_this.model.canvas.height/2 - offsetY);
+				}
+
+				console.log("ADDING CIRCLE");
+				console.log(offsetX);
+				console.log(offsetY);
+				console.log("----------");
+				console.log(x);
+				console.log(y);
+				console.log(radius);
+				console.log(color);
+				addCircle(x,y, radius, color)
+		});
+
+
+		// Circle generator
+		function addCircle(x, y, size, nodeColor) {
+
+			var material = new THREE.MeshBasicMaterial({ color: nodeColor});
+			var circleGeometry = new THREE.CircleGeometry(size, 64);              
+			var circle = new THREE.Mesh( circleGeometry,  new THREE.MeshBasicMaterial({ color: nodeColor}));
+
+			circle.position.set( x, y, 0 );
+
+			group.add(circle);
 		}
-	}).render();
+		/*
+		addCircle(0,0, 8, "#ff0000");
+		addCircle(-_this.model.canvas.width/2,0, 8, "#ff0000");
+		addCircle(_this.model.canvas.width/2,0, 8, "#ff0000");
+		addCircle(0,_this.model.canvas.height/2, 8, "#ff0000");
+		addCircle(0,-_this.model.canvas.height/2, 8, "#ff0000");
+		*/
+		/*
+		function addLine(xStart, xEnd, yStart, yEnd) {
+			var geometry = new THREE.Geometry();
+			geometry.vertices.push(new THREE.Vector3(xStart, yStart, 0));
+			geometry.vertices.push(new THREE.Vector3(xEnd, yEnd, 0));
+	        group.add(new THREE.Line(geometry, new THREE.LineBasicMaterial({ color: 0x000000})));
+		}
+		*/
 
+
+		// Set up renderer
+
+		camera.position.set(0, 0, 100 );
+		group.position.set(0, 0, 0 );
+		scene.add(camera);
+		scene.add(group);
+
+
+		renderer.setClearColor( 0xffffff );
+		renderer.setPixelRatio(window.devicePixelRatio );
+		renderer.setSize(_this.model.canvas.width || window.innerWidth,_this.model.canvas.height || window.innerHeight);
+		container.appendChild( renderer.domElement );
+
+		// Run renderer
+		// TODO ON RENDER clear this.model and D3
+		renderer.render(scene, camera);
+
+
+	}
+	function destroy() {
+		// Clear previous graph
+		$('#content').empty();
+
+		var obj, i;
+		for ( i = scene.children.length - 1; i >= 0 ; i -- ) {
+		    obj = scene.children[ i ];
+		    if (obj !== camera) {
+		        scene.remove(obj);
+		    }
+		}
+
+	}
+	function animate() {
+		requestAnimationFrame( animate );
+		render();
+	}
+
+	function render() {
+		renderer.render( scene, camera );
+	}
+
+	// Random Value Generator
+	function getRandom(size){
+		return Math.floor(Math.random() * size);
+	};
+
+	// Random Value Generator (Min-Max)
+	function getRandomMaxMin(min, max){
+		return Math.random() * (max - min) + min;
+	};
+
+	init();
+	animate();
 
 };
 ;
-function ObserverFactory(){
-}
+function ObserverFactory(){}
 
 ObserverFactory.queue = [];
-// Objects should be in the form of
-/*
-	caller: 'attr',
-	content: ''
-*/
 
 /**
 * TODO: 
@@ -423,8 +516,8 @@ ObserverFactory.prototype.then = function(callback) {
 	return this;
 };
 
-ObserverFactory.prototype.expectArray = function(key) {
-	this.expectedType = (typeof []);
+ObserverFactory.prototype.expectKeyType = function(keyType) {
+	this.expectedType = keyType;
 	return this;
 };
 
@@ -488,6 +581,20 @@ var extend = function(base,extension){
 			base[k] = extension[k]
 	}
 	return base;
+}
+
+function componentToHex(c) {
+	var hex = c.toString(16);
+	return hex.length == 1 ? "0" + hex : hex;
+}
+
+var convertToHex = function(input){
+	var color = input.substring(0, input.length - 2);
+	color = color.replace(/ /g,'');
+
+	var rgb = color.split(',');
+
+    return "#" + componentToHex(parseInt(rgb[0])) + componentToHex(parseInt(rgb[1])) + componentToHex(parseInt(rgb[2]));
 }
 ;
 	// ... 
