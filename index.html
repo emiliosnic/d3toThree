@@ -73,15 +73,15 @@
       width = 600 - margin.left - margin.right,
       height = 300 - margin.top - margin.bottom;
   var d3_data = [
-    {'Ceral Name': 'Aristote', 'Manufacturer': 'Quaker', 'Type': 'A', 'Calories':10 , 'Protein (g)':4 },
-    {'Ceral Name': 'Platonas', 'Manufacturer': 'Quaker', 'Type': 'B', 'Calories':20 , 'Protein (g)':6 },
-    {'Ceral Name': 'Parmenidis', 'Manufacturer': 'FFGreat', 'Type': 'C', 'Calories':30 , 'Protein (g)':2 },
-    {'Ceral Name': 'Fidias', 'Manufacturer': 'FFGreat', 'Type': 'A', 'Calories':46, 'Protein (g)':1 },
-    {'Ceral Name': 'YesTest', 'Manufacturer': 'Quaker', 'Type': 'B', 'Calories':67 , 'Protein (g)':3 },
-    {'Ceral Name': 'Something Here', 'Manufacturer': 'Quaker', 'Type': 'C', 'Calories':83 , 'Protein (g)':8 },
-    {'Ceral Name': 'asdgasd', 'Manufacturer': 'Yolo', 'Type': 'A', 'Calories':63, 'Protein (g)':7 },
-    {'Ceral Name': 'dhaesTest', 'Manufacturer': 'Yolo', 'Type': 'B', 'Calories':69 , 'Protein (g)':9 },
-    {'Ceral Name': 'asdga Here', 'Manufacturer': 'Quaker', 'Type': 'C', 'Calories':30 , 'Protein (g)':8 }
+    {'Name': 'Aristote', 'Manufacturer': 'Quaker', 'Type': 'A', 'Calories':10 , 'Protein (g)':4 },
+    {'Name': 'Platonas', 'Manufacturer': 'Quaker', 'Type': 'B', 'Calories':20 , 'Protein (g)':6 },
+    {'Name': 'Parmenidis', 'Manufacturer': 'FFGreat', 'Type': 'C', 'Calories':30 , 'Protein (g)':2 },
+    {'Name': 'Fidias', 'Manufacturer': 'FFGreat', 'Type': 'A', 'Calories':46, 'Protein (g)':1 },
+    {'Name': 'YesTest', 'Manufacturer': 'Quaker', 'Type': 'B', 'Calories':67 , 'Protein (g)':3 },
+    {'Name': 'Something Here', 'Manufacturer': 'Quaker', 'Type': 'C', 'Calories':83 , 'Protein (g)':8 },
+    {'Name': 'asdgasd', 'Manufacturer': 'Yolo', 'Type': 'A', 'Calories':63, 'Protein (g)':7 },
+    {'Name': 'dhaesTest', 'Manufacturer': 'Yolo', 'Type': 'B', 'Calories':69 , 'Protein (g)':9 },
+    {'Name': 'asdga Here', 'Manufacturer': 'Quaker', 'Type': 'C', 'Calories':30 , 'Protein (g)':8 }
   ];
   /* 
    * value accessor - returns the value to encode for a given data object.
@@ -91,25 +91,25 @@
    */ 
   // setup x 
   var xValue = function(d) { return d.Calories;}, // data -> value
-      xScale = d3to3.scale.linear().range([0, width]), // value -> display
+      xScale = d3.scale.linear().range([0, width]), // value -> display
       xMap = function(d) { return xScale(xValue(d));}, // data -> display
-      xAxis = d3to3.svg.axis().scale(xScale).orient("bottom");
+      xAxis = d3.svg.axis().scale(xScale).orient("bottom");
   // setup y
   var yValue = function(d) { return d["Protein (g)"];}, // data -> value
-      yScale = d3to3.scale.linear().range([height, 0]), // value -> display
+      yScale = d3.scale.linear().range([height, 0]), // value -> display
       yMap = function(d) { return yScale(yValue(d));}, // data -> display
-      yAxis = d3to3.svg.axis().scale(yScale).orient("left");
+      yAxis = d3.svg.axis().scale(yScale).orient("left");
   // setup fill color
   var cValue = function(d) { return d.Manufacturer;},
-      color = d3to3.scale.category10();
+      color = d3.scale.category10();
   // add the graph canvas to the body of the webpage
-  var svg = d3to3.select("#d3_panel").append("svg")
+  var svg = d3.select("#d3_panel").append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   // add the tooltip area to the webpage
-  var tooltip = d3to3.select("body").append("div")
+  var tooltip = d3.select("body").append("div")
       .attr("class", "tooltip")
       .style("opacity", 0);
   // load data
@@ -119,9 +119,10 @@
       d["Protein (g)"] = +d["Protein (g)"];
     });
     // don't want dots overlapping axis, so add in buffer to d3_data domain
-    xScale.domain([d3to3.min(d3_data, xValue)-1, d3to3.max(d3_data, xValue)+1]);
-    yScale.domain([d3to3.min(d3_data, yValue)-1, d3to3.max(d3_data, yValue)+1]);
-/*    // x-axis
+    xScale.domain([d3.min(d3_data, xValue)-1, d3.max(d3_data, xValue)+1]);
+    yScale.domain([d3.min(d3_data, yValue)-1, d3.max(d3_data, yValue)+1]);
+
+    // x-axis
     svg.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
@@ -141,7 +142,7 @@
         .attr("y", 6)
         .attr("dy", ".71em")
         .style("text-anchor", "end");
-*/
+
     // draw dots
     svg.selectAll(".dot")
         .data(d3_data)
@@ -155,17 +156,19 @@
             tooltip.transition()
                  .duration(200)
                  .style("opacity", .9);
-            tooltip.html(d["Cereal Name"] + "<br/> (" + xValue(d) 
+            tooltip.html(d["Name"] + "<br/> (" + xValue(d) 
   	        + ", " + yValue(d) + ")")
-                 .style("left", (d3to3.event.pageX + 5) + "px")
-                 .style("top", (d3to3.event.pageY - 28) + "px");
+                 .style("left", (d3.event.pageX + 5) + "px")
+                 .style("top", (d3.event.pageY - 28) + "px");
         })
         .on("mouseout", function(d) {
             tooltip.transition()
                  .duration(500)
                  .style("opacity", 0);
         });
-d3to3.to3D("#d3_panel");
+
+    // Renderer
+    d3to3.render("#d3_panel");
 
   </script>
 
