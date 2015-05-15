@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Scatter Plot Generator</title>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+        <link href='http://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+
+        <style type="text/css">
+            body {
+                font-family: 'Lato', sans-serif;
+                text-align: center;
+            }
+			.btn {
+				cursor: pointer;
+				cursor: hand;
+				margin: 10px;
+				padding:10px;
+				background: #fbfbfb;
+				float: left;
+				border:1px solid #cacaca;
+			}
+			.btn > input {
+				font-size: 0.8em;
+				width: 50px;
+				text-align: center;
+			}
+			.start-btn,
+			.btn.animate-btn {
+				box-shadow: 0 1px 1px rgba(0,0,0,0.3);
+				border-radius: 4px;
+				background: #fefefe;
+				color: black;
+				position: relative;
+			}
+			.center_wrapper {
+				width: auto;
+				float: none;
+				display: inline-block;
+			}
+		</style>
+	</head>
+	<body>
+
+		<!-- Load Dependencies -->
+        <script type="text/javascript" src="../dependencies/js/jquery.min.js"></script>
+        <script type="text/javascript" src="../dependencies/js/three.min.js"></script>
+        <script type="text/javascript" src="../dependencies/js/stats.min.js"></script>
+
+		<!-- Graph content -->
+		<div id='content'></div>
+
+		<!-- Settings -->
+		<div class="center_wrapper">
+			<span class="btn add-btn">Data Points: <input type="number" value="200" id="data_points_value"></span> 
+			<span class="btn add-btn">Categories: <input type="number" value="5" id="categories_value"></span> 
+			<span class="btn add-btn">Size Sparsity: <input type="number" value="10" id="size_sparsity_value"></span> 
+		</div>
+		<br>
+		
+		<!-- Controls -->
+		<div class="center_wrapper">
+			<a class="btn" id="start-btn">Draw</a> 
+			<a class="btn" id="clear-btn">Clear</a> 
+		</div>
+
+		<script type="text/javascript">
+
+			// Create a recyclable graph object
+			var _graph = {
+				'properties': { 
+					'baseSize' : 4,
+					'baseColor' : 0x4c90c5,
+					'categoryColor': [0x4c90c5,0x57b851,0xde4a50,0xff9932,0xa87ecb]
+				}
+			};
+
+			var container, camera, scene, renderer, group;
+	
+			var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;
+
+			function init() {
+
+				container = document.getElementById('content');
+				document.body.appendChild( container );
+
+				scene = new THREE.Scene();
+
+				camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 1000 );
+				camera.position.set(0, -50, 600 );
+				scene.add(camera);
+
+				group = new THREE.Group();
+				group.position.y = 50;
+				scene.add( group );
+
+				// Circle generator
+				function addCircle(x, y, size, category) {
+					
+					var nodeColor; 
+
+					if (_graph.properties.categoryColor[category] != null ) {
+						nodeColor = _graph.properties.categoryColor[category];
+					} else {
+						nodeColor = _graph.properties.baseColor;
+					}
+
+
+					var material = new THREE.MeshBasicMaterial({ color: nodeColor});
+
+					var circleGeometry = new THREE.CircleGeometry( size, 32 );              
+					var circle = new THREE.Mesh( circleGeometry,  new THREE.MeshBasicMaterial({ color: nodeColor}));
+
+					circle.position.set( x, y, 0 );
+					circle.scale.set(1,1,1);
+
+					group.add( circle);
+				}
+
+				function addLine(xStart, xEnd, yStart, yEnd) {
+					var geometry = new THREE.Geometry();
+					geometry.vertices.push(new THREE.Vector3(xStart, yStart, 0));
+					geometry.vertices.push(new THREE.Vector3(xEnd, yEnd, 0));
+			        group.add(new THREE.Line(geometry, new THREE.LineBasicMaterial({ color: 0x000000})));
+				}
+
+				// Create Nodes
+				createNodes(document.getElementById('data_points_value').value,
+							document.getElementById('categories_value').value,
+							document.getElementById('size_sparsity_value').value);
+
+				for (var i = _graph.x.length; i >= 0; i--) {
+					addCircle(_graph.x[i], _graph.y[i], _graph.sizedata[i], _graph.category[i]);
+				};
+
+
+
+				// Draw the axis
+				addLine(-600,-600,-200,200);
+				addLine(-600,600,-200,-200);
+
+				// Set up renderer
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setClearColor( 0xffffff );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+
+			}
+			function destroy() {
+				// Clear previous graph
+				$('#content').empty();
+
+				var obj, i;
+				for ( i = scene.children.length - 1; i >= 0 ; i -- ) {
+				    obj = scene.children[ i ];
+				    if (obj !== camera) {
+				        scene.remove(obj);
+				    }
+				}
+
+			}
+			function animate() {
+				requestAnimationFrame( animate );
+				render();
+			}
+
+			function render() {
+				renderer.render( scene, camera );
+			}
+
+			// Node Generator
+			function createNodes(nodes, categories, size){
+				_graph.x = [];
+				_graph.y = [];
+				_graph.category= [];
+				_graph.sizedata= [];
+
+				for (var i = 0; i < nodes; i++) {
+					_graph.x.push(getRandomMaxMin(-550,400));
+					_graph.y.push(getRandomMaxMin(-150,100));
+					_graph.sizedata.push(_graph.properties.baseSize+getRandom(size));
+					_graph.category.push(getRandom(categories));
+				}
+			}
+
+			// Random Value Generator
+			function getRandom(size){
+				return Math.floor(Math.random() * size);
+			};
+
+			// Random Value Generator (Min-Max)
+			function getRandomMaxMin(min, max){
+				return Math.random() * (max - min) + min;
+			};
+
+			$('#start-btn').click(function(e){
+				e.preventDefault();
+				init();
+				animate();
+			}); 
+
+			$('#clear-btn').click(function(e){
+				e.preventDefault();
+				destroy();
+			}); 
+
+		</script>
+	</body>
+</html>

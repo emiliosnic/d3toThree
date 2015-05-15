@@ -56,18 +56,17 @@
 
 <script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
 
-<script src="lib/d3.min.js"></script>
+<script src="lib/d3.js"></script>
 <script src="lib/three.min.js"></script>
 <script src="dist/d3to3.min.js"></script>
 
   <ul class="panels">
     <li id="d3_panel"></li>
-    <li id="custom_panel"> <a id="convert_cta" class="cta" onclick="d3to3.convert();">Convert to WebGL</a></li>
+    <li id="custom_panel"></li>
   </ul>
 
   <script>
 
-    d3to3.init();
 
 
   var margin = {top: 20, right: 20, bottom: 30, left: 40},
@@ -107,23 +106,24 @@
   var svg = d3to3.select("#d3_panel").append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
-    .append("g")
+      .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   // add the tooltip area to the webpage
+  /*
   var tooltip = d3to3.select("body").append("div")
       .attr("class", "tooltip")
       .style("opacity", 0);
+      */
   // load data
     // change string (from CSV) into number format
     d3_data.forEach(function(d) {
       d.Calories = +d.Calories;
       d["Protein (g)"] = +d["Protein (g)"];
-  //    console.log(d);
     });
     // don't want dots overlapping axis, so add in buffer to d3_data domain
     xScale.domain([d3to3.min(d3_data, xValue)-1, d3to3.max(d3_data, xValue)+1]);
     yScale.domain([d3to3.min(d3_data, yValue)-1, d3to3.max(d3_data, yValue)+1]);
-    // x-axis
+/*    // x-axis
     svg.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
@@ -143,6 +143,7 @@
         .attr("y", 6)
         .attr("dy", ".71em")
         .style("text-anchor", "end");
+*/
     // draw dots
     svg.selectAll(".dot")
         .data(d3_data)
@@ -151,8 +152,8 @@
         .attr("r", 8)
         .attr("cx", xMap)
         .attr("cy", yMap)
-        .style("fill", function(d) { return color(cValue(d));}) 
-        .on("mouseover", function(d) {
+        .style("fill", function(d) { return color(cValue(d));}) ;
+/*        .on("mouseover", function(d) {
             tooltip.transition()
                  .duration(200)
                  .style("opacity", .9);
@@ -166,6 +167,8 @@
                  .duration(500)
                  .style("opacity", 0);
         });
+*/
+d3to3.to3D("#d3_panel");
 
   </script>
 
