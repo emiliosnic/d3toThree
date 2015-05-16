@@ -8,7 +8,16 @@ module.exports = function(grunt) {
         separator: ';',
       },
       dist: {
-        src: ['src/module1.js', 'src/module2.js'],
+        src: [
+              'src/init.js',
+              'src/hooks.js', 
+              'src/scene/geometries.js', 
+              'src/scene/renderer.js', 
+              'src/utils/colors.js',
+              'src/utils/units.js',
+              'src/utils/observers.js',
+              'src/teardown.js'
+              ],
         dest: 'dist/<%= pkg.name %>.js',
       },
     },    
@@ -25,7 +34,7 @@ module.exports = function(grunt) {
     },
     watch: {
       scripts: {
-        files: ['src/*.js'],
+        files: ['src/*.js', 'src/**/*.js'],
         tasks: ['concat', 'uglify'],
         options: {
           livereload: true
