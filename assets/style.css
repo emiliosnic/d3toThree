@@ -1,0 +1,41 @@
+
+body {
+font: 11px sans-serif;
+}
+.axis path,
+.axis line {
+fill: none;
+stroke: #000;
+}
+.tooltip {
+position: absolute;
+width: 200px;
+height: 28px;
+pointer-events: none;
+}
+.panels {
+display: block;
+width:100%;
+height: auto;
+overflow: auto;
+padding: 0;
+margin: 0;
+}
+.panels li {
+display: block;
+width: 50%;
+height: auto;
+overflow: auto;
+float: left;
+text-align: center;
+}
+a.cta {
+background: green;
+padding:20px; 
+display: inline-block;
+text-decoration: none;
+color: white;
+font-size: 1.4em;
+cursor: pointer;
+cursor: hand;
+}
