@@ -13,7 +13,7 @@ _this.render = function(d3id){
 			geometryFactory = new GeometryFactory();
 
 			scene = new THREE.Scene(),
-			container = document.getElementById('custom_panel');
+			container = document.getElementById(d3id);
 
 			camera = new THREE.PerspectiveCamera( 115, (_this.model.canvas.width || window.innerWidth) / (_this.model.canvas.height || window.innerHeight), 1, 1000);
 			camera.position.set(0, 0, 100);
@@ -24,13 +24,19 @@ _this.render = function(d3id){
 			renderer = new THREE.WebGLRenderer({ antialias: true }),
 			renderer.setClearColor( 0xffffff );
 			renderer.setPixelRatio(window.devicePixelRatio );
-			renderer.setSize(_this.model.canvas.width || window.innerWidth,_this.model.canvas.height || window.innerHeight);
+				
+			renderer.setSize(
+				_this.model.canvas.width  || window.innerWidth,
+				_this.model.canvas.height || window.innerHeight
+			);
 
 		};
 
 		var removeSVG = function () {
-			var child = document.getElementById(d3id.replace("#",""));
-			child.parentNode.removeChild(child);
+			/*
+				var child = document.getElementById(d3id.replace("#",""));
+				child.parentNode.removeChild(child);
+			*/
 		};
 
 		var constructMeshes = function () {

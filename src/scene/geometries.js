@@ -24,7 +24,8 @@ GeometryFactory.line   = function() {
 
 GeometryFactory.prototype.loadData = function(data) {
 
-	var that = this;
+	var that = this,
+		offset = translateOffsets(_this.model.canvas.transform);
 
 	var loadDataCircle = function(){
 
@@ -41,6 +42,10 @@ GeometryFactory.prototype.loadData = function(data) {
 			x = (offsetX <= _this.model.canvas.width)  ?  - (_this.model.canvas.width/2 - offsetX): (_this.model.canvas.width/2 - offsetX); 
 			y = (offsetY <= _this.model.canvas.height) ?   (_this.model.canvas.height/2 - offsetY): - (_this.model.canvas.height/2 - offsetY);
 			
+			// Apply offsets	
+			x += offset.x;
+			y -= offset.y;
+
 			var material = new THREE.MeshBasicMaterial({ 'color': color}),
 				circleGeometry = new THREE.CircleGeometry(radius, 64),
 				circle = new THREE.Mesh( circleGeometry,  new THREE.MeshBasicMaterial({ 'color': color}));

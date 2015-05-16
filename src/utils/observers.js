@@ -38,8 +38,9 @@ ObserverFactory.prototype.type = function(type){
 	return new ObserverFactory[constr]();
 }
 
-ObserverFactory.attr = function() { this.type = 'attr'; }
-ObserverFactory.each = function() { this.type = 'each'; }
+ObserverFactory.attr   = function() { this.type = 'attr';   }
+ObserverFactory.each   = function() { this.type = 'each';   }
+ObserverFactory.append = function() { this.type = 'append'; }
 
 ObserverFactory.prototype.notify = function(args) {
 

@@ -1,176 +1,124 @@
-<!DOCTYPE html>
-<html>
-<meta charset="utf-8">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang="en">
 <head>
-  <!-- Example based on http://bl.ocks.org/mbostock/3887118 -->
-  <!-- Tooltip example from http://www.d3noob.org/2013/01/adding-tooltips-to-d3js-graph.html -->
+	<meta charset="utf-8">
+	<title>D3to3</title>
+	<meta name="description" content="D3to3">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-  <style>
-  body {
-    font: 11px sans-serif;
-  }
-  .axis path,
-  .axis line {
-    fill: none;
-    stroke: #000;
-    shape-rendering: crispEdges;
-  }
-  .dot {
-    stroke: #000;
-  }
-  .tooltip {
-    position: absolute;
-    width: 200px;
-    height: 28px;
-    pointer-events: none;
-  }
-  .panels {
-    display: block;
-    width:100%;
-    height: auto;
-    overflow: auto;
-  }
-  .panels li {
-    display: block;
-    width: 50%;
-    height: auto;
-    overflow: auto;
-    float: left;
-    text-align: center;
-  }
-  a.cta {
-    background: green;
-    padding:20px; 
-    display: inline-block;
-    text-decoration: none;
-    color: white;
-    font-size: 1.4em;
-    cursor: pointer;
-    cursor: hand;
-  }
+	<!-- Styles -->
+	<link rel="stylesheet" href="assets/reset.css">
+	<link rel="stylesheet" href="assets/style.css">
 
-  </style>
-  
 </head>
 <body>
 
 <script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
 
-<script src="lib/d3.js"></script>
-<script src="lib/three.min.js"></script>
-<script src="dist/d3to3.min.js"></script>
+	<script src="lib/d3.js"></script>
+	<script src="lib/three.min.js"></script>
+	<script src="dist/d3to3.min.js"></script>
 
-  <ul class="panels">
-    <li id="d3_panel"></li>
-    <li id="custom_panel"></li>
-  </ul>
+	<ul class="panels">
+		<li id="d3_panel"></li>
+		<li id="d3to3_panel"></li>
+	</ul>
 
-  <script>
+	<script>
 
+		var margin = {top: 20, right: 20, bottom: 30, left: 40},
+			width  = 600 - margin.left - margin.right,
+			height = 300 - margin.top  - margin.bottom;
 
+		var data = [
+			{'Name': 'Node 1', 'Category': 'A', 'Calories':10 , 'Protein (g)':4, 'radius': 8  },
+			{'Name': 'Node 2', 'Category': 'A', 'Calories':20 , 'Protein (g)':6, 'radius': 9  },
+			{'Name': 'Node 3', 'Category': 'B', 'Calories':30 , 'Protein (g)':2, 'radius': 8  },
+			{'Name': 'Node 4', 'Category': 'B', 'Calories':46 , 'Protein (g)':2, 'radius': 9  },
+			{'Name': 'Node 5', 'Category': 'A', 'Calories':67 , 'Protein (g)':3, 'radius': 11 },
+			{'Name': 'Node 6', 'Category': 'A', 'Calories':83 , 'Protein (g)':8, 'radius': 8  },
+			{'Name': 'Node 7', 'Category': 'C', 'Calories':63 , 'Protein (g)':7, 'radius': 10 },
+			{'Name': 'Node 8', 'Category': 'C', 'Calories':69 , 'Protein (g)':10, 'radius': 12 },
+			{'Name': 'Node 9', 'Category': 'A', 'Calories':30 , 'Protein (g)':8, 'radius': 12 }
+		];
 
-  var margin = {top: 20, right: 20, bottom: 30, left: 40},
-      width = 600 - margin.left - margin.right,
-      height = 300 - margin.top - margin.bottom;
-  var d3_data = [
-    {'Name': 'Aristote', 'Manufacturer': 'Quaker', 'Type': 'A', 'Calories':10 , 'Protein (g)':4 },
-    {'Name': 'Platonas', 'Manufacturer': 'Quaker', 'Type': 'B', 'Calories':20 , 'Protein (g)':6 },
-    {'Name': 'Parmenidis', 'Manufacturer': 'FFGreat', 'Type': 'C', 'Calories':30 , 'Protein (g)':2 },
-    {'Name': 'Fidias', 'Manufacturer': 'FFGreat', 'Type': 'A', 'Calories':46, 'Protein (g)':1 },
-    {'Name': 'YesTest', 'Manufacturer': 'Quaker', 'Type': 'B', 'Calories':67 , 'Protein (g)':3 },
-    {'Name': 'Something Here', 'Manufacturer': 'Quaker', 'Type': 'C', 'Calories':83 , 'Protein (g)':8 },
-    {'Name': 'asdgasd', 'Manufacturer': 'Yolo', 'Type': 'A', 'Calories':63, 'Protein (g)':7 },
-    {'Name': 'dhaesTest', 'Manufacturer': 'Yolo', 'Type': 'B', 'Calories':69 , 'Protein (g)':9 },
-    {'Name': 'asdga Here', 'Manufacturer': 'Quaker', 'Type': 'C', 'Calories':30 , 'Protein (g)':8 }
-  ];
-  /* 
-   * value accessor - returns the value to encode for a given data object.
-   * scale - maps value to a visual display encoding, such as a pixel position.
-   * map function - maps from data value to display value
-   * axis - sets up axis
-   */ 
-  // setup x 
-  var xValue = function(d) { return d.Calories;}, // data -> value
-      xScale = d3.scale.linear().range([0, width]), // value -> display
-      xMap = function(d) { return xScale(xValue(d));}, // data -> display
-      xAxis = d3.svg.axis().scale(xScale).orient("bottom");
-  // setup y
-  var yValue = function(d) { return d["Protein (g)"];}, // data -> value
-      yScale = d3.scale.linear().range([height, 0]), // value -> display
-      yMap = function(d) { return yScale(yValue(d));}, // data -> display
-      yAxis = d3.svg.axis().scale(yScale).orient("left");
-  // setup fill color
-  var cValue = function(d) { return d.Manufacturer;},
-      color = d3.scale.category10();
-  // add the graph canvas to the body of the webpage
-  var svg = d3.select("#d3_panel").append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-  // add the tooltip area to the webpage
-  var tooltip = d3.select("body").append("div")
-      .attr("class", "tooltip")
-      .style("opacity", 0);
-  // load data
-    // change string (from CSV) into number format
-    d3_data.forEach(function(d) {
-      d.Calories = +d.Calories;
-      d["Protein (g)"] = +d["Protein (g)"];
-    });
-    // don't want dots overlapping axis, so add in buffer to d3_data domain
-    xScale.domain([d3.min(d3_data, xValue)-1, d3.max(d3_data, xValue)+1]);
-    yScale.domain([d3.min(d3_data, yValue)-1, d3.max(d3_data, yValue)+1]);
+		// Setup x-Axis values
+		var xScale = d3.scale.linear().range([0, width]), 
+			xValue = function(d) { return d.Calories;        },
+			xMap   = function(d) { return xScale(xValue(d)); }, 
+			xAxis  = d3.svg.axis().scale(xScale).orient("bottom");
 
-    // x-axis
-    svg.append("g")
-        .attr("class", "x axis")
-        .attr("transform", "translate(0," + height + ")")
-        .call(xAxis)
-      .append("text")
-        .attr("class", "label")
-        .attr("x", width)
-        .attr("y", -6)
-        .style("text-anchor", "end");
-    // y-axis
-    svg.append("g")
-        .attr("class", "y axis")
-        .call(yAxis)
-      .append("text")
-        .attr("class", "label")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 6)
-        .attr("dy", ".71em")
-        .style("text-anchor", "end");
+		// Setup y-Axis values
+		var yScale = d3.scale.linear().range([height, 0]), 
+			yValue = function(d) { return d["Protein (g)"];  }, 
+			yMap   = function(d) { return yScale(yValue(d)); }, 
+			yAxis  = d3.svg.axis().scale(yScale).orient("left");
 
-    // draw dots
-    svg.selectAll(".dot")
-        .data(d3_data)
-      .enter().append("circle")
-        .attr("class", "dot")
-        .attr("r", 8)
-        .attr("cx", xMap)
-        .attr("cy", yMap)
-        .style("fill", function(d) { return color(cValue(d));}) 
-        .on("mouseover", function(d) {
-            tooltip.transition()
-                 .duration(200)
-                 .style("opacity", .9);
-            tooltip.html(d["Name"] + "<br/> (" + xValue(d) 
-  	        + ", " + yValue(d) + ")")
-                 .style("left", (d3.event.pageX + 5) + "px")
-                 .style("top", (d3.event.pageY - 28) + "px");
-        })
-        .on("mouseout", function(d) {
-            tooltip.transition()
-                 .duration(500)
-                 .style("opacity", 0);
-        });
+		// Setup radius values
+		var rMap   = function(d) { return d["radius"]; };
 
-    // Renderer
-    d3to3.render("#d3_panel");
+		// Setup Fill Color
+		var color = d3.scale.category10(),
+			cValue = function(d) { return d.Category; };
+	
+		// Append the graph
+		var svg = d3.select("#d3_panel").append("svg")
+			.attr("width", width + margin.left + margin.right)
+			.attr("height", height + margin.top + margin.bottom)
+			.append("g")
+			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  </script>
+		// Load Data
+		data.forEach(function(d) {
+			d.Calories = +d.Calories;
+			d["Protein (g)"] = +d["Protein (g)"];
+		});
+		
+		// don't want dots overlapping axis, so add in buffer to data domain
+		xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
+		yScale.domain([d3.min(data, yValue)-1, d3.max(data, yValue)+1]);
 
-  </body>
-  </html>
+		// x-axis
+		svg.append("g")	
+			.attr("class", "x axis")
+			.call(xAxis);
+
+		// y-axis
+		svg.append("g")
+			.attr("class", "y axis")
+			.call(yAxis)
+			.append("text")
+			.attr("transform", "rotate(-90)");
+
+		// Draw Circles
+		svg.selectAll(".dot")
+			.data(data)
+			.enter().append("circle")
+			.attr("class", "dot")
+			.attr("r", rMap)
+			.attr("cx", xMap)
+			.attr("cy", yMap)
+			.style("fill", function(d) { 
+				return color(cValue(d));
+			}) 
+			.on("mouseover", function(d) {
+				d3.select(this)
+					.transition()
+					.duration(200).
+					attr("r", rMap(d)+5);
+			})
+			.on("mouseout", function(d) {
+				d3.select(this)
+					.transition()
+					.duration(200)
+					.attr("r", rMap(d));
+			});
+
+		// Renderer
+		d3to3.render("d3to3_panel");
+
+	</script>
+
+</body>
+</html>

@@ -86,19 +86,34 @@ _this.setup = function(){
 	}
 
 	_d3.selection.prototype.each = function() { 
+		
+
 		var nodes = hook_each.apply(this, arguments); 
 		observerFactory.notify({'type':'each', 'keyType':typeof [], 'value':nodes[0]});
+
+		// console.log("================ EACH ================ ");
+		// console.log(nodes);
 
 		return hook_each.apply(this, arguments);      
 	}
 
 	_d3.selection.prototype.attr = function() { 
+
+		 console.log("================ ATTR ================ ");
+		 // console.log(arguments);
+
 	  	// Notify attr observers
 		observerFactory.notify({'type':'attr', 'key':arguments[0], 'value':arguments[1]});
 		return hook_attr.apply(this, arguments); 
 	}
 
 	_d3.selection.prototype.append = function(){
+
+		console.log("================ APPEND ================ ");
+		// console.log(arguments);
+		
+		observerFactory.notify({'type':'append', 'key':arguments[0], 'value':arguments[1]});
+		
 		// Determine SVG width and height 
 		if (arguments[0] === 'svg'){
 			observerFactory.observe(
@@ -107,6 +122,11 @@ _this.setup = function(){
 				}),
 				observerFactory.type('attr').expectKey('height').then(function(value){
 					_this.model.canvas.height = value;
+				}),
+				observerFactory.type('append').expectKey('g').then(function(value){}),
+
+				observerFactory.type('attr').expectKey('transform').then(function(value){
+					_this.model.canvas.transform = value;
 				})
 			);
 		} 

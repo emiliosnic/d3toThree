@@ -121,19 +121,34 @@ _this.setup = function(){
 	}
 
 	_d3.selection.prototype.each = function() { 
+		
+
 		var nodes = hook_each.apply(this, arguments); 
 		observerFactory.notify({'type':'each', 'keyType':typeof [], 'value':nodes[0]});
+
+		// console.log("================ EACH ================ ");
+		// console.log(nodes);
 
 		return hook_each.apply(this, arguments);      
 	}
 
 	_d3.selection.prototype.attr = function() { 
+
+		 console.log("================ ATTR ================ ");
+		 // console.log(arguments);
+
 	  	// Notify attr observers
 		observerFactory.notify({'type':'attr', 'key':arguments[0], 'value':arguments[1]});
 		return hook_attr.apply(this, arguments); 
 	}
 
 	_d3.selection.prototype.append = function(){
+
+		console.log("================ APPEND ================ ");
+		// console.log(arguments);
+		
+		observerFactory.notify({'type':'append', 'key':arguments[0], 'value':arguments[1]});
+		
 		// Determine SVG width and height 
 		if (arguments[0] === 'svg'){
 			observerFactory.observe(
@@ -142,6 +157,11 @@ _this.setup = function(){
 				}),
 				observerFactory.type('attr').expectKey('height').then(function(value){
 					_this.model.canvas.height = value;
+				}),
+				observerFactory.type('append').expectKey('g').then(function(value){}),
+
+				observerFactory.type('attr').expectKey('transform').then(function(value){
+					_this.model.canvas.transform = value;
 				})
 			);
 		} 
@@ -312,7 +332,8 @@ GeometryFactory.line   = function() {
 
 GeometryFactory.prototype.loadData = function(data) {
 
-	var that = this;
+	var that = this,
+		offset = translateOffsets(_this.model.canvas.transform);
 
 	var loadDataCircle = function(){
 
@@ -329,6 +350,10 @@ GeometryFactory.prototype.loadData = function(data) {
 			x = (offsetX <= _this.model.canvas.width)  ?  - (_this.model.canvas.width/2 - offsetX): (_this.model.canvas.width/2 - offsetX); 
 			y = (offsetY <= _this.model.canvas.height) ?   (_this.model.canvas.height/2 - offsetY): - (_this.model.canvas.height/2 - offsetY);
 			
+			// Apply offsets	
+			x += offset.x;
+			y -= offset.y;
+
 			var material = new THREE.MeshBasicMaterial({ 'color': color}),
 				circleGeometry = new THREE.CircleGeometry(radius, 64),
 				circle = new THREE.Mesh( circleGeometry,  new THREE.MeshBasicMaterial({ 'color': color}));
@@ -375,7 +400,7 @@ _this.render = function(d3id){
 			geometryFactory = new GeometryFactory();
 
 			scene = new THREE.Scene(),
-			container = document.getElementById('custom_panel');
+			container = document.getElementById(d3id);
 
 			camera = new THREE.PerspectiveCamera( 115, (_this.model.canvas.width || window.innerWidth) / (_this.model.canvas.height || window.innerHeight), 1, 1000);
 			camera.position.set(0, 0, 100);
@@ -386,13 +411,19 @@ _this.render = function(d3id){
 			renderer = new THREE.WebGLRenderer({ antialias: true }),
 			renderer.setClearColor( 0xffffff );
 			renderer.setPixelRatio(window.devicePixelRatio );
-			renderer.setSize(_this.model.canvas.width || window.innerWidth,_this.model.canvas.height || window.innerHeight);
+				
+			renderer.setSize(
+				_this.model.canvas.width  || window.innerWidth,
+				_this.model.canvas.height || window.innerHeight
+			);
 
 		};
 
 		var removeSVG = function () {
-			var child = document.getElementById(d3id.replace("#",""));
-			child.parentNode.removeChild(child);
+			/*
+				var child = document.getElementById(d3id.replace("#",""));
+				child.parentNode.removeChild(child);
+			*/
 		};
 
 		var constructMeshes = function () {
@@ -458,6 +489,16 @@ _this.render = function(d3id){
     return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 }
 ;
+var translateOffsets =function(input){
+	var translation = /\(([^)]+)\)/.exec(input)[1].split(','),
+		offsetX = parseInt(translation[0]) || 0,
+		offsetY = parseInt(translation[1]) || 0;
+    return {
+    	x: offsetX,
+    	y: offsetY
+    };
+}
+;
 function ObserverFactory(){}
 
 ObserverFactory.queue = [];
@@ -497,8 +538,9 @@ ObserverFactory.prototype.type = function(type){
 	return new ObserverFactory[constr]();
 }
 
-ObserverFactory.attr = function() { this.type = 'attr'; }
-ObserverFactory.each = function() { this.type = 'each'; }
+ObserverFactory.attr   = function() { this.type = 'attr';   }
+ObserverFactory.each   = function() { this.type = 'each';   }
+ObserverFactory.append = function() { this.type = 'append'; }
 
 ObserverFactory.prototype.notify = function(args) {
 

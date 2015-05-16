@@ -14,6 +14,7 @@ module.exports = function(grunt) {
               'src/scene/geometries.js', 
               'src/scene/renderer.js', 
               'src/utils/colors.js',
+              'src/utils/units.js',
               'src/utils/observers.js',
               'src/teardown.js'
               ],
