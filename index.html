@@ -18,7 +18,7 @@
 
 	<script src="lib/d3.js"></script>
 	<script src="lib/three.min.js"></script>
-	<script src="dist/d3to3.min.js"></script>
+	<script src="dist/d3to3.js"></script>
 
 	<ul class="panels">
 		<li id="d3_panel"></li>
@@ -63,11 +63,23 @@
 			cValue = function(d) { return d.Category; };
 	
 		// Append the graph
-		var svg = d3.select("#d3_panel").append("svg")
+		var svg = 
+
+			d3.select("#d3_panel")
+			.append("svg")
 			.attr("width", width + margin.left + margin.right)
 			.attr("height", height + margin.top + margin.bottom)
+
+			// #####################
+			// MAKE THIS BOLD
+
+			.d3to3().canvas()
+			// #####################
+
 			.append("g")
-			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+			.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+			;
+
 
 		// Load Data
 		data.forEach(function(d) {
@@ -82,14 +94,26 @@
 		// x-axis
 		svg.append("g")	
 			.attr("class", "x axis")
-			.call(xAxis);
+			.call(xAxis)
+			
+			// #####################
+			// MAKE THIS BOLD
+
+			.d3to3().axis().x();
+
+			// #####################
 
 		// y-axis
 		svg.append("g")
 			.attr("class", "y axis")
 			.call(yAxis)
-			.append("text")
-			.attr("transform", "rotate(-90)");
+			
+			// #####################
+			// MAKE THIS BOLD
+
+			.d3to3().axis().y();
+
+			// #####################
 
 		// Draw Circles
 		svg.selectAll(".dot")
@@ -113,7 +137,14 @@
 					.transition()
 					.duration(200)
 					.attr("r", rMap(d));
-			});
+			})
+			// #####################
+			// MAKE THIS BOLD
+
+			.d3to3().data()
+			// #####################
+
+			;
 
 		// Renderer
 		d3to3.render("d3to3_panel");

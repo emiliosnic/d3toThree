@@ -32,9 +32,6 @@ ObserverFactory.prototype.type = function(type){
 	if (typeof ObserverFactory[constr] !== "function"){
 		// TOODO: Handle error  
 	}
-	if (typeof ObserverFactory[constr].prototype.drive !== "function") { 
-		ObserverFactory[constr].prototype = new ObserverFactory();
-	}
 	return new ObserverFactory[constr]();
 }
 
@@ -56,7 +53,7 @@ ObserverFactory.prototype.notify = function(args) {
 
 	    if (observer.type == type && 
 			(observer.expectedKey == key) || (observer.expectedType == keyType)){
-	    
+
 			if (typeof observer.callback === "function" && value != null){
 				observer.callback(value); 
 			}
@@ -65,3 +62,27 @@ ObserverFactory.prototype.notify = function(args) {
 		}
 	});
 } 
+
+
+Object.prototype.extractNode = function(key) {
+	
+	var obj = this;
+
+	// Extract directly
+	if (key in this){
+		obj = this[key];
+	} else {
+		// Find first item that has the nodeName required
+		for (var item in this) {
+			if (this.hasOwnProperty(item) && this[item].nodeName === key){
+				obj = this[item];
+				break;
+			}
+		}
+	}
+	return obj;
+};
+
+
+
+

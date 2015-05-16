@@ -11,7 +11,13 @@ var d3to3 = (function () {
 			y: [] 
 		}, 
 		content: [],
+
+		// TODO: FIX THIS
 		canvas: { 
+			offsets : { 
+				x: 40,
+				y: 20
+			}, 
 			width: null, 
 			height: null 
 		}
@@ -32,4 +38,8 @@ var d3to3 = (function () {
 
 	// Setup Utils
 	observerFactory = new ObserverFactory();
+
+	if (_this.loaded) {
+
+
 

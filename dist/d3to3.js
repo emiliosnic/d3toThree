@@ -11,7 +11,13 @@ var d3to3 = (function () {
 			y: [] 
 		}, 
 		content: [],
+
+		// TODO: FIX THIS
 		canvas: { 
+			offsets : { 
+				x: 40,
+				y: 20
+			}, 
 			width: null, 
 			height: null 
 		}
@@ -33,7 +39,74 @@ var d3to3 = (function () {
 	// Setup Utils
 	observerFactory = new ObserverFactory();
 
+	if (_this.loaded) {
+
+
+
 ;
+
+
+//
+/*
+	new stuff:
+	d3to3.axis.x
+	d3to3.axis.y
+	d3to3.data
+	d3to3.canvas
+*/
+
+
+
+// TODO:
+//   CHANGE EXTEND FUNTION!!
+
+function extend (base, extension) {
+  if (arguments.length > 2) 
+  	[].forEach.call(arguments, function (extension) { 
+ 	 	extend(base, extension) 
+ 	})
+  else 
+  	for (var k in extension) 
+  		base[k] = extension[k]
+  return base;
+}
+
+extend(d3.selection.prototype, { d3to3: d3_extension})
+
+function d3_extension() {
+
+	this.canvas = function(){
+		
+		_this.model.canvas.width  = this[0].extractNode('svg').width.baseVal.value;
+		_this.model.canvas.height  = this[0].extractNode('svg').height.baseVal.value;
+
+		return this;
+	}    
+
+	this.axis = function(){
+		this.x = function(){
+			_this.model.axis.x = this[0].extractNode('g').childNodes;
+			return this;
+		}
+		this.y = function(){
+			_this.model.axis.y = this[0].extractNode('g').childNodes;
+			return this;
+		}
+		return this;
+	};
+	this.data = function(){
+		_this.model.content = this[0];
+		return this;
+	}    
+    return this;
+}
+
+
+
+// TODO:
+//   CHANGE EXTEND FUNTION
+
+
 _this.scale            = {};
 _this.svg              = {};
 _this.layout           = {};
@@ -78,12 +151,13 @@ _this.setup = function(){
 		hook_enter_insert = _d3.selection.enter.prototype.insert,
 		hook_enter_size = _d3.selection.enter.prototype.size;
 
-	_d3.selection.enter.prototype.empty = function() { return hook_enter_empty.apply(this, arguments);  }
+	_d3.selection.enter.prototype.empty = function()  { return hook_enter_empty.apply(this, arguments);  }
 	_d3.selection.enter.prototype.node   = function() { return hook_enter_node.apply(this, arguments);   }
 	_d3.selection.enter.prototype.call   = function() { return hook_enter_call.apply(this, arguments);   }
 	_d3.selection.enter.prototype.select = function() { return hook_enter_select.apply(this, arguments); }
 	_d3.selection.enter.prototype.insert = function() { return hook_enter_insert.apply(this, arguments); }
 	_d3.selection.enter.prototype.size   = function() { return hook_enter_size.apply(this, arguments);   }
+	_d3.selection.enter.prototype.append = function() {return hook_append.apply(this, arguments);        }
 	_d3.selection.prototype.selectAll = function() { return hook_selectAll.apply(this, arguments); }
 	_d3.selection.prototype.select = function()    { return hook_select.apply(this, arguments);    }
 	_d3.selection.prototype.classed = function()   { return hook_classed.apply(this, arguments);   }
@@ -97,76 +171,14 @@ _this.setup = function(){
 	_d3.selection.prototype.filter = function()    { return hook_filter.apply(this, arguments);    }
 	_d3.selection.prototype.order = function()     { return hook_order.apply(this, arguments);     }
 	_d3.selection.prototype.sort = function()      { return hook_sort.apply(this, arguments);      }
-	_d3.selection.prototype.call = function()      { return hook_call.apply(this, arguments);      }
 	_d3.selection.prototype.empty = function()     { return hook_empty.apply(this, arguments);     }
 	_d3.selection.prototype.node = function()      { return hook_node.apply(this, arguments);      }
 	_d3.selection.prototype.size = function()      { return hook_size.apply(this, arguments);      }
 	_d3.selection.prototype.data = function()      { return hook_data.apply(this, arguments);      }
-
-	_d3.selection.enter.prototype.append = function() {
-		var newNodes = hook_append.apply(this, arguments);
-	
-		// Notify Observers that look for enter event
-		if (arguments[0] == "circle"){
-			observerFactory.observe(
-				observerFactory.type("each").expectKeyType(typeof[]).then(function(value){
-					[].forEach.call(value, function (item) { 
-						_this.model.content.push(item);
-					})
-
-				})
-			);
-		}
-	  return hook_append.apply(this, arguments); 
-	}
-
-	_d3.selection.prototype.each = function() { 
-		
-
-		var nodes = hook_each.apply(this, arguments); 
-		observerFactory.notify({'type':'each', 'keyType':typeof [], 'value':nodes[0]});
-
-		// console.log("================ EACH ================ ");
-		// console.log(nodes);
-
-		return hook_each.apply(this, arguments);      
-	}
-
-	_d3.selection.prototype.attr = function() { 
-
-		 console.log("================ ATTR ================ ");
-		 // console.log(arguments);
-
-	  	// Notify attr observers
-		observerFactory.notify({'type':'attr', 'key':arguments[0], 'value':arguments[1]});
-		return hook_attr.apply(this, arguments); 
-	}
-
-	_d3.selection.prototype.append = function(){
-
-		console.log("================ APPEND ================ ");
-		// console.log(arguments);
-		
-		observerFactory.notify({'type':'append', 'key':arguments[0], 'value':arguments[1]});
-		
-		// Determine SVG width and height 
-		if (arguments[0] === 'svg'){
-			observerFactory.observe(
-				observerFactory.type('attr').expectKey('width').then(function(value){
-					_this.model.canvas.width = value;
-				}),
-				observerFactory.type('attr').expectKey('height').then(function(value){
-					_this.model.canvas.height = value;
-				}),
-				observerFactory.type('append').expectKey('g').then(function(value){}),
-
-				observerFactory.type('attr').expectKey('transform').then(function(value){
-					_this.model.canvas.transform = value;
-				})
-			);
-		} 
-		return hook_append.apply(this, arguments);
-	}
+	_d3.selection.prototype.call = function() 	   { return hook_call.apply(this, arguments);      }
+	_d3.selection.prototype.each = function() 	   { return hook_each.apply(this, arguments);      }
+	_d3.selection.prototype.attr = function()      { return hook_attr.apply(this, arguments);      }
+	_d3.selection.prototype.append = function()    { return hook_append.apply(this, arguments);    }
 
 	_this.min                      = function(array, f)  { return _d3.min(array, f);                            }
 	_this.max                      = function(array, f)  { return _d3.max(array, f);                            }
@@ -290,7 +302,7 @@ _this.setup = function(){
 	_this.layout.tree              = function() { return _d3.layout.tree();                                     }
 	_this.layout.treemap           = function() { return _d3.layout.treemap();                                  }
 	_this.layout.cluster           = function() { return _d3.layout.cluster();                                  }
-	_this.svg.axis                 = function() { return _d3.svg.axis();                                        }
+	_this.svg.axis                 = function()  { return _d3.svg.axis();                                       }	
 	_this.svg.arc                  = function() { return _d3.svg.arc();                                         }
 	_this.svg.line                 = function() { return _d3.svg.line();                                        }
 	_this.svg.brush                = function() { return _d3.svg.brush();                                       }
@@ -315,44 +327,40 @@ GeometryFactory.prototype.type = function(type){
 	if (typeof GeometryFactory[constr] !== "function"){
 		// TOODO: Handle error  
 	}
-	if (typeof GeometryFactory[constr].prototype.drive !== "function") { 
+	if (typeof GeometryFactory[constr].prototype.type !== "function") { 
 		GeometryFactory[constr].prototype = new GeometryFactory();
 	}
 	return new GeometryFactory[constr]();
 }
 
+// ---------------------------------------
+// Circle Geometry
+// ---------------------------------------
+
 GeometryFactory.circle = function() {  
-	this.type = 'circle'; 
-	this.meshes = [];
-}
-GeometryFactory.line   = function() {  
-	this.type = 'line';    
-	this.meshes = [];
-}
+	
+	this.type = 'circle';
+	this.meshes = []; 
 
-GeometryFactory.prototype.loadData = function(data) {
-
-	var that = this,
-		offset = translateOffsets(_this.model.canvas.transform);
-
-	var loadDataCircle = function(){
-
+	this.loadDataInner = function(data){
+		var that = this;
+		
 		data.forEach(function (item) {
 			var radius  = item.r.baseVal.value,
 				offsetX = item.cx.baseVal.value,
-				offsetY = item.cy.baseVal.value;
-				color   = RGBToHex(item.style.cssText.slice(6));
+				offsetY = item.cy.baseVal.value,
+				color   = colorToHex(item.style.cssText.slice(6));
 
 			var x,
 				y;
 
 			// Normalize width and height
-			x = (offsetX <= _this.model.canvas.width)  ?  - (_this.model.canvas.width/2 - offsetX): (_this.model.canvas.width/2 - offsetX); 
-			y = (offsetY <= _this.model.canvas.height) ?   (_this.model.canvas.height/2 - offsetY): - (_this.model.canvas.height/2 - offsetY);
-			
+			x = normalizePosition.x(offsetX);
+			y = normalizePosition.y(offsetY);
+
 			// Apply offsets	
-			x += offset.x;
-			y -= offset.y;
+			x += _this.model.canvas.offsets.x;
+			y -= _this.model.canvas.offsets.y;
 
 			var material = new THREE.MeshBasicMaterial({ 'color': color}),
 				circleGeometry = new THREE.CircleGeometry(radius, 64),
@@ -364,13 +372,140 @@ GeometryFactory.prototype.loadData = function(data) {
 			that.meshes.push(circle);
 
 		});
-
 	}
+}
 
-	if (this.type == "circle"){
-		loadDataCircle();
+// ---------------------------------------
+//  Axis Geometry
+// ---------------------------------------
+
+GeometryFactory.axis   = function() {  
+	this.type = 'axis';    
+	this.meshes = [];
+
+	this.loadDataInner = function(data){
+
+		// AXIS have paths and ticks
+		// Check for ticks and draw
+		// Then check for paths and draw
+
+
+		for (i =  0; i < data.length; i++){
+
+			if (data[i].nodeName === "g") {
+				// Apply Ticks
+				
+				var tickPosition = { x:0, y:0};
+
+				// Setup Line
+				tickPosition = translateOffsets(data[i].attributes.extractNode('transform').nodeValue);
+
+				var x = normalizePosition.x(tickPosition.x) + _this.model.canvas.offsets.x,
+					y = normalizePosition.y(tickPosition.y) - _this.model.canvas.offsets.y;
+		
+				var line = { x:0, y:0 };
+
+				line.y = parseInt(data[i].childNodes.extractNode('line').attributes.extractNode('y2').nodeValue);
+				line.x = parseInt(data[i].childNodes.extractNode('line').attributes.extractNode('x2').nodeValue);
+
+			    var material = new THREE.LineBasicMaterial({ color: 0x000000});
+			    var geometry = new THREE.Geometry();
+
+				// Default
+				var newx,
+					newy;
+
+			    // Determine Axis Lines
+				if (!isNaN(line.x) && !isNaN(line.y)){
+					newx = x+ line.x;
+					newy = y+ line.y;
+				} else {
+					// Default Values
+					if (this.properties.orientation === "horizontal") {
+						newx = x, newy = y+10;
+					} else {
+						newx = x-10, newy = y;
+					}
+				}
+
+				// Add lines
+				geometry.vertices.push(new THREE.Vector3(x, y, 0));
+				geometry.vertices.push(new THREE.Vector3(newx, newy, 0));
+
+				this.meshes.push(new THREE.Line(geometry, material));
+				
+
+				/*			
+					offsetHeight: 12
+					offsetLeft: -2
+					offsetParent: body
+					offsetTop: -6
+					offsetWidth: 12
+				*/
+
+				// Add text
+				/*
+					console.log("TEXT");
+					console.log(data[i].childNodes);
+					console.log(data[i].childNodes.extractNode('text').__data__);
+					console.log(data[i].childNodes.extractNode('text').attributes.extractNode('x').nodeValue);
+					console.log(data[i].childNodes.extractNode('text').attributes.extractNode('y').nodeValue);
+				*/
+
+			} else if (data[i].nodeName === "path") {
+
+				// Apply line
+				var points = extractSVGPath(data[i].attributes.extractNode('d').nodeValue);
+
+				if (this.properties.orientation === "horizontal") {
+					points.splice(-1,1);
+					points.splice(-1,1);
+				}
+
+				var count = points.length;
+
+				for (var j = 1; j < count; j++) {
+					var startX = parseInt(points[j-1].x),
+						startY = parseInt(points[j-1].y),
+						endX   = points[j].x,
+						endY   = points[j].y;
+
+
+						if (points[j].x == "V") {
+							endX = parseInt(points[j-1].x);
+
+							points[j].x = parseInt(points[j-1].x);
+
+						} else if (points[j].y == "H") {
+							endY = parseInt(points[j-1].y);
+							points[j].y = parseInt(points[j-1].y);
+						}
+
+
+					startY = normalizePosition.y(startY) - _this.model.canvas.offsets.y;
+					startX = normalizePosition.x(startX) + _this.model.canvas.offsets.x;
+					endX   = normalizePosition.x(endX) + _this.model.canvas.offsets.x;
+					endY   = normalizePosition.y(endY) - _this.model.canvas.offsets.y;
+
+
+						geometry.vertices.push(new THREE.Vector3(startX, startY, 0));
+						geometry.vertices.push(new THREE.Vector3(endX  , endY, 0));
+
+						this.meshes.push(new THREE.Line(geometry, material));
+
+				}
+			}
+		}
 	}
+}
 
+GeometryFactory.prototype.setProperties = function(properties) {
+	this.properties = properties;
+	return this;
+};
+
+GeometryFactory.prototype.loadData = function(data) {
+	this.loadDataInner(data);
 	return this;
 };
 
@@ -398,6 +533,9 @@ _this.render = function(d3id){
 
 			// Setup Canvas
 			geometryFactory = new GeometryFactory();
+
+
+			// MOVE RENDERED TO VIEW!!!
 
 			scene = new THREE.Scene(),
 			container = document.getElementById(d3id);
@@ -444,6 +582,20 @@ _this.render = function(d3id){
 			.loadData(_this.model.content)
 			.toGroup(group);
 
+		// Setup x Axis
+		geometryFactory
+			.type('axis')
+			.setProperties({'orientation': 'horizontal'})
+			.loadData(_this.model.axis.x)
+			.toGroup(group);
+
+		// Setup y Axis
+		geometryFactory
+			.type('axis')
+			.setProperties({'orientation': 'vertical'})
+			.loadData(_this.model.axis.y)
+			.toGroup(group);
+
 		// Remove this model
 		_this.model.content = {};
 
@@ -467,29 +619,43 @@ _this.render = function(d3id){
 	animate();
 
 };
-;var RGBToHex =function(input){
+;
 
-	var componentToHex = function(c) {
+var colorToHex =function(input){
+
+	this.componentToHex = function(c) {
 		var hex = c.toString(16);
 		return hex.length == 1 ? "0" + hex : hex;
 	}
 
-	var r,g,b;
+	// Default return
+	if (input == undefined || typeof input !== "string")
+    	return "#000000";
 
-	if(typeof tests === "object" && tests.length == 3){
-		r = input[0];
-		g = input[1];
-		b = input[2];
+	// If this is already a hex clear
+	if (input.charAt(0) === '#') {
+		return ((input.length > 6 )? input.substring(0,7):input);
+	
 	} else {
 		var rgb = /\(([^)]+)\)/.exec(input)[1].split(',');
+		var r,g,b;
 		r = parseInt(rgb[0]);
 		g = parseInt(rgb[1]);
 		b = parseInt(rgb[2]);
+		
+		// Else if this is rgb call rgba
+		return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 	}
-    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+
 }
 ;
 var translateOffsets =function(input){
+	if (typeof input !== "string")
+		return {
+			x: -1, 
+			y: -1
+		};
+
 	var translation = /\(([^)]+)\)/.exec(input)[1].split(','),
 		offsetX = parseInt(translation[0]) || 0,
 		offsetY = parseInt(translation[1]) || 0;
@@ -498,6 +664,47 @@ var translateOffsets =function(input){
     	y: offsetY
     };
 }
+
+var normalizePosition = {};
+
+normalizePosition.x = function(value){
+	return (value <= _this.model.canvas.width) ? -(_this.model.canvas.width/2 - value): (_this.model.canvas.width/2 - value); 
+}
+normalizePosition.y = function(value){
+	return (value <= _this.model.canvas.height) ? (_this.model.canvas.height/2 - value): -(_this.model.canvas.height/2 - value); 
+	return 1;
+};
+
+
+var extractSVGPath = function(input) {
+	var points = [];
+	var commands = input.split(/(?=[MVHV])/);
+
+	commands.forEach(function(item, i){
+		
+		var index = item.charAt(0), 
+			tmp = item.substring(1),
+			xy = tmp.split(','),
+			newX,
+			newY;
+
+			if (index === "V"){
+				newX = "V";
+				newY = xy[0];
+
+			} else if (index === "H"){
+				newX = xy[0];
+				newY = "H";
+			
+			} else {
+				newX = xy[0];
+				newY = -xy[1];
+			}
+
+		points.push({x: newX, y: newY})
+	})
+	return points;
+};
 ;
 function ObserverFactory(){}
 
@@ -532,9 +739,6 @@ ObserverFactory.prototype.type = function(type){
 	if (typeof ObserverFactory[constr] !== "function"){
 		// TOODO: Handle error  
 	}
-	if (typeof ObserverFactory[constr].prototype.drive !== "function") { 
-		ObserverFactory[constr].prototype = new ObserverFactory();
-	}
 	return new ObserverFactory[constr]();
 }
 
@@ -556,7 +760,7 @@ ObserverFactory.prototype.notify = function(args) {
 
 	    if (observer.type == type && 
 			(observer.expectedKey == key) || (observer.expectedType == keyType)){
-	    
+
 			if (typeof observer.callback === "function" && value != null){
 				observer.callback(value); 
 			}
@@ -565,11 +769,35 @@ ObserverFactory.prototype.notify = function(args) {
 		}
 	});
 } 
+
+
+Object.prototype.extractNode = function(key) {
+	
+	var obj = this;
+
+	// Extract directly
+	if (key in this){
+		obj = this[key];
+	} else {
+		// Find first item that has the nodeName required
+		for (var item in this) {
+			if (this.hasOwnProperty(item) && this[item].nodeName === key){
+				obj = this[item];
+				break;
+			}
+		}
+	}
+	return obj;
+};
+
+
+
+
 ;
 	// Expose to global d3
-	if (_this.loaded) {
-		_this.setup(); 
-		window.d3 = _d3;
+	_this.setup(); 
+	window.d3 = _d3;
+
 	}
 
 	return _this;

@@ -12,6 +12,9 @@ _this.render = function(d3id){
 			// Setup Canvas
 			geometryFactory = new GeometryFactory();
 
+
+			// MOVE RENDERED TO VIEW!!!
+
 			scene = new THREE.Scene(),
 			container = document.getElementById(d3id);
 
@@ -55,6 +58,20 @@ _this.render = function(d3id){
 		geometryFactory
 			.type('circle')
 			.loadData(_this.model.content)
+			.toGroup(group);
+
+		// Setup x Axis
+		geometryFactory
+			.type('axis')
+			.setProperties({'orientation': 'horizontal'})
+			.loadData(_this.model.axis.x)
+			.toGroup(group);
+
+		// Setup y Axis
+		geometryFactory
+			.type('axis')
+			.setProperties({'orientation': 'vertical'})
+			.loadData(_this.model.axis.y)
 			.toGroup(group);
 
 		// Remove this model

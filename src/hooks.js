@@ -1,4 +1,67 @@
 
+
+
+//
+/*
+	new stuff:
+	d3to3.axis.x
+	d3to3.axis.y
+	d3to3.data
+	d3to3.canvas
+*/
+
+
+
+// TODO:
+//   CHANGE EXTEND FUNTION!!
+
+function extend (base, extension) {
+  if (arguments.length > 2) 
+  	[].forEach.call(arguments, function (extension) { 
+ 	 	extend(base, extension) 
+ 	})
+  else 
+  	for (var k in extension) 
+  		base[k] = extension[k]
+  return base;
+}
+
+extend(d3.selection.prototype, { d3to3: d3_extension})
+
+function d3_extension() {
+
+	this.canvas = function(){
+		
+		_this.model.canvas.width  = this[0].extractNode('svg').width.baseVal.value;
+		_this.model.canvas.height  = this[0].extractNode('svg').height.baseVal.value;
+
+		return this;
+	}    
+
+	this.axis = function(){
+		this.x = function(){
+			_this.model.axis.x = this[0].extractNode('g').childNodes;
+			return this;
+		}
+		this.y = function(){
+			_this.model.axis.y = this[0].extractNode('g').childNodes;
+			return this;
+		}
+		return this;
+	};
+	this.data = function(){
+		_this.model.content = this[0];
+		return this;
+	}    
+    return this;
+}
+
+
+
+// TODO:
+//   CHANGE EXTEND FUNTION
+
+
 _this.scale            = {};
 _this.svg              = {};
 _this.layout           = {};
@@ -43,12 +106,13 @@ _this.setup = function(){
 		hook_enter_insert = _d3.selection.enter.prototype.insert,
 		hook_enter_size = _d3.selection.enter.prototype.size;
 
-	_d3.selection.enter.prototype.empty = function() { return hook_enter_empty.apply(this, arguments);  }
+	_d3.selection.enter.prototype.empty = function()  { return hook_enter_empty.apply(this, arguments);  }
 	_d3.selection.enter.prototype.node   = function() { return hook_enter_node.apply(this, arguments);   }
 	_d3.selection.enter.prototype.call   = function() { return hook_enter_call.apply(this, arguments);   }
 	_d3.selection.enter.prototype.select = function() { return hook_enter_select.apply(this, arguments); }
 	_d3.selection.enter.prototype.insert = function() { return hook_enter_insert.apply(this, arguments); }
 	_d3.selection.enter.prototype.size   = function() { return hook_enter_size.apply(this, arguments);   }
+	_d3.selection.enter.prototype.append = function() {return hook_append.apply(this, arguments);        }
 	_d3.selection.prototype.selectAll = function() { return hook_selectAll.apply(this, arguments); }
 	_d3.selection.prototype.select = function()    { return hook_select.apply(this, arguments);    }
 	_d3.selection.prototype.classed = function()   { return hook_classed.apply(this, arguments);   }
@@ -62,76 +126,14 @@ _this.setup = function(){
 	_d3.selection.prototype.filter = function()    { return hook_filter.apply(this, arguments);    }
 	_d3.selection.prototype.order = function()     { return hook_order.apply(this, arguments);     }
 	_d3.selection.prototype.sort = function()      { return hook_sort.apply(this, arguments);      }
-	_d3.selection.prototype.call = function()      { return hook_call.apply(this, arguments);      }
 	_d3.selection.prototype.empty = function()     { return hook_empty.apply(this, arguments);     }
 	_d3.selection.prototype.node = function()      { return hook_node.apply(this, arguments);      }
 	_d3.selection.prototype.size = function()      { return hook_size.apply(this, arguments);      }
 	_d3.selection.prototype.data = function()      { return hook_data.apply(this, arguments);      }
-
-	_d3.selection.enter.prototype.append = function() {
-		var newNodes = hook_append.apply(this, arguments);
-	
-		// Notify Observers that look for enter event
-		if (arguments[0] == "circle"){
-			observerFactory.observe(
-				observerFactory.type("each").expectKeyType(typeof[]).then(function(value){
-					[].forEach.call(value, function (item) { 
-						_this.model.content.push(item);
-					})
-
-				})
-			);
-		}
-	  return hook_append.apply(this, arguments); 
-	}
-
-	_d3.selection.prototype.each = function() { 
-		
-
-		var nodes = hook_each.apply(this, arguments); 
-		observerFactory.notify({'type':'each', 'keyType':typeof [], 'value':nodes[0]});
-
-		// console.log("================ EACH ================ ");
-		// console.log(nodes);
-
-		return hook_each.apply(this, arguments);      
-	}
-
-	_d3.selection.prototype.attr = function() { 
-
-		 console.log("================ ATTR ================ ");
-		 // console.log(arguments);
-
-	  	// Notify attr observers
-		observerFactory.notify({'type':'attr', 'key':arguments[0], 'value':arguments[1]});
-		return hook_attr.apply(this, arguments); 
-	}
-
-	_d3.selection.prototype.append = function(){
-
-		console.log("================ APPEND ================ ");
-		// console.log(arguments);
-		
-		observerFactory.notify({'type':'append', 'key':arguments[0], 'value':arguments[1]});
-		
-		// Determine SVG width and height 
-		if (arguments[0] === 'svg'){
-			observerFactory.observe(
-				observerFactory.type('attr').expectKey('width').then(function(value){
-					_this.model.canvas.width = value;
-				}),
-				observerFactory.type('attr').expectKey('height').then(function(value){
-					_this.model.canvas.height = value;
-				}),
-				observerFactory.type('append').expectKey('g').then(function(value){}),
-
-				observerFactory.type('attr').expectKey('transform').then(function(value){
-					_this.model.canvas.transform = value;
-				})
-			);
-		} 
-		return hook_append.apply(this, arguments);
-	}
+	_d3.selection.prototype.call = function() 	   { return hook_call.apply(this, arguments);      }
+	_d3.selection.prototype.each = function() 	   { return hook_each.apply(this, arguments);      }
+	_d3.selection.prototype.attr = function()      { return hook_attr.apply(this, arguments);      }
+	_d3.selection.prototype.append = function()    { return hook_append.apply(this, arguments);    }
 
 	_this.min                      = function(array, f)  { return _d3.min(array, f);                            }
 	_this.max                      = function(array, f)  { return _d3.max(array, f);                            }
@@ -255,7 +257,7 @@ _this.setup = function(){
 	_this.layout.tree              = function() { return _d3.layout.tree();                                     }
 	_this.layout.treemap           = function() { return _d3.layout.treemap();                                  }
 	_this.layout.cluster           = function() { return _d3.layout.cluster();                                  }
-	_this.svg.axis                 = function() { return _d3.svg.axis();                                        }
+	_this.svg.axis                 = function()  { return _d3.svg.axis();                                       }	
 	_this.svg.arc                  = function() { return _d3.svg.arc();                                         }
 	_this.svg.line                 = function() { return _d3.svg.line();                                        }
 	_this.svg.brush                = function() { return _d3.svg.brush();                                       }
