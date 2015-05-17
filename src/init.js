@@ -1,18 +1,35 @@
+
+/**
+ *   File: 
+ *         init.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
+
 var d3to3 = (function () {
 
 	var _this = {},
 		_d3   = {};
 
 	_this.loaded = false;
+	_this.about = {
+		name: "d3to3",
+		version: "0.0.1"
+	};
+
+	/**
+	 * Default Config
+	 */
+	
+	_this.config = { 
+	}
 
 	_this.model = { 
 		axis: { 
 			x: [], 
 			y: [] 
 		}, 
-		content: [],
-
-		// TODO: FIX THIS
 		canvas: { 
 			offsets : { 
 				x: 40,
@@ -20,7 +37,8 @@ var d3to3 = (function () {
 			}, 
 			width: null, 
 			height: null 
-		}
+		},
+		content: []
 	}; 
 
 	_this.initializer = ({
@@ -35,11 +53,5 @@ var d3to3 = (function () {
 		}
 	}).init();
 
-
-	// Setup Utils
-	observerFactory = new ObserverFactory();
-
 	if (_this.loaded) {
-
-
 

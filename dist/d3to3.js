@@ -1,18 +1,35 @@
+
+/**
+ *   File: 
+ *         init.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
+
 var d3to3 = (function () {
 
 	var _this = {},
 		_d3   = {};
 
 	_this.loaded = false;
+	_this.about = {
+		name: "d3to3",
+		version: "0.0.1"
+	};
+
+	/**
+	 * Default Config
+	 */
+	
+	_this.config = { 
+	}
 
 	_this.model = { 
 		axis: { 
 			x: [], 
 			y: [] 
 		}, 
-		content: [],
-
-		// TODO: FIX THIS
 		canvas: { 
 			offsets : { 
 				x: 40,
@@ -20,7 +37,8 @@ var d3to3 = (function () {
 			}, 
 			width: null, 
 			height: null 
-		}
+		},
+		content: []
 	}; 
 
 	_this.initializer = ({
@@ -35,77 +53,57 @@ var d3to3 = (function () {
 		}
 	}).init();
 
-
-	// Setup Utils
-	observerFactory = new ObserverFactory();
-
 	if (_this.loaded) {
 
-
-
 ;
+/**
+ *   File: 
+ *         setup.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
 
+/**
+ * Extend D3
+ */ 
 
-//
-/*
-	new stuff:
-	d3to3.axis.x
-	d3to3.axis.y
-	d3to3.data
-	d3to3.canvas
-*/
+extend(d3.selection.prototype, { 
 
+	d3to3: function() {
 
+		this.canvas = function(){
+			_this.model.canvas.width  = this[0].extractNode('svg').width.baseVal.value;
+			_this.model.canvas.height  = this[0].extractNode('svg').height.baseVal.value;
 
-// TODO:
-//   CHANGE EXTEND FUNTION!!
-
-function extend (base, extension) {
-  if (arguments.length > 2) 
-  	[].forEach.call(arguments, function (extension) { 
- 	 	extend(base, extension) 
- 	})
-  else 
-  	for (var k in extension) 
-  		base[k] = extension[k]
-  return base;
-}
-
-extend(d3.selection.prototype, { d3to3: d3_extension})
-
-function d3_extension() {
-
-	this.canvas = function(){
-		
-		_this.model.canvas.width  = this[0].extractNode('svg').width.baseVal.value;
-		_this.model.canvas.height  = this[0].extractNode('svg').height.baseVal.value;
-
-		return this;
-	}    
-
-	this.axis = function(){
-		this.x = function(){
-			_this.model.axis.x = this[0].extractNode('g').childNodes;
 			return this;
-		}
-		this.y = function(){
-			_this.model.axis.y = this[0].extractNode('g').childNodes;
+		}    
+
+		this.axis = function(){
+			this.x = function(){
+				_this.model.axis.x = this[0].extractNode('g').childNodes;
+				return this;
+			}
+			this.y = function(){
+				_this.model.axis.y = this[0].extractNode('g').childNodes;
+				return this;
+			}
 			return this;
-		}
-		return this;
-	};
-	this.data = function(){
-		_this.model.content = this[0];
-		return this;
-	}    
-    return this;
-}
+		};
+
+		this.data = function(){
+			_this.model.content = this[0];
+			return this;
+		}    
+
+	    return this;
+	}
+});
 
 
-
-// TODO:
-//   CHANGE EXTEND FUNTION
-
+/**
+ * Setup D3 Hooks
+ */ 
 
 _this.scale            = {};
 _this.svg              = {};
@@ -318,468 +316,1118 @@ _this.setup = function(){
 	_this.json                     = function(url, callback) { return _d3.json(url, callback);                  }
 	_this.html                     = function(url, callback) { return _d3.html(url, callback);                  }
 
-};;
-function GeometryFactory(){};
+};;/**
+ * @author Eberhard Graether / http://egraether.com/
+ * @author Mark Lundin 	/ http://mark-lundin.com
+ * @author Simone Manini / http://daron1337.github.io
+ * @author Luca Antiga 	/ http://lantiga.github.io
+ */
 
-GeometryFactory.prototype.type = function(type){
+THREE.TrackballControls = function ( object, domElement ) {
+
+	var _this = this;
+	var STATE = { NONE: -1, ROTATE: 0, ZOOM: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_ZOOM_PAN: 4 };
+
+	this.object = object;
+	this.domElement = ( domElement !== undefined ) ? domElement : document;
+
+	// API
+
+	this.enabled = true;
+
+	this.screen = { left: 0, top: 0, width: 0, height: 0 };
+
+	this.rotateSpeed = 1.0;
+	this.zoomSpeed = 1.2;
+	this.panSpeed = 0.3;
+
+	this.noRotate = false;
+	this.noZoom = false;
+	this.noPan = false;
+
+	this.staticMoving = false;
+	this.dynamicDampingFactor = 0.2;
+
+	this.minDistance = 0;
+	this.maxDistance = Infinity;
+
+	this.keys = [ 65 /*A*/, 83 /*S*/, 68 /*D*/ ];
+
+	// internals
+
+	this.target = new THREE.Vector3();
+
+	var EPS = 0.000001;
+
+	var lastPosition = new THREE.Vector3();
+
+	var _state = STATE.NONE,
+	_prevState = STATE.NONE,
+
+	_eye = new THREE.Vector3(),
+
+	_movePrev = new THREE.Vector2(),
+	_moveCurr = new THREE.Vector2(),
+
+	_lastAxis = new THREE.Vector3(),
+	_lastAngle = 0,
+
+	_zoomStart = new THREE.Vector2(),
+	_zoomEnd = new THREE.Vector2(),
+
+	_touchZoomDistanceStart = 0,
+	_touchZoomDistanceEnd = 0,
+
+	_panStart = new THREE.Vector2(),
+	_panEnd = new THREE.Vector2();
+
+	// for reset
+
+	this.target0 = this.target.clone();
+	this.position0 = this.object.position.clone();
+	this.up0 = this.object.up.clone();
+
+	// events
+
+	var changeEvent = { type: 'change' };
+	var startEvent = { type: 'start' };
+	var endEvent = { type: 'end' };
+
+
+	// methods
+
+	this.handleResize = function () {
+
+		if ( this.domElement === document ) {
+
+			this.screen.left = 0;
+			this.screen.top = 0;
+			this.screen.width = window.innerWidth;
+			this.screen.height = window.innerHeight;
+
+		} else {
+
+			var box = this.domElement.getBoundingClientRect();
+			// adjustments come from similar code in the jquery offset() function
+			var d = this.domElement.ownerDocument.documentElement;
+			this.screen.left = box.left + window.pageXOffset - d.clientLeft;
+			this.screen.top = box.top + window.pageYOffset - d.clientTop;
+			this.screen.width = box.width;
+			this.screen.height = box.height;
+
+		}
+
+	};
+
+	this.handleEvent = function ( event ) {
+
+		if ( typeof this[ event.type ] == 'function' ) {
+
+			this[ event.type ]( event );
+
+		}
+
+	};
+
+	var getMouseOnScreen = ( function () {
+
+		var vector = new THREE.Vector2();
+
+		return function ( pageX, pageY ) {
+
+			vector.set(
+				( pageX - _this.screen.left ) / _this.screen.width,
+				( pageY - _this.screen.top ) / _this.screen.height
+			);
+
+			return vector;
+
+		};
+
+	}() );
+
+	var getMouseOnCircle = ( function () {
+
+		var vector = new THREE.Vector2();
+
+		return function ( pageX, pageY ) {
+
+			vector.set(
+				( ( pageX - _this.screen.width * 0.5 - _this.screen.left ) / ( _this.screen.width * 0.5 ) ),
+				( ( _this.screen.height + 2 * ( _this.screen.top - pageY ) ) / _this.screen.width ) // screen.width intentional
+			);
+
+			return vector;
+		};
+
+	}() );
+
+	this.rotateCamera = (function() {
+
+		var axis = new THREE.Vector3(),
+			quaternion = new THREE.Quaternion(),
+			eyeDirection = new THREE.Vector3(),
+			objectUpDirection = new THREE.Vector3(),
+			objectSidewaysDirection = new THREE.Vector3(),
+			moveDirection = new THREE.Vector3(),
+			angle;
+
+		return function () {
+
+			moveDirection.set( _moveCurr.x - _movePrev.x, _moveCurr.y - _movePrev.y, 0 );
+			angle = moveDirection.length();
+
+			if ( angle ) {
+
+				_eye.copy( _this.object.position ).sub( _this.target );
+
+				eyeDirection.copy( _eye ).normalize();
+				objectUpDirection.copy( _this.object.up ).normalize();
+				objectSidewaysDirection.crossVectors( objectUpDirection, eyeDirection ).normalize();
+
+				objectUpDirection.setLength( _moveCurr.y - _movePrev.y );
+				objectSidewaysDirection.setLength( _moveCurr.x - _movePrev.x );
+
+				moveDirection.copy( objectUpDirection.add( objectSidewaysDirection ) );
+
+				axis.crossVectors( moveDirection, _eye ).normalize();
+
+				angle *= _this.rotateSpeed;
+				quaternion.setFromAxisAngle( axis, angle );
+
+				_eye.applyQuaternion( quaternion );
+				_this.object.up.applyQuaternion( quaternion );
+
+				_lastAxis.copy( axis );
+				_lastAngle = angle;
+
+			}
+
+			else if ( !_this.staticMoving && _lastAngle ) {
+
+				_lastAngle *= Math.sqrt( 1.0 - _this.dynamicDampingFactor );
+				_eye.copy( _this.object.position ).sub( _this.target );
+				quaternion.setFromAxisAngle( _lastAxis, _lastAngle );
+				_eye.applyQuaternion( quaternion );
+				_this.object.up.applyQuaternion( quaternion );
+
+			}
+
+			_movePrev.copy( _moveCurr );
+
+		};
+
+	}());
+
+
+	this.zoomCamera = function () {
+
+		var factor;
+
+		if ( _state === STATE.TOUCH_ZOOM_PAN ) {
+
+			factor = _touchZoomDistanceStart / _touchZoomDistanceEnd;
+			_touchZoomDistanceStart = _touchZoomDistanceEnd;
+			_eye.multiplyScalar( factor );
+
+		} else {
+
+			factor = 1.0 + ( _zoomEnd.y - _zoomStart.y ) * _this.zoomSpeed;
+
+			if ( factor !== 1.0 && factor > 0.0 ) {
+
+				_eye.multiplyScalar( factor );
+
+				if ( _this.staticMoving ) {
+
+					_zoomStart.copy( _zoomEnd );
+
+				} else {
+
+					_zoomStart.y += ( _zoomEnd.y - _zoomStart.y ) * this.dynamicDampingFactor;
+
+				}
+
+			}
+
+		}
+
+	};
+
+	this.panCamera = (function() {
+
+		var mouseChange = new THREE.Vector2(),
+			objectUp = new THREE.Vector3(),
+			pan = new THREE.Vector3();
+
+		return function () {
+
+			mouseChange.copy( _panEnd ).sub( _panStart );
+
+			if ( mouseChange.lengthSq() ) {
+
+				mouseChange.multiplyScalar( _eye.length() * _this.panSpeed );
+
+				pan.copy( _eye ).cross( _this.object.up ).setLength( mouseChange.x );
+				pan.add( objectUp.copy( _this.object.up ).setLength( mouseChange.y ) );
+
+				_this.object.position.add( pan );
+				_this.target.add( pan );
+
+				if ( _this.staticMoving ) {
+
+					_panStart.copy( _panEnd );
+
+				} else {
+
+					_panStart.add( mouseChange.subVectors( _panEnd, _panStart ).multiplyScalar( _this.dynamicDampingFactor ) );
+
+				}
+
+			}
+		};
+
+	}());
+
+	this.checkDistances = function () {
+
+		if ( !_this.noZoom || !_this.noPan ) {
+
+			if ( _eye.lengthSq() > _this.maxDistance * _this.maxDistance ) {
+
+				_this.object.position.addVectors( _this.target, _eye.setLength( _this.maxDistance ) );
+
+			}
+
+			if ( _eye.lengthSq() < _this.minDistance * _this.minDistance ) {
+
+				_this.object.position.addVectors( _this.target, _eye.setLength( _this.minDistance ) );
+
+			}
+
+		}
+
+	};
+
+	this.update = function () {
+
+		_eye.subVectors( _this.object.position, _this.target );
+
+		if ( !_this.noRotate ) {
+
+			_this.rotateCamera();
+
+		}
+
+		if ( !_this.noZoom ) {
+
+			_this.zoomCamera();
+
+		}
+
+		if ( !_this.noPan ) {
+
+			_this.panCamera();
+
+		}
+
+		_this.object.position.addVectors( _this.target, _eye );
+
+		_this.checkDistances();
+
+		_this.object.lookAt( _this.target );
+
+		if ( lastPosition.distanceToSquared( _this.object.position ) > EPS ) {
+
+			_this.dispatchEvent( changeEvent );
+
+			lastPosition.copy( _this.object.position );
+
+		}
+
+	};
+
+	this.reset = function () {
+
+		_state = STATE.NONE;
+		_prevState = STATE.NONE;
+
+		_this.target.copy( _this.target0 );
+		_this.object.position.copy( _this.position0 );
+		_this.object.up.copy( _this.up0 );
+
+		_eye.subVectors( _this.object.position, _this.target );
+
+		_this.object.lookAt( _this.target );
+
+		_this.dispatchEvent( changeEvent );
+
+		lastPosition.copy( _this.object.position );
+
+	};
+
+	// listeners
+
+	function keydown( event ) {
+
+		if ( _this.enabled === false ) return;
+
+		window.removeEventListener( 'keydown', keydown );
+
+		_prevState = _state;
+
+		if ( _state !== STATE.NONE ) {
+
+			return;
+
+		} else if ( event.keyCode === _this.keys[ STATE.ROTATE ] && !_this.noRotate ) {
+
+			_state = STATE.ROTATE;
+
+		} else if ( event.keyCode === _this.keys[ STATE.ZOOM ] && !_this.noZoom ) {
+
+			_state = STATE.ZOOM;
+
+		} else if ( event.keyCode === _this.keys[ STATE.PAN ] && !_this.noPan ) {
+
+			_state = STATE.PAN;
+
+		}
+
+	}
+
+	function keyup( event ) {
+
+		if ( _this.enabled === false ) return;
+
+		_state = _prevState;
+
+		window.addEventListener( 'keydown', keydown, false );
+
+	}
+
+	function mousedown( event ) {
+
+		if ( _this.enabled === false ) return;
+
+		event.preventDefault();
+		event.stopPropagation();
+
+		if ( _state === STATE.NONE ) {
+
+			_state = event.button;
+
+		}
+
+		if ( _state === STATE.ROTATE && !_this.noRotate ) {
+
+			_moveCurr.copy( getMouseOnCircle( event.pageX, event.pageY ) );
+			_movePrev.copy(_moveCurr);
+
+		} else if ( _state === STATE.ZOOM && !_this.noZoom ) {
+
+			_zoomStart.copy( getMouseOnScreen( event.pageX, event.pageY ) );
+			_zoomEnd.copy(_zoomStart);
+
+		} else if ( _state === STATE.PAN && !_this.noPan ) {
+
+			_panStart.copy( getMouseOnScreen( event.pageX, event.pageY ) );
+			_panEnd.copy(_panStart);
+
+		}
+
+		document.addEventListener( 'mousemove', mousemove, false );
+		document.addEventListener( 'mouseup', mouseup, false );
+
+		_this.dispatchEvent( startEvent );
+
+	}
+
+	function mousemove( event ) {
+
+		if ( _this.enabled === false ) return;
+
+		event.preventDefault();
+		event.stopPropagation();
+
+		if ( _state === STATE.ROTATE && !_this.noRotate ) {
+
+			_movePrev.copy(_moveCurr);
+			_moveCurr.copy( getMouseOnCircle( event.pageX, event.pageY ) );
+
+		} else if ( _state === STATE.ZOOM && !_this.noZoom ) {
+
+			_zoomEnd.copy( getMouseOnScreen( event.pageX, event.pageY ) );
+
+		} else if ( _state === STATE.PAN && !_this.noPan ) {
+
+			_panEnd.copy( getMouseOnScreen( event.pageX, event.pageY ) );
+
+		}
+
+	}
+
+	function mouseup( event ) {
+
+		if ( _this.enabled === false ) return;
+
+		event.preventDefault();
+		event.stopPropagation();
+
+		_state = STATE.NONE;
+
+		document.removeEventListener( 'mousemove', mousemove );
+		document.removeEventListener( 'mouseup', mouseup );
+		_this.dispatchEvent( endEvent );
+
+	}
+
+	function mousewheel( event ) {
+
+		if ( _this.enabled === false ) return;
+
+		event.preventDefault();
+		event.stopPropagation();
+
+		var delta = 0;
+
+		if ( event.wheelDelta ) { // WebKit / Opera / Explorer 9
+
+			delta = event.wheelDelta / 40;
+
+		} else if ( event.detail ) { // Firefox
+
+			delta = - event.detail / 3;
+
+		}
+
+		_zoomStart.y += delta * 0.01;
+		_this.dispatchEvent( startEvent );
+		_this.dispatchEvent( endEvent );
+
+	}
+
+	function touchstart( event ) {
+
+		if ( _this.enabled === false ) return;
+
+		switch ( event.touches.length ) {
+
+			case 1:
+				_state = STATE.TOUCH_ROTATE;
+				_moveCurr.copy( getMouseOnCircle( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
+				_movePrev.copy(_moveCurr);
+				break;
+
+			case 2:
+				_state = STATE.TOUCH_ZOOM_PAN;
+				var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
+				var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
+				_touchZoomDistanceEnd = _touchZoomDistanceStart = Math.sqrt( dx * dx + dy * dy );
+
+				var x = ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX ) / 2;
+				var y = ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY ) / 2;
+				_panStart.copy( getMouseOnScreen( x, y ) );
+				_panEnd.copy( _panStart );
+				break;
+
+			default:
+				_state = STATE.NONE;
+
+		}
+		_this.dispatchEvent( startEvent );
+
+
+	}
+
+	function touchmove( event ) {
+
+		if ( _this.enabled === false ) return;
+
+		event.preventDefault();
+		event.stopPropagation();
+
+		switch ( event.touches.length ) {
+
+			case 1:
+				_movePrev.copy(_moveCurr);
+				_moveCurr.copy( getMouseOnCircle(  event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
+				break;
+
+			case 2:
+				var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
+				var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
+				_touchZoomDistanceEnd = Math.sqrt( dx * dx + dy * dy );
+
+				var x = ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX ) / 2;
+				var y = ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY ) / 2;
+				_panEnd.copy( getMouseOnScreen( x, y ) );
+				break;
+
+			default:
+				_state = STATE.NONE;
+
+		}
+
+	}
+
+	function touchend( event ) {
+
+		if ( _this.enabled === false ) return;
+
+		switch ( event.touches.length ) {
+
+			case 1:
+				_movePrev.copy(_moveCurr);
+				_moveCurr.copy( getMouseOnCircle(  event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
+				break;
+
+			case 2:
+				_touchZoomDistanceStart = _touchZoomDistanceEnd = 0;
+
+				var x = ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX ) / 2;
+				var y = ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY ) / 2;
+				_panEnd.copy( getMouseOnScreen( x, y ) );
+				_panStart.copy( _panEnd );
+				break;
+
+		}
+
+		_state = STATE.NONE;
+		_this.dispatchEvent( endEvent );
+
+	}
+
+	this.domElement.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
+
+	this.domElement.addEventListener( 'mousedown', mousedown, false );
+
+	this.domElement.addEventListener( 'mousewheel', mousewheel, false );
+	this.domElement.addEventListener( 'DOMMouseScroll', mousewheel, false ); // firefox
+
+	this.domElement.addEventListener( 'touchstart', touchstart, false );
+	this.domElement.addEventListener( 'touchend', touchend, false );
+	this.domElement.addEventListener( 'touchmove', touchmove, false );
+
+	window.addEventListener( 'keydown', keydown, false );
+	window.addEventListener( 'keyup', keyup, false );
+
+	this.handleResize();
+
+	// force an update at start
+	this.update();
+
+};
+
+THREE.TrackballControls.prototype = Object.create( THREE.EventDispatcher.prototype );
+THREE.TrackballControls.prototype.constructor = THREE.TrackballControls;
+;
+/**
+ *   File: 
+ *         scene/materials.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
+
+
+var MATERIALS = (function () {
+	return {
+		Basic: function (color) {
+			return (new THREE.MeshBasicMaterial({ 'color': COLORS.HEX(color)}));
+		},
+		LineBasic: function (color) {
+			return (new THREE.LineBasicMaterial({ 'color': COLORS.HEX(color)}));
+		}
+	};
+})();
+
+;
+/**
+ *   File: 
+ *         scene/geometries.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
+
+
+var GEOMETRIES = (function () {
+	return {
+		Circle: function (camera, properties) {
+
+			// TODO: COMPLETE
+		},
+		Line: function (properties) {
+
+			var geometry = new THREE.Geometry();
+				geometry.vertices.push(new THREE.Vector3(properties.x1, properties.y1, properties.z1));
+				geometry.vertices.push(new THREE.Vector3(properties.x2, properties.y2, properties.z2));
+
+			return new THREE.Line(geometry, MATERIALS.LineBasic(properties.color));
+		}
+	};
+})();
+;
+/**
+ *   File: 
+ *         scene/cameras.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
+ 
+var CAMERAS = (function () {
+	return {
+		Perspective: function (properties) {
+
+			var fov = 100, 
+				near = 1, 
+				far = 1000, 
+				x = 0, 
+				y = 0, 
+				z = 0,  
+				aspect = (window.innerWidth / window.innerHeight);
+
+			if (properties) {
+				fov    = properties.fov  || fov;
+				near   = properties.near || near;
+				far    = properties.far  || far;
+				x      = properties.position.x || x;
+				y      = properties.position.y || y;
+				z      = properties.position.z || z;
+				aspect = (properties.width / properties.height) || aspect;
+			}
+
+			var camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+				camera.position.set(x, y, z);
+
+			return camera;
+		}
+	};
+})();
+
+;
+/**
+ *   File: 
+ *         scene/controls.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
+
+var CONTROLS = (function () {
+	return {
+		Trackball: function (camera, properties) {
+
+			var x = 0, 
+				y = 0, 
+				z = 0;
+
+			if (properties) {
+				x      = properties.x || x;
+				y      = properties.y || y;
+				z      = properties.z || z;
+			}
+
+			var controls = new THREE.TrackballControls(camera);
+				controls.target.set(x,y,z);
+
+			return controls;
+		}
+	};
+})();
+;
+/**
+ *   File: 
+ *         views/_base.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
+
+function VIEW(){};
+
+VIEW.prototype.type = function(type){
 	var constr = type;
 
-	if (typeof GeometryFactory[constr] !== "function"){
-		// TOODO: Handle error  
+	if (typeof VIEW[constr] !== "function"){
+		console.error(_this.about.name + " - Failed to construct VIEW - Caller:"+ arguments.callee.caller.name)
 	}
-	if (typeof GeometryFactory[constr].prototype.type !== "function") { 
-		GeometryFactory[constr].prototype = new GeometryFactory();
+	if (typeof VIEW[constr].prototype.type !== "function") { 
+		VIEW[constr].prototype = new VIEW();
 	}
-	return new GeometryFactory[constr]();
+	return new VIEW[constr]();
 }
 
-// ---------------------------------------
-// Circle Geometry
-// ---------------------------------------
 
-GeometryFactory.circle = function() {  
-	
-	this.type = 'circle';
-	this.meshes = []; 
-
-	this.loadDataInner = function(data){
-		var that = this;
-		
-		data.forEach(function (item) {
-			var radius  = item.r.baseVal.value,
-				offsetX = item.cx.baseVal.value,
-				offsetY = item.cy.baseVal.value,
-				color   = colorToHex(item.style.cssText.slice(6));
-
-			var x,
-				y;
-
-			// Normalize width and height
-			x = normalizePosition.x(offsetX);
-			y = normalizePosition.y(offsetY);
-
-			// Apply offsets	
-			x += _this.model.canvas.offsets.x;
-			y -= _this.model.canvas.offsets.y;
-
-			var material = new THREE.MeshBasicMaterial({ 'color': color}),
-				circleGeometry = new THREE.CircleGeometry(radius, 64),
-				circle = new THREE.Mesh( circleGeometry,  new THREE.MeshBasicMaterial({ 'color': color}));
-
-			circle.position.set(x, y, 0 );
-
-			// Keep to meshes
-			that.meshes.push(circle);
-
-		});
-	}
-}
-
-// ---------------------------------------
-//  Axis Geometry
-// ---------------------------------------
-
-GeometryFactory.axis   = function() {  
-	this.type = 'axis';    
-	this.meshes = [];
-
-	this.loadDataInner = function(data){
-
-		// AXIS have paths and ticks
-		// Check for ticks and draw
-		// Then check for paths and draw
-
-
-		for (i =  0; i < data.length; i++){
-
-			if (data[i].nodeName === "g") {
-				// Apply Ticks
-				
-				var tickPosition = { x:0, y:0};
-
-				// Setup Line
-				tickPosition = translateOffsets(data[i].attributes.extractNode('transform').nodeValue);
-
-				var x = normalizePosition.x(tickPosition.x) + _this.model.canvas.offsets.x,
-					y = normalizePosition.y(tickPosition.y) - _this.model.canvas.offsets.y;
-		
-				var line = { x:0, y:0 };
-
-				line.y = parseInt(data[i].childNodes.extractNode('line').attributes.extractNode('y2').nodeValue);
-				line.x = parseInt(data[i].childNodes.extractNode('line').attributes.extractNode('x2').nodeValue);
-
-			    var material = new THREE.LineBasicMaterial({ color: 0x000000});
-			    var geometry = new THREE.Geometry();
-
-				// Default
-				var newx,
-					newy;
-
-			    // Determine Axis Lines
-				if (!isNaN(line.x) && !isNaN(line.y)){
-					newx = x+ line.x;
-					newy = y+ line.y;
-				} else {
-					// Default Values
-					if (this.properties.orientation === "horizontal") {
-						newx = x, newy = y+10;
-					} else {
-						newx = x-10, newy = y;
-					}
-				}
-
-				// Add lines
-				geometry.vertices.push(new THREE.Vector3(x, y, 0));
-				geometry.vertices.push(new THREE.Vector3(newx, newy, 0));
-
-				this.meshes.push(new THREE.Line(geometry, material));
-				
-
-				/*			
-					offsetHeight: 12
-					offsetLeft: -2
-					offsetParent: body
-					offsetTop: -6
-					offsetWidth: 12
-				*/
-
-				// Add text
-				/*
-					console.log("TEXT");
-					console.log(data[i].childNodes);
-					console.log(data[i].childNodes.extractNode('text').__data__);
-					console.log(data[i].childNodes.extractNode('text').attributes.extractNode('x').nodeValue);
-					console.log(data[i].childNodes.extractNode('text').attributes.extractNode('y').nodeValue);
-				*/
-
-			} else if (data[i].nodeName === "path") {
-
-				// Apply line
-				var points = extractSVGPath(data[i].attributes.extractNode('d').nodeValue);
-
-				if (this.properties.orientation === "horizontal") {
-					points.splice(-1,1);
-					points.splice(-1,1);
-				}
-
-				var count = points.length;
-
-				for (var j = 1; j < count; j++) {
-					var startX = parseInt(points[j-1].x),
-						startY = parseInt(points[j-1].y),
-						endX   = points[j].x,
-						endY   = points[j].y;
-
-
-						if (points[j].x == "V") {
-							endX = parseInt(points[j-1].x);
-
-							points[j].x = parseInt(points[j-1].x);
-
-						} else if (points[j].y == "H") {
-							endY = parseInt(points[j-1].y);
-							points[j].y = parseInt(points[j-1].y);
-						}
-
-
-					startY = normalizePosition.y(startY) - _this.model.canvas.offsets.y;
-					startX = normalizePosition.x(startX) + _this.model.canvas.offsets.x;
-					endX   = normalizePosition.x(endX) + _this.model.canvas.offsets.x;
-					endY   = normalizePosition.y(endY) - _this.model.canvas.offsets.y;
-
-
-						geometry.vertices.push(new THREE.Vector3(startX, startY, 0));
-						geometry.vertices.push(new THREE.Vector3(endX  , endY, 0));
-
-						this.meshes.push(new THREE.Line(geometry, material));
-
-				}
-			}
-		}
-	}
-}
-
-GeometryFactory.prototype.setProperties = function(properties) {
+VIEW.prototype.setProperties = function(properties) {
 	this.properties = properties;
 	return this;
 };
 
-GeometryFactory.prototype.loadData = function(data) {
-	this.loadDataInner(data);
+VIEW.prototype.loadData = function(data) {
+	this.load(data);
 	return this;
 };
 
-GeometryFactory.prototype.toGroup = function(group) {
+VIEW.prototype.toGroup = function(group) {
 
 	this.meshes.forEach(function(item){
 		if (group && group instanceof THREE.Group)
 			group.add(item);
 	})
 
-	GeometryFactory.meshes = [];
+	VIEW.meshes = [];
 
 	return this;
 };
 ;
-_this.render = function(d3id){
+/**
+ *   File: 
+ *         views/axis.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
+
+VIEW.axis = function() {  
+
+	this.type = 'axis';    
+	this.meshes = [];
+
+	this.load = function(data){
+
+		for (index = 0; index < data.length; index++){
+
+			/**
+			 * Extract Axis Points
+			 */ 
+
+			if (data[index].nodeName === "g") {
+
+				/**
+				 * Extract Ticks
+				 */ 
+
+				var tickPosition = UNITS.extractTranslation(data[index].attributes.extractNode('transform').nodeValue),
+					tickLine = { 
+						x: parseInt(data[index].childNodes.extractNode('line').attributes.extractNode('x2').nodeValue),
+						y: parseInt(data[index].childNodes.extractNode('line').attributes.extractNode('y2').nodeValue)
+					};
+
+				var startX = UNITS.normalizeH(tickPosition.x) + _this.model.canvas.offsets.x,
+					startY = UNITS.normalizeV(tickPosition.y) - _this.model.canvas.offsets.y,
+					endX = startX + tickLine.x,
+					endY = startY - tickLine.y;
+
+				this.meshes.push(
+					GEOMETRIES.Line({
+						x1: startX, y1: startY, z1:0,
+						x2: endX  , y2: endY  , z2:0,
+						color: 'default'
+					})
+				);
+				
+				/**
+				 * Extract Text
+				 */ 
+				
+				/**
+				 <TODO>
+					offsetHeight: 12
+					offsetLeft: -2
+					offsetParent: body
+					offsetTop: -6
+					offsetWidth: 12
+
+					console.log("TEXT");
+					console.log(data[index].childNodes);
+					console.log(data[index].childNodes.extractNode('text').__data__);
+					console.log(data[index].childNodes.extractNode('text').attributes.extractNode('x').nodeValue);
+					console.log(data[index].childNodes.extractNode('text').attributes.extractNode('y').nodeValue);
+				*/
+
+			} else if (data[index].nodeName === "path") {
+
+				/**
+				 * Extract Axis Paths
+				 */ 
+
+				var points = UNITS.extractSVGPath(data[index].attributes.extractNode('d').nodeValue);
+
+				for (var j = 1; j < points.length; j++) {
+
+					var startY = UNITS.normalizeV(parseInt(points[j-1].y)) - _this.model.canvas.offsets.y;
+						startX = UNITS.normalizeH(parseInt(points[j-1].x)) + _this.model.canvas.offsets.x;
+						endX   = UNITS.normalizeH(parseInt(points[j].x))   + _this.model.canvas.offsets.x;
+						endY   = UNITS.normalizeV(parseInt(points[j].y))   - _this.model.canvas.offsets.y;
+
+					this.meshes.push(
+						GEOMETRIES.Line({
+							x1: startX, y1: startY, z1:0,
+							x2: endX,   y2:endY   , z2:0,
+							color: 'default'
+						})
+					);
+				}
+			}
+		}
+	}
+};
+/**
+ *   File: 
+ *         views/circle.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
+
+VIEW.circle = function() {  
 	
-	// View configuration
+	this.type = 'circle';
+	this.meshes = []; 
 
-	var camera, renderer, scene, group, container, geometryFactory;
+	this.load = function(data){
 
+		var that = this;
+	
+		data.forEach(function (item) {
+			var radius  = item.r.baseVal.value,
+				offsetX = item.cx.baseVal.value,
+				offsetY = item.cy.baseVal.value,
+				color   = COLORS.HEX(item.style.cssText.slice(6));
+
+			var x = UNITS.normalizeH(offsetX) + _this.model.canvas.offsets.x;
+				y = UNITS.normalizeV(offsetY) - _this.model.canvas.offsets.y;
+
+			var circle = new THREE.Mesh( new THREE.CircleGeometry(radius, 64),  MATERIALS.Basic(color));
+				circle.position.set(x, y, 0 );
+
+			that.meshes.push(circle);
+		});
+	}
+}
+;
+/**
+ *   File: 
+ *         scene/lights.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
+
+
+var LIGHTS = (function () {
+	return {
+		Ambient: function (properties) {
+
+			var color = 0xffffff;
+
+			if (properties) {
+				color = COLORS.HEX(properties.color) || color;
+			}
+
+			return new THREE.AmbientLight(color);
+		},
+		Directional: function (properties) {
+		
+			var color = 0xffffff, x=1,  y=1, z=1; 
+
+			if (properties) {
+				color = COLORS.HEX(properties.color) || color;
+				x     = properties.x || x;
+				y     = properties.y || y;
+				z     = properties.z || z;
+
+			}
+
+			var light = new THREE.DirectionalLight(color);
+				light.position.set(x, y, z).normalize();
+
+  			return light;
+		}
+	};
+})();
+
+;
+
+/**
+ *   File: 
+ *         scene/parser.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
+
+;
+/**
+ *   File: 
+ *         renderer.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
+
+_this.render = function(d3id){
+
+	var camera, renderer, scene, group, container, view, controls;
 
 	(function () {
-		var configureCanvas = function () {	
+		var createCanvas = function () {	
 
-			// Setup Canvas
-			geometryFactory = new GeometryFactory();
-
-
-			// MOVE RENDERED TO VIEW!!!
-
+			view  = new VIEW();
 			scene = new THREE.Scene(),
 			container = document.getElementById(d3id);
 
-			camera = new THREE.PerspectiveCamera( 115, (_this.model.canvas.width || window.innerWidth) / (_this.model.canvas.height || window.innerHeight), 1, 1000);
-			camera.position.set(0, 0, 100);
+			camera = CAMERAS.Perspective({ 
+				width    : _this.model.canvas.width,
+				height   : _this.model.canvas.height,
+				fov      : 115,
+				position : { x: 0, y:0, z:100 } 
+			});
+
+			controls = CONTROLS.Trackball(camera);
 
 			group = new THREE.Group(),
 			group.position.set(0, 0, 0);
 
 			renderer = new THREE.WebGLRenderer({ antialias: true }),
 			renderer.setClearColor( 0xffffff );
-			renderer.setPixelRatio(window.devicePixelRatio );
-				
+			renderer.setPixelRatio(window.devicePixelRatio);
 			renderer.setSize(
 				_this.model.canvas.width  || window.innerWidth,
 				_this.model.canvas.height || window.innerHeight
 			);
-
 		};
 
 		var removeSVG = function () {
-			/*
-				var child = document.getElementById(d3id.replace("#",""));
-				child.parentNode.removeChild(child);
-			*/
-		};
-
-		var constructMeshes = function () {
-			// console.log(_this.model.content);
+			/**
+			 * TODO: Implement
+			 */ 
 		};
 		
-		configureCanvas();
-		constructMeshes();
-		// removeSVG();
+		createCanvas();
+		init();
+		animate();
+		removeSVG();
 
 	}());
 
 	function init() {
 
-		// Setup circle geometry
-		geometryFactory
+		/**
+		 * Setup Data View
+		 */ 
+		view
 			.type('circle')
 			.loadData(_this.model.content)
 			.toGroup(group);
 
-		// Setup x Axis
-		geometryFactory
+		/**
+		 * Setup X Axis View
+		 */ 
+		view
 			.type('axis')
 			.setProperties({'orientation': 'horizontal'})
 			.loadData(_this.model.axis.x)
 			.toGroup(group);
 
-		// Setup y Axis
-		geometryFactory
+		/**
+		 * Setup Y Axis View
+		 */ 
+		view
 			.type('axis')
 			.setProperties({'orientation': 'vertical'})
 			.loadData(_this.model.axis.y)
 			.toGroup(group);
 
-		// Remove this model
+		/**
+		 * Flush Model and Run Render
+		 */ 
+
 		_this.model.content = {};
 
-		// Run renderer
 		scene.add(camera);
 		scene.add(group);
-		renderer.render(scene, camera);
+
 		container.appendChild( renderer.domElement );
 	}
 
-	function animate() {
+ 	function animate() {
 		requestAnimationFrame(animate);
+	    controls.update();    
 		render();
 	}
 
 	function render() {
 		renderer.render( scene, camera );
 	}
-
-	init();
-	animate();
-
 };
 ;
+/**
+ *   File: 
+ *         utils/colors.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
 
-var colorToHex =function(input){
+var COLORS = (function () {
+	return {
+		HEX: function (input) {
 
-	this.componentToHex = function(c) {
-		var hex = c.toString(16);
-		return hex.length == 1 ? "0" + hex : hex;
-	}
+			var componentToHex = function(c) {
+				var hex = c.toString(16);
+				return hex.length == 1 ? "0" + hex : hex;
+			}
 
-	// Default return
-	if (input == undefined || typeof input !== "string")
-    	return "#000000";
+			// Default
+			
+			if (input == undefined || typeof input !== "string" || input == 'default')
+		    	return "#000000";
 
-	// If this is already a hex clear
-	if (input.charAt(0) === '#') {
-		return ((input.length > 6 )? input.substring(0,7):input);
-	
-	} else {
-		var rgb = /\(([^)]+)\)/.exec(input)[1].split(',');
-		var r,g,b;
-		r = parseInt(rgb[0]);
-		g = parseInt(rgb[1]);
-		b = parseInt(rgb[2]);
-		
-		// Else if this is rgb call rgba
-		return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
-	}
+			// Normalize HEX
 
-}
-;
-var translateOffsets =function(input){
-	if (typeof input !== "string")
-		return {
-			x: -1, 
-			y: -1
-		};
-
-	var translation = /\(([^)]+)\)/.exec(input)[1].split(','),
-		offsetX = parseInt(translation[0]) || 0,
-		offsetY = parseInt(translation[1]) || 0;
-    return {
-    	x: offsetX,
-    	y: offsetY
-    };
-}
-
-var normalizePosition = {};
-
-normalizePosition.x = function(value){
-	return (value <= _this.model.canvas.width) ? -(_this.model.canvas.width/2 - value): (_this.model.canvas.width/2 - value); 
-}
-normalizePosition.y = function(value){
-	return (value <= _this.model.canvas.height) ? (_this.model.canvas.height/2 - value): -(_this.model.canvas.height/2 - value); 
-	return 1;
-};
-
-
-var extractSVGPath = function(input) {
-	var points = [];
-	var commands = input.split(/(?=[MVHV])/);
-
-	commands.forEach(function(item, i){
-		
-		var index = item.charAt(0), 
-			tmp = item.substring(1),
-			xy = tmp.split(','),
-			newX,
-			newY;
-
-			if (index === "V"){
-				newX = "V";
-				newY = xy[0];
-
-			} else if (index === "H"){
-				newX = xy[0];
-				newY = "H";
+			if (input.charAt(0) === '#') {
+				return ((input.length > 6 )? input.substring(0,7):input);
 			
 			} else {
-				newX = xy[0];
-				newY = -xy[1];
+				
+				// Convert from RGB
+
+				var rgb = /\(([^)]+)\)/.exec(input)[1].split(',');
+				var r,g,b;
+				r = parseInt(rgb[0]);
+				g = parseInt(rgb[1]);
+				b = parseInt(rgb[2]);
+				
+				// Else if this is rgb call rgba
+				return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 			}
-
-		points.push({x: newX, y: newY})
-	})
-	return points;
-};
-;
-function ObserverFactory(){}
-
-ObserverFactory.queue = [];
-
-ObserverFactory.prototype.observe = function() {
-	[].forEach.call(arguments, function (obj) { 
-		if (obj)
-			ObserverFactory.queue.push(obj);
-	});
-	return this;
-};
-
-ObserverFactory.prototype.then = function(callback) {
-	this.callback = callback || {};
-	return this;
-};
-
-ObserverFactory.prototype.expectKeyType = function(keyType) {
-	this.expectedType = keyType;
-	return this;
-};
-
-ObserverFactory.prototype.expectKey = function(key) {
-	this.expectedKey = key;
-	return this;
-};
-
-ObserverFactory.prototype.type = function(type){
-	var constr = type;
-
-	if (typeof ObserverFactory[constr] !== "function"){
-		// TOODO: Handle error  
-	}
-	return new ObserverFactory[constr]();
-}
-
-ObserverFactory.attr   = function() { this.type = 'attr';   }
-ObserverFactory.each   = function() { this.type = 'each';   }
-ObserverFactory.append = function() { this.type = 'append'; }
-
-ObserverFactory.prototype.notify = function(args) {
-
-	var key = args.key || {},
-		keyType = args.keyType || {},
-		value = args.value || {},
-		type = args.type || {};
-
-	if (!ObserverFactory.hasOwnProperty(type))
-		return;
-
-	ObserverFactory.queue.some(function(observer, i) {
-
-	    if (observer.type == type && 
-			(observer.expectedKey == key) || (observer.expectedType == keyType)){
-
-			if (typeof observer.callback === "function" && value != null){
-				observer.callback(value); 
-			}
-			ObserverFactory.queue.splice(i, 1);
-			return true; 
 		}
-	});
-} 
+	};
+})();
+;
+/**
+ *   File: 
+ *         utils/helpers.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
 
+/**
+ * Extract Node Protype
+ */ 
 
 Object.prototype.extractNode = function(key) {
 	
 	var obj = this;
 
-	// Extract directly
 	if (key in this){
 		obj = this[key];
 	} else {
-		// Find first item that has the nodeName required
 		for (var item in this) {
 			if (this.hasOwnProperty(item) && this[item].nodeName === key){
 				obj = this[item];
@@ -790,13 +1438,103 @@ Object.prototype.extractNode = function(key) {
 	return obj;
 };
 
+/**
+ * Extension Helper
+ */ 
 
-
+function extend (base, extension) {
+  if (arguments.length > 2) 
+  	[].forEach.call(arguments, function (extension) { 
+ 	 	extend(base, extension) 
+ 	})
+  else 
+  	for (var k in extension) 
+  		base[k] = extension[k]
+  return base;
+}
 
 ;
-	// Expose to global d3
-	_this.setup(); 
-	window.d3 = _d3;
+/**
+ *   File: 
+ *         utils/units.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
+
+var UNITS = (function () {
+	return {
+		extractTranslation: function (input) {
+			
+			if (typeof input !== "string")
+				return { x: -1, y: -1};
+
+			var translation = /\(([^)]+)\)/.exec(input)[1].split(','),
+				offsetX = parseInt(translation[0]) || 0,
+				offsetY = parseInt(translation[1]) || 0;
+
+			return {
+				x: offsetX,
+				y: offsetY
+			};
+		},
+		extractSVGPath: function(input) {
+
+			var points = [],
+				parsedInput = input.split(/(?=[MVHV])/);
+
+			// Extract points 
+
+			parsedInput.forEach(function(item, i){
+
+				var index = item.charAt(0), 
+					values = item.substring(1).split(',');
+
+				if (index === "V"){
+					points.push({x: "V", y: values[0]})
+
+				} else if (index === "H"){
+					points.push({x: values[0], y: "H"})
+
+				} else {
+					points.push({x: values[0], y: values[1]})
+				}
+			});
+
+			// Normalize all points to numbers 
+
+			for (var j = 1; j < points.length; j++) {
+				if (points[j].x == "V") {
+					points[j].x = points[j-1].x;
+				} 
+				if (points[j].y == "H") {
+					points[j].y = points[j-1].y;
+				}
+			}
+			return points;
+		},
+		normalizeV: function(value) {
+			return (value <= _this.model.canvas.height) ? (_this.model.canvas.height/2 - value): -(_this.model.canvas.height/2 - value); 
+		},
+		normalizeH: function(value) {
+			return (value <= _this.model.canvas.width) ? -(_this.model.canvas.width/2 - value): (_this.model.canvas.width/2 - value); 
+		}
+	};
+})();
+;
+/**
+ *   File: 
+ *         teardown.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
+
+
+		/**
+		 * Expose to global d3
+		 */ 
+		window.d3 = _d3;
 
 	}
 

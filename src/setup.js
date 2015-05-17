@@ -1,66 +1,52 @@
 
+/**
+ *   File: 
+ *         setup.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
 
+/**
+ * Extend D3
+ */ 
 
-//
-/*
-	new stuff:
-	d3to3.axis.x
-	d3to3.axis.y
-	d3to3.data
-	d3to3.canvas
-*/
+extend(d3.selection.prototype, { 
 
+	d3to3: function() {
 
+		this.canvas = function(){
+			_this.model.canvas.width  = this[0].extractNode('svg').width.baseVal.value;
+			_this.model.canvas.height  = this[0].extractNode('svg').height.baseVal.value;
 
-// TODO:
-//   CHANGE EXTEND FUNTION!!
-
-function extend (base, extension) {
-  if (arguments.length > 2) 
-  	[].forEach.call(arguments, function (extension) { 
- 	 	extend(base, extension) 
- 	})
-  else 
-  	for (var k in extension) 
-  		base[k] = extension[k]
-  return base;
-}
-
-extend(d3.selection.prototype, { d3to3: d3_extension})
-
-function d3_extension() {
-
-	this.canvas = function(){
-		
-		_this.model.canvas.width  = this[0].extractNode('svg').width.baseVal.value;
-		_this.model.canvas.height  = this[0].extractNode('svg').height.baseVal.value;
-
-		return this;
-	}    
-
-	this.axis = function(){
-		this.x = function(){
-			_this.model.axis.x = this[0].extractNode('g').childNodes;
 			return this;
-		}
-		this.y = function(){
-			_this.model.axis.y = this[0].extractNode('g').childNodes;
+		}    
+
+		this.axis = function(){
+			this.x = function(){
+				_this.model.axis.x = this[0].extractNode('g').childNodes;
+				return this;
+			}
+			this.y = function(){
+				_this.model.axis.y = this[0].extractNode('g').childNodes;
+				return this;
+			}
 			return this;
-		}
-		return this;
-	};
-	this.data = function(){
-		_this.model.content = this[0];
-		return this;
-	}    
-    return this;
-}
+		};
+
+		this.data = function(){
+			_this.model.content = this[0];
+			return this;
+		}    
+
+	    return this;
+	}
+});
 
 
-
-// TODO:
-//   CHANGE EXTEND FUNTION
-
+/**
+ * Setup D3 Hooks
+ */ 
 
 _this.scale            = {};
 _this.svg              = {};
