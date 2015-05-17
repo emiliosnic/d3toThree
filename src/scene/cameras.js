@@ -9,7 +9,6 @@
  
 var CAMERAS = (function () {
 	return {
-
 		Orthographic: function (properties) {
 
 			var near = 1, 

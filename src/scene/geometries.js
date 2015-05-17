@@ -19,14 +19,10 @@ var GEOMETRIES = (function () {
 			var sphere = new THREE.Mesh(
 				new THREE.SphereGeometry(properties.radius, 64, 64), 
 				MATERIALS.Phong({
-        // light
-        specular: '#f1f1f1',
-        // intermediate
-        color: properties.color,
-        // dark
-        emissive: '#006063',
-        shininess: 100 
-
+					specular: '#f1f1f1',
+					color: properties.color,
+					emissive: '#006063',
+					shininess: 100 
 				})
 			);
 			sphere.position.set(properties.x, properties.y, properties.z);

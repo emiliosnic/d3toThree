@@ -2099,14 +2099,10 @@ var GEOMETRIES = (function () {
 			var sphere = new THREE.Mesh(
 				new THREE.SphereGeometry(properties.radius, 64, 64), 
 				MATERIALS.Phong({
-        // light
-        specular: '#f1f1f1',
-        // intermediate
-        color: properties.color,
-        // dark
-        emissive: '#006063',
-        shininess: 100 
-
+					specular: '#f1f1f1',
+					color: properties.color,
+					emissive: '#006063',
+					shininess: 100 
 				})
 			);
 			sphere.position.set(properties.x, properties.y, properties.z);
@@ -2151,7 +2147,6 @@ var GEOMETRIES = (function () {
  
 var CAMERAS = (function () {
 	return {
-
 		Orthographic: function (properties) {
 
 			var near = 1, 
@@ -2200,6 +2195,37 @@ var CAMERAS = (function () {
 				camera.position.set(x, y, z);
 
 			return camera;
+		}
+	};
+})();
+
+;
+/**
+ *   File: 
+ *         scene/renderers.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
+ 
+var RENDERERS = (function () {
+	return {
+		WebGL: function (properties) {
+
+			var width = window.innerWidth,
+				height = window.innerHeight;
+
+			if (properties) {
+				width  = properties.width || width;
+				height = properties.height || height;
+			}
+
+			var renderer = new THREE.WebGLRenderer({ antialias: true });
+				renderer.setClearColor(0xffffff);
+				renderer.setPixelRatio(window.devicePixelRatio);
+				renderer.setSize(width, height)
+
+			return renderer;
 		}
 	};
 })();
@@ -2475,39 +2501,37 @@ var LIGHTS = (function () {
 
 _this.render = function(){
 
-	var camera, renderer, scene, group, container, view, controls, canvas, raycaster, light;
+	var camera, renderer, scene, group, container, controls, canvas, light;
 
 	(function () {
 		var createCanvas = function () {	
 
-			view  = new VIEW();
-			scene = new THREE.Scene(),
 			container = document.getElementById(_this.config.target);
 
 			camera = CAMERAS.Orthographic({ 
 				width    : _this.model.canvas.width,
 				height   : _this.model.canvas.height,
-				position : { x: 0, y:0, z: 50 }
+				position : { x: 0, y:0, z: 100 }
 			});
 
 			if (_this.config.mouseControls){
 				controls = CONTROLS.Trackball(camera);
+				controls.noZoom = true;
 			}
 
-			raycaster = new THREE.Raycaster(); 
-
 			light = LIGHTS.Directional({ color:"#ffffff", x:0, y:0, z:20});
-
+			
 			group = new THREE.Group(),
 			group.position.set(0, 0, 0);
 
-			renderer = new THREE.WebGLRenderer({ antialias: true }),
-			renderer.setClearColor( 0xffffff );
-			renderer.setPixelRatio(window.devicePixelRatio);
-			renderer.setSize(
-				_this.model.canvas.width  || window.innerWidth,
-				_this.model.canvas.height || window.innerHeight
-			);
+			renderer = RENDERERS.WebGL({
+				width : _this.model.canvas.width, 
+				height: _this.model.canvas.height
+			});
+			renderer.domElement.addEventListener( 'mousewheel', mousewheel, false );
+			renderer.domElement.addEventListener( 'DOMMouseScroll', mousewheel, false ); // firefox
+			container.appendChild( renderer.domElement );
+
 		};
 
 		var removeSVG = function () {
@@ -2529,7 +2553,7 @@ _this.render = function(){
 		/**
 		 * Setup Data View
 		 */ 
-		view
+		new VIEW()
 			.type(_this.config.view)
 			.loadData(_this.model.content)
 			.toGroup(group);
@@ -2537,7 +2561,7 @@ _this.render = function(){
 		/**
 		 * Setup X Axis View
 		 */ 
-		view
+		new VIEW()
 			.type('axis')
 			.setProperties({'orientation': 'horizontal'})
 			.loadData(_this.model.axis.x)
@@ -2546,12 +2570,17 @@ _this.render = function(){
 		/**
 		 * Setup Y Axis View
 		 */ 
-		view
+		new VIEW()
 			.type('axis')
 			.setProperties({'orientation': 'vertical'})
 			.loadData(_this.model.axis.y)
 			.toGroup(group);
 
+		/**
+		 * ShowWireframe
+		 */ 
+
+			
 
 		/**
 		 * Flush Model and Run Render
@@ -2559,18 +2588,11 @@ _this.render = function(){
 
 		_this.model.content = {};
 
+		scene = new THREE.Scene(),
 		scene.add(camera);
 		scene.add(group);
 		scene.add(light);
 
-
-
-		// TODO
-		// Fix orthographic camera zoom bug
-		// 
-		// https://github.com/mrdoob/three.js/issues/1454
-
-		container.appendChild( renderer.domElement );
 	}
 
  	function animate() {
@@ -2584,6 +2606,35 @@ _this.render = function(){
 	}
 
 	function render() {
+		renderer.render( scene, camera );
+	}
+
+	function mousewheel( event ) {
+		var zoom = 0.02;
+
+		event.preventDefault();
+		event.stopPropagation();
+
+		var delta = 0;
+
+		if ( event.wheelDelta ) { // WebKit / Opera / Explorer 9
+		    delta = event.wheelDelta / 40;
+		} else if ( event.detail ) { // Firefox
+		    delta = - event.detail / 3;
+		}
+
+		var width = camera.right / zoom;
+		var height = camera.top / zoom;
+
+		zoom -= delta * 0.001;
+
+		camera.left = -zoom*width;
+		camera.right = zoom*width;
+		camera.top = zoom*height;
+		camera.bottom = -zoom*height;
+
+		camera.updateProjectionMatrix();
+
 		renderer.render( scene, camera );
 	}
 
