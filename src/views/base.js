@@ -32,7 +32,7 @@ VIEW.prototype.loadData = function(data) {
 	return this;
 };
 
-VIEW.prototype.toGroup = function(group) {
+VIEW.prototype.appendTo = function(group) {
 
 	this.meshes.forEach(function(item){
 		if (group && group instanceof THREE.Group)

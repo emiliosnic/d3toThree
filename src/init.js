@@ -23,15 +23,18 @@ var d3to3 = (function () {
 	 */
 	
 	_this.config = { 
+
+		// TODO: Determine Dynamically
+		'target': 'd3to3_panel',
+		'source': undefined,
+
 		'mouseControls': false,
-		'3D': false
+		'3D': false,
+		'wireframe': false
 	};
 
 	_this.model = { 
-		axis: { 
-			x: [], 
-			y: [] 
-		}, 
+		axes: [],
 		canvas: { 
 			offsetLeft: 0,
 			offsetTop: 0,

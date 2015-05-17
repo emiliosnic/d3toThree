@@ -26,15 +26,10 @@ VIEW.circle = function() {
 				y = UNITS.normalizeV(offsetY) - _this.model.canvas.offsetTop;
 
 			if (_this.config['3D']){
-				that.meshes.push(
-					GEOMETRIES.Sphere({ radius: radius, color: color, x: x, y: y, z: 0})
-				);
+				that.meshes.push(GEOMETRIES.Sphere({ radius: radius, color: color, x: x, y: y, z: 0}));
 
 			} else {
-				that.meshes.push(
-					GEOMETRIES.Circle({ radius: radius, color: color, x: x, y: y, z: 0})
-				);
-
+				that.meshes.push(GEOMETRIES.Circle({ radius: radius, color: color, x: x, y: y, z: 0}));
 			}
 		});
 	}

@@ -14,39 +14,11 @@
 extend(d3.selection.prototype, { 
 
 	d3to3: function() {
-		this.canvas = function(properties){
-
-			_this.model.canvas.width  = this[0].extractNode('svg').width.baseVal.value;
-			_this.model.canvas.height  = this[0].extractNode('svg').height.baseVal.value;
-			
-			// Append properties for the canvas if any
-
-			if (properties){
-				for (property in properties){
-					_this.model.canvas[property] = properties[property];
-				}
-			}
-
-			// TODO:
-			// CONVERT DO DYNAMIC REPRESENTATION
-
-			_this.model.canvas.offsetLeft = 40;
-			_this.model.canvas.offsetTop = 20;
-
-			return this;
-		}    
 
 		this.axis = function(){
-			this.x = function(){
-				_this.model.axis.x = this[0].extractNode('g').childNodes;
-				return this;
-			}
-			this.y = function(){
-				_this.model.axis.y = this[0].extractNode('g').childNodes;
-				return this;
-			}
+			_this.model.axes.push(this[0].extractNode('g').childNodes);
 			return this;
-		};
+		},
 
 		this.data = function(){
 			_this.model.content = this[0];
@@ -75,7 +47,8 @@ _this.random           = d3.random;
 _this.interpolators    = d3.interpolators;
 _this.svg.symbolTypes  = d3.svg.symbolTypes;
 
-_this.setup = function(){
+_this.setupHooks = ({
+	setup: function () {
 
 	var hook_selectAll = _d3.selection.prototype.selectAll,
 		hook_select = _d3.selection.prototype.select,
@@ -132,8 +105,42 @@ _this.setup = function(){
 	_d3.selection.prototype.data = function()      { return hook_data.apply(this, arguments);      }
 	_d3.selection.prototype.call = function() 	   { return hook_call.apply(this, arguments);      }
 	_d3.selection.prototype.each = function() 	   { return hook_each.apply(this, arguments);      }
-	_d3.selection.prototype.attr = function()      { return hook_attr.apply(this, arguments);      }
-	_d3.selection.prototype.append = function()    { return hook_append.apply(this, arguments);    }
+
+		_d3.selection.prototype.attr = function()      { 
+		  	// Notify attr observers
+			observerFactory.notify({'type':'attr', 'key':arguments[0], 'value':arguments[1]});
+		
+			return hook_attr.apply(this, arguments); 
+		}
+		_d3.selection.prototype.append = function(){ 
+
+
+			observerFactory.notify({'type':'append', 'key':arguments[0], 'value':arguments[1]});
+			
+			// Determine SVG width, height and offsets 
+
+			if (arguments[0] === 'svg'){
+
+				_this.model.canvas.source = this[0][0].id;
+
+				observerFactory.observe(
+					observerFactory.type('attr').expectKey('width').then(function(value){
+						_this.model.canvas.width = value;
+					}),
+					observerFactory.type('attr').expectKey('height').then(function(value){
+						_this.model.canvas.height = value;
+					}),
+					observerFactory.type('append').expectKey('g').then(function(value){}),
+					observerFactory.type('attr').expectKey('transform').then(function(value){
+						var offsets = UNITS.extractTranslation(value);
+							_this.model.canvas.offsetLeft = offsets.x;
+							_this.model.canvas.offsetTop  = offsets.y;
+
+					})
+				);
+			} 
+			return hook_append.apply(this, arguments);
+		}
 
 	_this.min                      = function(array, f)  { return _d3.min(array, f);                            }
 	_this.max                      = function(array, f)  { return _d3.max(array, f);                            }
@@ -272,5 +279,6 @@ _this.setup = function(){
 	_this.xml                      = function(request)       { return _d3.xml(request);                         }
 	_this.json                     = function(url, callback) { return _d3.json(url, callback);                  }
 	_this.html                     = function(url, callback) { return _d3.html(url, callback);                  }
-
-};
+	
+	}
+}).setup();

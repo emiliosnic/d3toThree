@@ -10,7 +10,8 @@
 
 var MATERIALS = (function () {
 	return {
-		Basic: function (color) {
+		Basic: function (properties) {
+			var color = (properties && properties.color)? properties.color : 'default';
 			return (new THREE.MeshBasicMaterial({ 'color': COLORS.HEX(color)}));
 		},
 		Phong: function (properties) {
@@ -21,7 +22,8 @@ var MATERIALS = (function () {
 		        shininess: properties.shininess
 			}));
 		},
-		LineBasic: function (color) {
+		LineBasic: function (properties) {
+			var color = (properties && properties.color)? properties.color : 'default';
 			return (new THREE.LineBasicMaterial({ 'color': COLORS.HEX(color)}));
 		}
 	};

@@ -40,7 +40,7 @@ VIEW.axis = function() {
 				this.meshes.push(
 					GEOMETRIES.Line({ 
 						x1: startX, y1: startY, z1:0,
-						x2: endX  , y2: endY  , z2:0,
+						x2: endX  , y2: endY  , z2:0
 					})
 				);
 				

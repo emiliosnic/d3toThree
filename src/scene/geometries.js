@@ -10,7 +10,7 @@
 var GEOMETRIES = (function () {
 	return {
 		Circle: function (properties) {
-			var circle = new THREE.Mesh(new THREE.CircleGeometry(properties.radius, 64), MATERIALS.Basic(properties.color));
+			var circle = new THREE.Mesh(new THREE.CircleGeometry(properties.radius, 64), MATERIALS.Basic({'color': properties.color}));
 				circle.position.set(properties.x, properties.y, properties.z);
 
 				return circle;
@@ -19,8 +19,8 @@ var GEOMETRIES = (function () {
 			var sphere = new THREE.Mesh(
 				new THREE.SphereGeometry(properties.radius, 64, 64), 
 				MATERIALS.Phong({
-					specular: '#f1f1f1',
 					color: properties.color,
+					specular: '#f1f1f1',
 					emissive: '#006063',
 					shininess: 100 
 				})
@@ -38,7 +38,7 @@ var GEOMETRIES = (function () {
 				size:   WIDTH, 
 				height: HEIGHT
 			});
-			var	textMesh = new THREE.Mesh( textGeom, MATERIALS.Basic(properties.color));
+			var	textMesh = new THREE.Mesh( textGeom, MATERIALS.Basic({'color':properties.color}));
 				textMesh.position.set( 
 					properties.x - WIDTH/2, 
 					properties.y - WIDTH/2, 
@@ -48,11 +48,13 @@ var GEOMETRIES = (function () {
 		},
 		Line: function (properties) {
 
+			var material = properties.material ||  MATERIALS.LineBasic();
+
 			var geometry = new THREE.Geometry();
 				geometry.vertices.push(new THREE.Vector3(properties.x1, properties.y1, properties.z1));
 				geometry.vertices.push(new THREE.Vector3(properties.x2, properties.y2, properties.z2));
 
-			return new THREE.Line(geometry, MATERIALS.LineBasic(properties.color));
+			return new THREE.Line(geometry, material);
 		}
 	};
 })();

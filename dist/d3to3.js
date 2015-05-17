@@ -23,15 +23,18 @@ var d3to3 = (function () {
 	 */
 	
 	_this.config = { 
+
+		// TODO: Determine Dynamically
+		'target': 'd3to3_panel',
+		'source': undefined,
+
 		'mouseControls': false,
-		'3D': false
+		'3D': false,
+		'wireframe': false
 	};
 
 	_this.model = { 
-		axis: { 
-			x: [], 
-			y: [] 
-		}, 
+		axes: [],
 		canvas: { 
 			offsetLeft: 0,
 			offsetTop: 0,
@@ -88,39 +91,11 @@ var d3to3 = (function () {
 extend(d3.selection.prototype, { 
 
 	d3to3: function() {
-		this.canvas = function(properties){
-
-			_this.model.canvas.width  = this[0].extractNode('svg').width.baseVal.value;
-			_this.model.canvas.height  = this[0].extractNode('svg').height.baseVal.value;
-			
-			// Append properties for the canvas if any
-
-			if (properties){
-				for (property in properties){
-					_this.model.canvas[property] = properties[property];
-				}
-			}
-
-			// TODO:
-			// CONVERT DO DYNAMIC REPRESENTATION
-
-			_this.model.canvas.offsetLeft = 40;
-			_this.model.canvas.offsetTop = 20;
-
-			return this;
-		}    
 
 		this.axis = function(){
-			this.x = function(){
-				_this.model.axis.x = this[0].extractNode('g').childNodes;
-				return this;
-			}
-			this.y = function(){
-				_this.model.axis.y = this[0].extractNode('g').childNodes;
-				return this;
-			}
+			_this.model.axes.push(this[0].extractNode('g').childNodes);
 			return this;
-		};
+		},
 
 		this.data = function(){
 			_this.model.content = this[0];
@@ -149,7 +124,8 @@ _this.random           = d3.random;
 _this.interpolators    = d3.interpolators;
 _this.svg.symbolTypes  = d3.svg.symbolTypes;
 
-_this.setup = function(){
+_this.setupHooks = ({
+	setup: function () {
 
 	var hook_selectAll = _d3.selection.prototype.selectAll,
 		hook_select = _d3.selection.prototype.select,
@@ -206,8 +182,42 @@ _this.setup = function(){
 	_d3.selection.prototype.data = function()      { return hook_data.apply(this, arguments);      }
 	_d3.selection.prototype.call = function() 	   { return hook_call.apply(this, arguments);      }
 	_d3.selection.prototype.each = function() 	   { return hook_each.apply(this, arguments);      }
-	_d3.selection.prototype.attr = function()      { return hook_attr.apply(this, arguments);      }
-	_d3.selection.prototype.append = function()    { return hook_append.apply(this, arguments);    }
+
+		_d3.selection.prototype.attr = function()      { 
+		  	// Notify attr observers
+			observerFactory.notify({'type':'attr', 'key':arguments[0], 'value':arguments[1]});
+		
+			return hook_attr.apply(this, arguments); 
+		}
+		_d3.selection.prototype.append = function(){ 
+
+
+			observerFactory.notify({'type':'append', 'key':arguments[0], 'value':arguments[1]});
+			
+			// Determine SVG width, height and offsets 
+
+			if (arguments[0] === 'svg'){
+
+				_this.model.canvas.source = this[0][0].id;
+
+				observerFactory.observe(
+					observerFactory.type('attr').expectKey('width').then(function(value){
+						_this.model.canvas.width = value;
+					}),
+					observerFactory.type('attr').expectKey('height').then(function(value){
+						_this.model.canvas.height = value;
+					}),
+					observerFactory.type('append').expectKey('g').then(function(value){}),
+					observerFactory.type('attr').expectKey('transform').then(function(value){
+						var offsets = UNITS.extractTranslation(value);
+							_this.model.canvas.offsetLeft = offsets.x;
+							_this.model.canvas.offsetTop  = offsets.y;
+
+					})
+				);
+			} 
+			return hook_append.apply(this, arguments);
+		}
 
 	_this.min                      = function(array, f)  { return _d3.min(array, f);                            }
 	_this.max                      = function(array, f)  { return _d3.max(array, f);                            }
@@ -346,8 +356,10 @@ _this.setup = function(){
 	_this.xml                      = function(request)       { return _d3.xml(request);                         }
 	_this.json                     = function(url, callback) { return _d3.json(url, callback);                  }
 	_this.html                     = function(url, callback) { return _d3.html(url, callback);                  }
-
-};;/**
+	
+	}
+}).setup();
+;/**
  * @author Eberhard Graether / http://egraether.com/
  * @author Mark Lundin 	/ http://mark-lundin.com
  * @author Simone Manini / http://daron1337.github.io
@@ -2061,7 +2073,8 @@ THREE.CanvasRenderer = function ( parameters ) {
 
 var MATERIALS = (function () {
 	return {
-		Basic: function (color) {
+		Basic: function (properties) {
+			var color = (properties && properties.color)? properties.color : 'default';
 			return (new THREE.MeshBasicMaterial({ 'color': COLORS.HEX(color)}));
 		},
 		Phong: function (properties) {
@@ -2072,7 +2085,8 @@ var MATERIALS = (function () {
 		        shininess: properties.shininess
 			}));
 		},
-		LineBasic: function (color) {
+		LineBasic: function (properties) {
+			var color = (properties && properties.color)? properties.color : 'default';
 			return (new THREE.LineBasicMaterial({ 'color': COLORS.HEX(color)}));
 		}
 	};
@@ -2090,7 +2104,7 @@ var MATERIALS = (function () {
 var GEOMETRIES = (function () {
 	return {
 		Circle: function (properties) {
-			var circle = new THREE.Mesh(new THREE.CircleGeometry(properties.radius, 64), MATERIALS.Basic(properties.color));
+			var circle = new THREE.Mesh(new THREE.CircleGeometry(properties.radius, 64), MATERIALS.Basic({'color': properties.color}));
 				circle.position.set(properties.x, properties.y, properties.z);
 
 				return circle;
@@ -2099,8 +2113,8 @@ var GEOMETRIES = (function () {
 			var sphere = new THREE.Mesh(
 				new THREE.SphereGeometry(properties.radius, 64, 64), 
 				MATERIALS.Phong({
-					specular: '#f1f1f1',
 					color: properties.color,
+					specular: '#f1f1f1',
 					emissive: '#006063',
 					shininess: 100 
 				})
@@ -2118,7 +2132,7 @@ var GEOMETRIES = (function () {
 				size:   WIDTH, 
 				height: HEIGHT
 			});
-			var	textMesh = new THREE.Mesh( textGeom, MATERIALS.Basic(properties.color));
+			var	textMesh = new THREE.Mesh( textGeom, MATERIALS.Basic({'color':properties.color}));
 				textMesh.position.set( 
 					properties.x - WIDTH/2, 
 					properties.y - WIDTH/2, 
@@ -2128,11 +2142,13 @@ var GEOMETRIES = (function () {
 		},
 		Line: function (properties) {
 
+			var material = properties.material ||  MATERIALS.LineBasic();
+
 			var geometry = new THREE.Geometry();
 				geometry.vertices.push(new THREE.Vector3(properties.x1, properties.y1, properties.z1));
 				geometry.vertices.push(new THREE.Vector3(properties.x2, properties.y2, properties.z2));
 
-			return new THREE.Line(geometry, MATERIALS.LineBasic(properties.color));
+			return new THREE.Line(geometry, material);
 		}
 	};
 })();
@@ -2294,7 +2310,7 @@ VIEW.prototype.loadData = function(data) {
 	return this;
 };
 
-VIEW.prototype.toGroup = function(group) {
+VIEW.prototype.appendTo = function(group) {
 
 	this.meshes.forEach(function(item){
 		if (group && group instanceof THREE.Group)
@@ -2347,7 +2363,7 @@ VIEW.axis = function() {
 				this.meshes.push(
 					GEOMETRIES.Line({ 
 						x1: startX, y1: startY, z1:0,
-						x2: endX  , y2: endY  , z2:0,
+						x2: endX  , y2: endY  , z2:0
 					})
 				);
 				
@@ -2400,6 +2416,44 @@ VIEW.axis = function() {
 };
 /**
  *   File: 
+ *         views/wireframe.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
+
+VIEW.wireframe = function() {  
+
+	this.type = 'wireframe'; 
+	this.meshes = [];
+
+	var material = new THREE.LineBasicMaterial( { color: 0xd9d9d9, linewidth: .1 } );
+ 
+	for ( var i = 0; i <= 38; i ++ ) {
+
+		var line = GEOMETRIES.Line({
+			x1: 0, y1: -500, z1:0,
+			x2: 0, y2: 500 , z2:0,
+			material: material
+		})
+
+	    line.position.x = (( i * 25 ) - 500) + _this.model.canvas.offsetLeft;
+		this.meshes.push(line);
+
+		var line = GEOMETRIES.Line({
+			x1: 0, y1: -500, z1:0,
+			x2: 0, y2: 500 , z2:0,
+			material: material
+		})
+
+	    line.position.y = (( i * 25 ) - 500) - _this.model.canvas.offsetTop;
+	    line.rotation.z = 90 * Math.PI / 180;
+
+		this.meshes.push(line);
+	}
+};
+/**
+ *   File: 
  *         views/circle.js
  * 	
  * 	 Description:
@@ -2425,15 +2479,10 @@ VIEW.circle = function() {
 				y = UNITS.normalizeV(offsetY) - _this.model.canvas.offsetTop;
 
 			if (_this.config['3D']){
-				that.meshes.push(
-					GEOMETRIES.Sphere({ radius: radius, color: color, x: x, y: y, z: 0})
-				);
+				that.meshes.push(GEOMETRIES.Sphere({ radius: radius, color: color, x: x, y: y, z: 0}));
 
 			} else {
-				that.meshes.push(
-					GEOMETRIES.Circle({ radius: radius, color: color, x: x, y: y, z: 0})
-				);
-
+				that.meshes.push(GEOMETRIES.Circle({ radius: radius, color: color, x: x, y: y, z: 0}));
 			}
 		});
 	}
@@ -2528,8 +2577,11 @@ _this.render = function(){
 				width : _this.model.canvas.width, 
 				height: _this.model.canvas.height
 			});
-			renderer.domElement.addEventListener( 'mousewheel', mousewheel, false );
-			renderer.domElement.addEventListener( 'DOMMouseScroll', mousewheel, false ); // firefox
+
+			if ( _this.config.mouseControls){
+				renderer.domElement.addEventListener( 'mousewheel', mousewheel, false );
+				renderer.domElement.addEventListener( 'DOMMouseScroll', mousewheel, false ); // firefox
+			}
 			container.appendChild( renderer.domElement );
 
 		};
@@ -2556,29 +2608,27 @@ _this.render = function(){
 		new VIEW()
 			.type(_this.config.view)
 			.loadData(_this.model.content)
-			.toGroup(group);
+			.appendTo(group);
 
 		/**
-		 * Setup X Axis View
+		 * Setup Axes View
 		 */ 
-		new VIEW()
-			.type('axis')
-			.setProperties({'orientation': 'horizontal'})
-			.loadData(_this.model.axis.x)
-			.toGroup(group);
-
-		/**
-		 * Setup Y Axis View
-		 */ 
-		new VIEW()
-			.type('axis')
-			.setProperties({'orientation': 'vertical'})
-			.loadData(_this.model.axis.y)
-			.toGroup(group);
+		_this.model.axes.forEach(function(item){
+			new VIEW()
+				.type('axis')
+				.loadData(item)
+				.appendTo(group);
+		})
 
 		/**
 		 * ShowWireframe
 		 */ 
+
+		if (_this.config.wireframe){
+			new VIEW()
+				.type('wireframe')
+				.appendTo(group);
+		}
 
 			
 
@@ -2727,6 +2777,78 @@ function extend (base, extension) {
   		base[k] = extension[k]
   return base;
 }
+
+
+/**
+ * Observer Factory
+ */ 
+
+function ObserverFactory(){}
+
+ObserverFactory.queue = [];
+var observerFactory = new ObserverFactory
+
+ObserverFactory.prototype.observe = function() {
+	[].forEach.call(arguments, function (obj) { 
+		if (obj)
+			ObserverFactory.queue.push(obj);
+	});
+	return this;
+};
+
+ObserverFactory.prototype.then = function(callback) {
+	this.callback = callback || {};
+	return this;
+};
+
+ObserverFactory.prototype.expectKeyType = function(keyType) {
+	this.expectedType = keyType;
+	return this;
+};
+
+ObserverFactory.prototype.expectKey = function(key) {
+	this.expectedKey = key;
+	return this;
+};
+
+ObserverFactory.prototype.type = function(type){
+	var constr = type;
+
+	if (typeof ObserverFactory[constr] !== "function"){
+		// TOODO: Handle error  
+	}
+	if (typeof ObserverFactory[constr].prototype.drive !== "function") { 
+		ObserverFactory[constr].prototype = new ObserverFactory();
+	}
+	return new ObserverFactory[constr]();
+}
+
+ObserverFactory.attr   = function() { this.type = 'attr';   }
+ObserverFactory.append = function() { this.type = 'append'; }
+
+ObserverFactory.prototype.notify = function(args) {
+
+	var key = args.key || {},
+		keyType = args.keyType || {},
+		value = args.value || {},
+		type = args.type || {};
+
+	if (!ObserverFactory.hasOwnProperty(type))
+		return;
+
+	ObserverFactory.queue.some(function(observer, i) {
+
+	    if (observer.type == type && 
+			(observer.expectedKey == key) || (observer.expectedType == keyType)){
+	    
+			if (typeof observer.callback === "function" && value != null){
+				observer.callback(value); 
+			}
+			ObserverFactory.queue.splice(i, 1);
+			return true; 
+		}
+	});
+} 
 
 ;
 /**

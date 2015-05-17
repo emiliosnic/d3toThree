@@ -36,8 +36,11 @@ _this.render = function(){
 				width : _this.model.canvas.width, 
 				height: _this.model.canvas.height
 			});
-			renderer.domElement.addEventListener( 'mousewheel', mousewheel, false );
-			renderer.domElement.addEventListener( 'DOMMouseScroll', mousewheel, false ); // firefox
+
+			if ( _this.config.mouseControls){
+				renderer.domElement.addEventListener( 'mousewheel', mousewheel, false );
+				renderer.domElement.addEventListener( 'DOMMouseScroll', mousewheel, false ); // firefox
+			}
 			container.appendChild( renderer.domElement );
 
 		};
@@ -64,29 +67,27 @@ _this.render = function(){
 		new VIEW()
 			.type(_this.config.view)
 			.loadData(_this.model.content)
-			.toGroup(group);
+			.appendTo(group);
 
 		/**
-		 * Setup X Axis View
+		 * Setup Axes View
 		 */ 
-		new VIEW()
-			.type('axis')
-			.setProperties({'orientation': 'horizontal'})
-			.loadData(_this.model.axis.x)
-			.toGroup(group);
-
-		/**
-		 * Setup Y Axis View
-		 */ 
-		new VIEW()
-			.type('axis')
-			.setProperties({'orientation': 'vertical'})
-			.loadData(_this.model.axis.y)
-			.toGroup(group);
+		_this.model.axes.forEach(function(item){
+			new VIEW()
+				.type('axis')
+				.loadData(item)
+				.appendTo(group);
+		})
 
 		/**
 		 * ShowWireframe
 		 */ 
+
+		if (_this.config.wireframe){
+			new VIEW()
+				.type('wireframe')
+				.appendTo(group);
+		}
 
 			
 
