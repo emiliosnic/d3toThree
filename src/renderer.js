@@ -18,13 +18,11 @@ _this.render = function(){
 			scene = new THREE.Scene(),
 			container = document.getElementById(_this.config.target);
 
-			camera = CAMERAS.Perspective({ 
+			camera = CAMERAS.Orthographic({ 
 				width    : _this.model.canvas.width,
 				height   : _this.model.canvas.height,
-				fov      : 113,
-				position : { x: 0, y:0, z:100 } 
+				position : { x: 0, y:0, z: 50 }
 			});
-
 
 			if (_this.config.mouseControls){
 				controls = CONTROLS.Trackball(camera);
@@ -98,6 +96,13 @@ _this.render = function(){
 		scene.add(camera);
 		scene.add(group);
 		scene.add(light);
+
+
+
+		// TODO
+		// Fix orthographic camera zoom bug
+		// 
+		// https://github.com/mrdoob/three.js/issues/1454
 
 		container.appendChild( renderer.domElement );
 	}
