@@ -7,16 +7,16 @@
  * 	       <TODO> 
  */
 
-_this.render = function(d3id){
+_this.render = function(){
 
-	var camera, renderer, scene, group, container, view, controls;
+	var camera, renderer, scene, group, container, view, controls, canvas, raycaster, mouse;
 
 	(function () {
 		var createCanvas = function () {	
 
 			view  = new VIEW();
 			scene = new THREE.Scene(),
-			container = document.getElementById(d3id);
+			container = document.getElementById(_this.config.target);
 
 			camera = CAMERAS.Perspective({ 
 				width    : _this.model.canvas.width,
@@ -25,7 +25,14 @@ _this.render = function(d3id){
 				position : { x: 0, y:0, z:100 } 
 			});
 
-			controls = CONTROLS.Trackball(camera);
+
+			if (_this.config.mouseControls){
+				controls = CONTROLS.Trackball(camera);
+			}
+
+			mouse = new THREE.Vector2(); 
+			raycaster = new THREE.Raycaster(); 
+
 
 			group = new THREE.Group(),
 			group.position.set(0, 0, 0);
@@ -58,7 +65,7 @@ _this.render = function(d3id){
 		 * Setup Data View
 		 */ 
 		view
-			.type('circle')
+			.type(_this.config.view)
 			.loadData(_this.model.content)
 			.toGroup(group);
 
@@ -93,12 +100,17 @@ _this.render = function(d3id){
 	}
 
  	function animate() {
+
+		if ( _this.config.mouseControls)
+		    controls.update(); 
+
 		requestAnimationFrame(animate);
-	    controls.update();    
 		render();
+
 	}
 
 	function render() {
 		renderer.render( scene, camera );
 	}
+
 };

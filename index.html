@@ -72,8 +72,8 @@
 
 			// #####################
 			// MAKE THIS BOLD
-
 			.d3to3().canvas()
+
 			// #####################
 
 			.append("g")
@@ -147,15 +147,11 @@
 			;
 
 		// Renderer
-		/*
-		d3to3.config({
-			id: "d3to3_panel"
-			// Lights
-			// 2D / 3D
-		});
-		*/
-
-		d3to3.render("d3to3_panel");
+		d3to3.configure({
+			target: "d3to3_panel",
+			view  : "circle",
+			mouseControls: true
+		}).render();
 
 	</script>
 

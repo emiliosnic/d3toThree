@@ -32,37 +32,38 @@ VIEW.axis = function() {
 						y: parseInt(data[index].childNodes.extractNode('line').attributes.extractNode('y2').nodeValue)
 					};
 
-				var startX = UNITS.normalizeH(tickPosition.x) + _this.model.canvas.offsets.x,
-					startY = UNITS.normalizeV(tickPosition.y) - _this.model.canvas.offsets.y,
+				var startX = UNITS.normalizeH(tickPosition.x) + _this.model.canvas.offsetLeft,
+					startY = UNITS.normalizeV(tickPosition.y) - _this.model.canvas.offsetTop,
 					endX = startX + tickLine.x,
 					endY = startY - tickLine.y;
 
 				this.meshes.push(
-					GEOMETRIES.Line({
+					GEOMETRIES.Line({ 
 						x1: startX, y1: startY, z1:0,
 						x2: endX  , y2: endY  , z2:0,
-						color: 'default'
 					})
 				);
 				
 				/**
 				 * Extract Text
 				 */ 
-				
-				/**
-				 <TODO>
-					offsetHeight: 12
-					offsetLeft: -2
-					offsetParent: body
-					offsetTop: -6
-					offsetWidth: 12
+				var text = data[index].childNodes.extractNode('text'),
+					textData = text.textContent,
+					textSize = parseFloat(text.attributes.extractNode('dy').nodeValue),
+					textOffsets = {
+						x: parseInt(text.attributes.extractNode('x').nodeValue),
+						y: parseInt(text.attributes.extractNode('y').nodeValue)
+					};
 
-					console.log("TEXT");
-					console.log(data[index].childNodes);
-					console.log(data[index].childNodes.extractNode('text').__data__);
-					console.log(data[index].childNodes.extractNode('text').attributes.extractNode('x').nodeValue);
-					console.log(data[index].childNodes.extractNode('text').attributes.extractNode('y').nodeValue);
-				*/
+				this.meshes.push(
+					GEOMETRIES.Text({
+						text: textData,
+						x: (startX + textOffsets.x + tickLine.x), 
+						y: (startY - textOffsets.y - tickLine.y), 
+						z: 0
+					})
+				);
+
 
 			} else if (data[index].nodeName === "path") {
 
@@ -74,16 +75,15 @@ VIEW.axis = function() {
 
 				for (var j = 1; j < points.length; j++) {
 
-					var startY = UNITS.normalizeV(parseInt(points[j-1].y)) - _this.model.canvas.offsets.y;
-						startX = UNITS.normalizeH(parseInt(points[j-1].x)) + _this.model.canvas.offsets.x;
-						endX   = UNITS.normalizeH(parseInt(points[j].x))   + _this.model.canvas.offsets.x;
-						endY   = UNITS.normalizeV(parseInt(points[j].y))   - _this.model.canvas.offsets.y;
+					var startY = UNITS.normalizeV(parseInt(points[j-1].y)) - _this.model.canvas.offsetTop;
+						startX = UNITS.normalizeH(parseInt(points[j-1].x)) + _this.model.canvas.offsetLeft;
+						endX   = UNITS.normalizeH(parseInt(points[j].x))   + _this.model.canvas.offsetLeft;
+						endY   = UNITS.normalizeV(parseInt(points[j].y))   - _this.model.canvas.offsetTop;
 
 					this.meshes.push(
 						GEOMETRIES.Line({
 							x1: startX, y1: startY, z1:0,
-							x2: endX,   y2:endY   , z2:0,
-							color: 'default'
+							x2: endX,   y2:endY   , z2:0
 						})
 					);
 				}

@@ -7,12 +7,30 @@
  * 	       <TODO> 
  */
 
-
 var GEOMETRIES = (function () {
 	return {
-		Circle: function (camera, properties) {
+		Circle: function (properties) {
+			var circle = new THREE.Mesh(new THREE.CircleGeometry(properties.radius, 64), MATERIALS.Basic(properties.color));
+				circle.position.set(properties.x, properties.y, properties.z);
 
-			// TODO: COMPLETE
+				return circle;
+		},
+		Text: function (properties) {
+
+			var WIDTH  = 8,
+				HEIGHT = 0;
+
+			var textGeom = new THREE.TextGeometry( properties.text, { 
+				size:   WIDTH, 
+				height: HEIGHT
+			});
+			var	textMesh = new THREE.Mesh( textGeom, MATERIALS.Basic(properties.color));
+				textMesh.position.set( 
+					properties.x - WIDTH/2, 
+					properties.y - WIDTH/2, 
+					properties.z );
+
+			return textMesh;
 		},
 		Line: function (properties) {
 

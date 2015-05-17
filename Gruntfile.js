@@ -12,6 +12,8 @@ module.exports = function(grunt) {
               'src/init.js',
               'src/setup.js', 
               'src/dependencies/TrackballControls.js', 
+              'src/dependencies/CanvasRenderer.js', 
+              'src/dependencies/helvetiker_regular.typeface.js', 
               'src/scene/materials.js', 
               'src/scene/geometries.js', 
               'src/scene/cameras.js', 

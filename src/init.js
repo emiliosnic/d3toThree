@@ -23,6 +23,7 @@ var d3to3 = (function () {
 	 */
 	
 	_this.config = { 
+		mouseControls: false
 	}
 
 	_this.model = { 
@@ -31,10 +32,8 @@ var d3to3 = (function () {
 			y: [] 
 		}, 
 		canvas: { 
-			offsets : { 
-				x: 40,
-				y: 20
-			}, 
+			offsetLeft: 0,
+			offsetTop: 0,
 			width: null, 
 			height: null 
 		},
@@ -52,6 +51,23 @@ var d3to3 = (function () {
 			}
 		}
 	}).init();
+
+	_this.configure = function(properties){
+
+		for (property in properties){
+			this.config[property] = properties[property];				
+		}
+		return this;
+	}
+	_this.render = function(properties){
+		try {
+			_this.render();
+		} catch(err ){
+			console.error(_this.about.name + " - Failed to render output - "+ err);
+		}
+	}
+
+
 
 	if (_this.loaded) {
 
