@@ -23,8 +23,9 @@ var d3to3 = (function () {
 	 */
 	
 	_this.config = { 
-		mouseControls: false
-	}
+		'mouseControls': false,
+		'3D': false
+	};
 
 	_this.model = { 
 		axis: { 

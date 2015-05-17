@@ -23,8 +23,9 @@ var d3to3 = (function () {
 	 */
 	
 	_this.config = { 
-		mouseControls: false
-	}
+		'mouseControls': false,
+		'3D': false
+	};
 
 	_this.model = { 
 		axis: { 
@@ -88,7 +89,6 @@ extend(d3.selection.prototype, {
 
 	d3to3: function() {
 		this.canvas = function(properties){
-			console.log(this[0]);
 
 			_this.model.canvas.width  = this[0].extractNode('svg').width.baseVal.value;
 			_this.model.canvas.height  = this[0].extractNode('svg').height.baseVal.value;
@@ -2064,6 +2064,14 @@ var MATERIALS = (function () {
 		Basic: function (color) {
 			return (new THREE.MeshBasicMaterial({ 'color': COLORS.HEX(color)}));
 		},
+		Phong: function (properties) {
+			return (new THREE.MeshPhongMaterial({
+				color: COLORS.HEX(properties.color),
+				specular: COLORS.HEX(properties.specular),
+				emmisive: COLORS.HEX(properties.emmisive),
+		        shininess: properties.shininess
+			}));
+		},
 		LineBasic: function (color) {
 			return (new THREE.LineBasicMaterial({ 'color': COLORS.HEX(color)}));
 		}
@@ -2086,6 +2094,24 @@ var GEOMETRIES = (function () {
 				circle.position.set(properties.x, properties.y, properties.z);
 
 				return circle;
+		},
+		Sphere: function (properties) {
+			var sphere = new THREE.Mesh(
+				new THREE.SphereGeometry(properties.radius, 64, 64), 
+				MATERIALS.Phong({
+        // light
+        specular: '#f1f1f1',
+        // intermediate
+        color: properties.color,
+        // dark
+        emissive: '#006063',
+        shininess: 100 
+
+				})
+			);
+			sphere.position.set(properties.x, properties.y, properties.z);
+
+			return sphere;
 		},
 		Text: function (properties) {
 
@@ -2347,9 +2373,17 @@ VIEW.circle = function() {
 			var x = UNITS.normalizeH(offsetX) + _this.model.canvas.offsetLeft;
 				y = UNITS.normalizeV(offsetY) - _this.model.canvas.offsetTop;
 
-			that.meshes.push(
-				GEOMETRIES.Circle({ radius: radius, color: color, x: x, y: y, z: 0})
-			);
+			if (_this.config['3D']){
+				that.meshes.push(
+					GEOMETRIES.Sphere({ radius: radius, color: color, x: x, y: y, z: 0})
+				);
+
+			} else {
+				that.meshes.push(
+					GEOMETRIES.Circle({ radius: radius, color: color, x: x, y: y, z: 0})
+				);
+
+			}
 		});
 	}
 }
@@ -2416,7 +2450,7 @@ var LIGHTS = (function () {
 
 _this.render = function(){
 
-	var camera, renderer, scene, group, container, view, controls, canvas, raycaster, mouse;
+	var camera, renderer, scene, group, container, view, controls, canvas, raycaster, light;
 
 	(function () {
 		var createCanvas = function () {	
@@ -2428,7 +2462,7 @@ _this.render = function(){
 			camera = CAMERAS.Perspective({ 
 				width    : _this.model.canvas.width,
 				height   : _this.model.canvas.height,
-				fov      : 115,
+				fov      : 113,
 				position : { x: 0, y:0, z:100 } 
 			});
 
@@ -2437,9 +2471,9 @@ _this.render = function(){
 				controls = CONTROLS.Trackball(camera);
 			}
 
-			mouse = new THREE.Vector2(); 
 			raycaster = new THREE.Raycaster(); 
 
+			light = LIGHTS.Directional({ color:"#ffffff", x:0, y:0, z:20});
 
 			group = new THREE.Group(),
 			group.position.set(0, 0, 0);
@@ -2463,6 +2497,7 @@ _this.render = function(){
 		init();
 		animate();
 		removeSVG();
+
 
 	}());
 
@@ -2494,6 +2529,7 @@ _this.render = function(){
 			.loadData(_this.model.axis.y)
 			.toGroup(group);
 
+
 		/**
 		 * Flush Model and Run Render
 		 */ 
@@ -2502,6 +2538,7 @@ _this.render = function(){
 
 		scene.add(camera);
 		scene.add(group);
+		scene.add(light);
 
 		container.appendChild( renderer.domElement );
 	}

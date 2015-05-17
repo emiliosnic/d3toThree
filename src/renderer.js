@@ -9,7 +9,7 @@
 
 _this.render = function(){
 
-	var camera, renderer, scene, group, container, view, controls, canvas, raycaster, mouse;
+	var camera, renderer, scene, group, container, view, controls, canvas, raycaster, light;
 
 	(function () {
 		var createCanvas = function () {	
@@ -21,7 +21,7 @@ _this.render = function(){
 			camera = CAMERAS.Perspective({ 
 				width    : _this.model.canvas.width,
 				height   : _this.model.canvas.height,
-				fov      : 115,
+				fov      : 113,
 				position : { x: 0, y:0, z:100 } 
 			});
 
@@ -30,9 +30,9 @@ _this.render = function(){
 				controls = CONTROLS.Trackball(camera);
 			}
 
-			mouse = new THREE.Vector2(); 
 			raycaster = new THREE.Raycaster(); 
 
+			light = LIGHTS.Directional({ color:"#ffffff", x:0, y:0, z:20});
 
 			group = new THREE.Group(),
 			group.position.set(0, 0, 0);
@@ -56,6 +56,7 @@ _this.render = function(){
 		init();
 		animate();
 		removeSVG();
+
 
 	}());
 
@@ -87,6 +88,7 @@ _this.render = function(){
 			.loadData(_this.model.axis.y)
 			.toGroup(group);
 
+
 		/**
 		 * Flush Model and Run Render
 		 */ 
@@ -95,6 +97,7 @@ _this.render = function(){
 
 		scene.add(camera);
 		scene.add(group);
+		scene.add(light);
 
 		container.appendChild( renderer.domElement );
 	}

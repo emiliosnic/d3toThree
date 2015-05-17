@@ -15,7 +15,6 @@ extend(d3.selection.prototype, {
 
 	d3to3: function() {
 		this.canvas = function(properties){
-			console.log(this[0]);
 
 			_this.model.canvas.width  = this[0].extractNode('svg').width.baseVal.value;
 			_this.model.canvas.height  = this[0].extractNode('svg').height.baseVal.value;
