@@ -10,22 +10,33 @@
 	<!-- Styles -->
 	<link rel="stylesheet" href="assets/reset.css">
 	<link rel="stylesheet" href="assets/style.css">
+	<link rel="stylesheet" href="assets/style.css">
+
+	<link rel="stylesheet" href="bower_components/highlightjs/styles/dark.css">
+
 
 </head>
 <body>
 
-<script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
 
 	<script src="lib/d3.js"></script>
 	<script src="lib/three.min.js"></script>
 	<script src="dist/d3to3.js"></script>
-
 	<ul class="panels">
-		<li id="d3_panel"></li>
-		<li id="d3to3_panel"></li>
+		<li>
+			<h2>D3</h2>
+			<div id="d3_panel">
+		</li>
+		<li>
+			<h2>D3to3</h2>
+			<div id="d3to3_panel"></div>
+		</li>
 	</ul>
 
-	<script>
+
+	<script src="bower_components/highlightjs/highlight.pack.js"></script>
+	<script type="text/javascript">
+
 
 		var margin = {top: 20, right: 20, bottom: 30, left: 40},
 			width  = 600 - margin.left - margin.right,
@@ -67,6 +78,7 @@
 		var color = d3.scale.category10(),
 			cValue = function(d) { return d.Category; };
 	
+
 		// Append the graph
 		var svg = d3.select("#d3_panel")
 			.append("svg")
@@ -117,7 +129,6 @@
 			// 'wireframe' : true,
 		}).render();
 		// #####################
-
 	</script>
 
 </body>

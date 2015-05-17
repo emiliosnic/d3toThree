@@ -1,6 +1,8 @@
 
 body {
-font: 11px sans-serif;
+	font-size:0.7em;
+	background: #dbdbdb;
+	font-family:  'Lato';
 }
 .axis path,
 .axis line {
@@ -15,11 +17,42 @@ font: 11px sans-serif;
 	padding: 0;
 	margin: 0;
 }
-	.panels li {
+.panels li {
 	display: block;
-	width: 50%;
+	width: 48%;
+	padding:0 20px;
+	min-height: 400px;
 	height: auto;
 	overflow: auto;
 	float: left;
 	text-align: center;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	border-radius: 2px;
+	border: 1px solid #ededed;
+	float: left;
+	background: white;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+.panels li:first-child {
+	margin: 20px 0.5% 20px 1.5%;
+}
+.panels li:last-child {
+	margin: 20px 1.5% 20px 0.5%;
+}
+.panels li h2 {
+	font-size: 1.5em;
+	padding: 20px 0;
+}
+#code_panel {
+	width: 90%;
+	height: 400px;
+	overflow: auto;
+	display: inline-block;
+	font-size:0.8em;
+	background: #282828;
+	color: white;
 }

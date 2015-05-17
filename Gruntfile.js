@@ -53,7 +53,7 @@ module.exports = function(grunt) {
           livereload: true
         },
       },
-    },
+    }
   });
 
   // Grunt Plugins
@@ -62,5 +62,5 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
 
   // Grunt Tasks
-  grunt.registerTask('default', ['concat', 'uglify', 'watch']);
+  grunt.registerTask('default', ['concat', 'uglify','watch']);
 };
