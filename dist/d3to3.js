@@ -2078,19 +2078,19 @@ var MATERIALS = (function () {
 	return {
 		Basic: function (properties) {
 			var color = (properties && properties.color)? properties.color : 'default';
-			return (new THREE.MeshBasicMaterial({ 'color': COLORS.HEX(color)}));
+			return (new THREE.MeshBasicMaterial({ 'color': COLORS.normalize(color)}));
 		},
 		Phong: function (properties) {
 			return (new THREE.MeshPhongMaterial({
-				color: COLORS.HEX(properties.color),
-				specular: COLORS.HEX(properties.specular),
-				emmisive: COLORS.HEX(properties.emmisive),
+				color: COLORS.normalize(properties.color),
+				specular: COLORS.normalize(properties.specular),
+				emmisive: COLORS.normalize(properties.emmisive),
 		        shininess: properties.shininess
 			}));
 		},
 		LineBasic: function (properties) {
 			var color = (properties && properties.color)? properties.color : 'default';
-			return (new THREE.LineBasicMaterial({ 'color': COLORS.HEX(color)}));
+			return (new THREE.LineBasicMaterial({ 'color': COLORS.normalize(color)}));
 		}
 	};
 })();
@@ -2476,7 +2476,7 @@ VIEW.circle = function() {
 			var radius  = item.r.baseVal.value,
 				offsetX = item.cx.baseVal.value,
 				offsetY = item.cy.baseVal.value,
-				color   = COLORS.HEX(item.style.cssText.slice(6));
+				color   = COLORS.normalize(item.style.cssText.slice(6));
 
 			var x = UNITS.normalizeH(offsetX) + _this.model.canvas.offsetLeft;
 				y = UNITS.normalizeV(offsetY) - _this.model.canvas.offsetTop;
@@ -2508,7 +2508,7 @@ var LIGHTS = (function () {
 			var color = 0xffffff;
 
 			if (properties) {
-				color = COLORS.HEX(properties.color) || color;
+				color = COLORS.normalize(properties.color) || color;
 			}
 
 			return new THREE.AmbientLight(color);
@@ -2518,7 +2518,7 @@ var LIGHTS = (function () {
 			var color = 0xffffff, x=1,  y=1, z=1; 
 
 			if (properties) {
-				color = COLORS.HEX(properties.color) || color;
+				color = COLORS.normalize(properties.color) || color;
 				x     = properties.x || x;
 				y     = properties.y || y;
 				z     = properties.z || z;
@@ -2704,7 +2704,7 @@ _this.render = function(){
 
 var COLORS = (function () {
 	return {
-		HEX: function (input) {
+		normalize: function (input) {
 
 			var componentToHex = function(c) {
 				var hex = c.toString(16);

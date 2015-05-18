@@ -20,7 +20,7 @@ VIEW.circle = function() {
 			var radius  = item.r.baseVal.value,
 				offsetX = item.cx.baseVal.value,
 				offsetY = item.cy.baseVal.value,
-				color   = COLORS.HEX(item.style.cssText.slice(6));
+				color   = COLORS.normalize(item.style.cssText.slice(6));
 
 			var x = UNITS.normalizeH(offsetX) + _this.model.canvas.offsetLeft;
 				y = UNITS.normalizeV(offsetY) - _this.model.canvas.offsetTop;

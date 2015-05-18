@@ -15,7 +15,7 @@ var LIGHTS = (function () {
 			var color = 0xffffff;
 
 			if (properties) {
-				color = COLORS.HEX(properties.color) || color;
+				color = COLORS.normalize(properties.color) || color;
 			}
 
 			return new THREE.AmbientLight(color);
@@ -25,7 +25,7 @@ var LIGHTS = (function () {
 			var color = 0xffffff, x=1,  y=1, z=1; 
 
 			if (properties) {
-				color = COLORS.HEX(properties.color) || color;
+				color = COLORS.normalize(properties.color) || color;
 				x     = properties.x || x;
 				y     = properties.y || y;
 				z     = properties.z || z;

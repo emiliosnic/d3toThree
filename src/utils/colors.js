@@ -9,7 +9,7 @@
 
 var COLORS = (function () {
 	return {
-		HEX: function (input) {
+		normalize: function (input) {
 
 			var componentToHex = function(c) {
 				var hex = c.toString(16);
