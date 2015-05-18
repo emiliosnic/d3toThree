@@ -117,6 +117,8 @@ _this.render = function(){
 	}
 
 	function mousewheel( event ) {
+		
+		// Activate only if we are inside the canvas
 		var zoom = 0.02;
 
 		event.preventDefault();

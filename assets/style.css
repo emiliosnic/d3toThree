@@ -3,6 +3,7 @@ body {
 	font-size:0.7em;
 	background: #dbdbdb;
 	font-family:  'Lato';
+	text-align: center;
 }
 .axis path,
 .axis line {
@@ -21,7 +22,7 @@ body {
 	display: block;
 	width: 48%;
 	padding:0 20px;
-	min-height: 400px;
+	min-height: 350px;
 	height: auto;
 	overflow: auto;
 	float: left;
