@@ -2726,10 +2726,9 @@ var COLORS = (function () {
 				// Convert from RGB
 
 				var rgb = /\(([^)]+)\)/.exec(input)[1].split(',');
-				var r,g,b;
-				r = parseInt(rgb[0]);
-				g = parseInt(rgb[1]);
-				b = parseInt(rgb[2]);
+				var r = parseInt(rgb[0]),
+					g = parseInt(rgb[1]),
+					b = parseInt(rgb[2]);
 				
 				// Else if this is rgb call rgba
 				return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
