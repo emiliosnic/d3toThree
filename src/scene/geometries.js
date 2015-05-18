@@ -17,12 +17,14 @@ var GEOMETRIES = (function () {
 		},
 		Sphere: function (properties) {
 			var sphere = new THREE.Mesh(
+
+				// TODO: Update Phone so that speclular and emmisive are determined 
+
 				new THREE.SphereGeometry(properties.radius, 64, 64), 
 				MATERIALS.Phong({
 					color: properties.color,
 					specular: '#f1f1f1',
-					emissive: '#006063',
-					shininess: 100 
+					emissive: '#006063'
 				})
 			);
 			sphere.position.set(properties.x, properties.y, properties.z);

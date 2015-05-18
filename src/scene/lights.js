@@ -9,6 +9,7 @@
 
 
 var LIGHTS = (function () {
+
 	return {
 		Ambient: function (properties) {
 
@@ -26,10 +27,9 @@ var LIGHTS = (function () {
 
 			if (properties) {
 				color = COLORS.normalize(properties.color) || color;
-				x     = properties.x || x;
-				y     = properties.y || y;
-				z     = properties.z || z;
-
+				x     = properties.position.x || x;
+				y     = properties.position.y || y;
+				z     = properties.position.z || z;
 			}
 
 			var light = new THREE.DirectionalLight(color);

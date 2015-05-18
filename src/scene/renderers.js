@@ -15,7 +15,7 @@ var RENDERERS = (function () {
 				height = window.innerHeight;
 
 			if (properties) {
-				width  = properties.width || width;
+				width  = properties.width  || width;
 				height = properties.height || height;
 			}
 

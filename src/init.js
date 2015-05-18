@@ -65,7 +65,7 @@ var d3to3 = (function () {
 	}
 	_this.render = function(properties){
 		try {
-			_this.render();
+			_this.controller();
 		} catch(err ){
 			console.error(_this.about.name + " - Failed to render output - "+ err);
 		}

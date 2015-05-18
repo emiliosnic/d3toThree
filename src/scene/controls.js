@@ -8,23 +8,26 @@
  */
 
 var CONTROLS = (function () {
+
+	setup = function(controls){
+		controls.rotateSpeed = 1.0;
+		controls.zoomSpeed   = 1.0;
+		controls.noZoom      = true;
+		controls.dynamicDampingFactor = 1.0;
+	}
+
 	return {
-		Trackball: function (camera, properties) {
-
-			var x = 0, 
-				y = 0, 
-				z = 0;
-
-			if (properties) {
-				x      = properties.x || x;
-				y      = properties.y || y;
-				z      = properties.z || z;
-			}
-
-			var controls = new THREE.TrackballControls(camera);
-				controls.target.set(x,y,z);
+		Trackball: function (camera) {
+			var	controls = new THREE.TrackballControls(camera);
+				setup(controls);
 
 			return controls;
-		}
-	};
+		},
+		Orbit: function (camera) {
+			var	controls = new THREE.OrbitControls( camera );
+				setup(controls);
+
+			return controls;
+		}	
+	}
 })();

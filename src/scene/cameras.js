@@ -8,6 +8,25 @@
  */
  
 var CAMERAS = (function () {
+
+	updateZoom = function(event){
+	
+		var zoom = 0.02, newZoom = zoom, delta = 0;
+
+		// WebKit / Opera / Explorer 9
+		delta = (event.wheelDelta)? (event.wheelDelta / 40): delta;
+
+		// Firefox
+		delta = (event.detail)? (- event.detail / 3): delta;
+
+		newZoom -= (delta * 0.001);
+
+		this.left   = - newZoom * (this.right / zoom);
+		this.right  =   newZoom * (this.right / zoom);
+		this.top    =   newZoom * (this.top   / zoom);
+		this.bottom = - newZoom * (this.top   / zoom);
+	}
+
 	return {
 		Orthographic: function (properties) {
 
@@ -19,17 +38,18 @@ var CAMERAS = (function () {
 				zoom = 0.5;
 
 			if (properties) {
-				near   = properties.near || near;
-				far    = properties.far  || far;
+				near   = properties.near   || near;
+				far    = properties.far    || far;
+				width  = properties.width  || width;
+				height = properties.height || height;
 				x      = properties.position.x || x;
 				y      = properties.position.y || y;
 				z      = properties.position.z || z;
-				width  = properties.width || width;
-				height = properties.height || height;
 			}
 
 			var camera = new THREE.OrthographicCamera( zoom * -width, zoom * width, zoom * height, zoom * -height, near, far );
 				camera.position.set(x, y, z);
+				camera.updateZoom = updateZoom;
 
 			return camera;
 		},
@@ -55,6 +75,7 @@ var CAMERAS = (function () {
 
 			var camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 				camera.position.set(x, y, z);
+				camera.updateZoom = updateZoom;
 
 			return camera;
 		}
