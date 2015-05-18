@@ -39,8 +39,8 @@
 
 
 		var margin = {top: 20, right: 20, bottom: 30, left: 40},
-			width  = 600 - margin.left - margin.right,
-			height = 300 - margin.top  - margin.bottom;
+			width  = 550 - margin.left - margin.right,
+			height = 250 - margin.top  - margin.bottom;
 
 		var data = [
 			{'Name': 'Node 1', 'Category': 'A', 'Calories':10 , 'Protein (g)':4, 'radius': 8  },
@@ -94,7 +94,6 @@
 		svg.append("g")	
 			.attr("class", "x axis")
 			.call(xAxis)
-			
 			// #####################
 			.d3to3().axis();
 			// #####################
@@ -103,7 +102,6 @@
 		svg.append("g")
 			.attr("class", "y axis")
 			.call(yAxis)
-			
 			// #####################
 			.d3to3().axis();
 			// #####################
@@ -116,17 +114,20 @@
 			.attr("cx", xMap)
 			.attr("cy", yMap)
 			.style("fill", function(d) { return color(cValue(d));})
-
 			// #####################
 			.d3to3().data();
 			// #####################
 
 		// #####################
 		d3to3.configure({
-			'view'  : 'circle'
-			// 'mouseControls': true
+
+			// TODO: Make view optional and extract it from d3to3.data({});
+			'view'  : 'circle',
+			'mouseControls': true
+
 			// '3D': true,
-			// 'wireframe' : true,
+			// 'wireframe' : true
+
 		}).render();
 		// #####################
 	</script>

@@ -98,6 +98,9 @@ extend(d3.selection.prototype, {
 		},
 
 		this.data = function(){
+
+			// TODO: Determine type and add to _this.config.view = {{data.view}}
+
 			_this.model.content = this[0];
 			return this;
 		}    
@@ -2479,9 +2482,10 @@ VIEW.circle = function() {
 				y = UNITS.normalizeV(offsetY) - _this.model.canvas.offsetTop;
 
 			if (_this.config['3D']){
+				// 3D Mode
 				that.meshes.push(GEOMETRIES.Sphere({ radius: radius, color: color, x: x, y: y, z: 0}));
-
 			} else {
+				// 2D Mode
 				that.meshes.push(GEOMETRIES.Circle({ radius: radius, color: color, x: x, y: y, z: 0}));
 			}
 		});
@@ -2606,7 +2610,7 @@ _this.render = function(){
 		 * Setup Data View
 		 */ 
 		new VIEW()
-			.type(_this.config.view)
+						.type(_this.config.view)
 			.loadData(_this.model.content)
 			.appendTo(group);
 
@@ -2629,8 +2633,6 @@ _this.render = function(){
 				.type('wireframe')
 				.appendTo(group);
 		}
-
-			
 
 		/**
 		 * Flush Model and Run Render

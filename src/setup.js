@@ -21,6 +21,9 @@ extend(d3.selection.prototype, {
 		},
 
 		this.data = function(){
+
+			// TODO: Determine type and add to _this.config.view = {{data.view}}
+
 			_this.model.content = this[0];
 			return this;
 		}    

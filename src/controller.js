@@ -65,7 +65,7 @@ _this.render = function(){
 		 * Setup Data View
 		 */ 
 		new VIEW()
-			.type(_this.config.view)
+						.type(_this.config.view)
 			.loadData(_this.model.content)
 			.appendTo(group);
 
@@ -88,8 +88,6 @@ _this.render = function(){
 				.type('wireframe')
 				.appendTo(group);
 		}
-
-			
 
 		/**
 		 * Flush Model and Run Render
