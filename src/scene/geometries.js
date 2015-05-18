@@ -1,79 +1,62 @@
 
-function GeometryFactory(){};
+/**
+ *   File: 
+ *         scene/geometries.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
 
-GeometryFactory.prototype.type = function(type){
-	var constr = type;
+var GEOMETRIES = (function () {
+	return {
+		Circle: function (properties) {
+			var circle = new THREE.Mesh(new THREE.CircleGeometry(properties.radius, 64), MATERIALS.Basic({'color': properties.color}));
+				circle.position.set(properties.x, properties.y, properties.z);
 
-	if (typeof GeometryFactory[constr] !== "function"){
-		// TOODO: Handle error  
-	}
-	if (typeof GeometryFactory[constr].prototype.drive !== "function") { 
-		GeometryFactory[constr].prototype = new GeometryFactory();
-	}
-	return new GeometryFactory[constr]();
-}
+				return circle;
+		},
+		Sphere: function (properties) {
+			var sphere = new THREE.Mesh(
 
-GeometryFactory.circle = function() {  
-	this.type = 'circle'; 
-	this.meshes = [];
-}
-GeometryFactory.line   = function() {  
-	this.type = 'line';    
-	this.meshes = [];
-}
+				// TODO: Update Phone so that speclular and emmisive are determined 
 
-GeometryFactory.prototype.loadData = function(data) {
+				new THREE.SphereGeometry(properties.radius, 64, 64), 
+				MATERIALS.Phong({
+					color: properties.color,
+					specular: '#f1f1f1',
+					emissive: '#006063'
+				})
+			);
+			sphere.position.set(properties.x, properties.y, properties.z);
 
-	var that = this,
-		offset = translateOffsets(_this.model.canvas.transform);
+			return sphere;
+		},
+		Text: function (properties) {
 
-	var loadDataCircle = function(){
+			var WIDTH  = 8,
+				HEIGHT = 0;
 
-		data.forEach(function (item) {
-			var radius  = item.r.baseVal.value,
-				offsetX = item.cx.baseVal.value,
-				offsetY = item.cy.baseVal.value;
-				color   = RGBToHex(item.style.cssText.slice(6));
+			var textGeom = new THREE.TextGeometry( properties.text, { 
+				size:   WIDTH, 
+				height: HEIGHT
+			});
+			var	textMesh = new THREE.Mesh( textGeom, MATERIALS.Basic({'color':properties.color}));
+				textMesh.position.set( 
+					properties.x - WIDTH/2, 
+					properties.y - WIDTH/2, 
+					properties.z );
 
-			var x,
-				y;
+			return textMesh;
+		},
+		Line: function (properties) {
 
-			// Normalize width and height
-			x = (offsetX <= _this.model.canvas.width)  ?  - (_this.model.canvas.width/2 - offsetX): (_this.model.canvas.width/2 - offsetX); 
-			y = (offsetY <= _this.model.canvas.height) ?   (_this.model.canvas.height/2 - offsetY): - (_this.model.canvas.height/2 - offsetY);
-			
-			// Apply offsets	
-			x += offset.x;
-			y -= offset.y;
+			var material = properties.material ||  MATERIALS.LineBasic();
 
-			var material = new THREE.MeshBasicMaterial({ 'color': color}),
-				circleGeometry = new THREE.CircleGeometry(radius, 64),
-				circle = new THREE.Mesh( circleGeometry,  new THREE.MeshBasicMaterial({ 'color': color}));
+			var geometry = new THREE.Geometry();
+				geometry.vertices.push(new THREE.Vector3(properties.x1, properties.y1, properties.z1));
+				geometry.vertices.push(new THREE.Vector3(properties.x2, properties.y2, properties.z2));
 
-			circle.position.set(x, y, 0 );
-
-			// Keep to meshes
-			that.meshes.push(circle);
-
-		});
-
-	}
-
-	if (this.type == "circle"){
-		loadDataCircle();
-	}
-
-	return this;
-};
-
-GeometryFactory.prototype.toGroup = function(group) {
-
-	this.meshes.forEach(function(item){
-		if (group && group instanceof THREE.Group)
-			group.add(item);
-	})
-
-	GeometryFactory.meshes = [];
-
-	return this;
-};
+			return new THREE.Line(geometry, material);
+		}
+	};
+})();

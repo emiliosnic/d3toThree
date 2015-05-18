@@ -1,20 +1,47 @@
+
+/**
+ *   File: 
+ *         init.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
+
 var d3to3 = (function () {
 
 	var _this = {},
 		_d3   = {};
 
 	_this.loaded = false;
+	_this.about = {
+		name: "d3to3",
+		version: "0.0.1"
+	};
+
+	/**
+	 * Default Config
+	 */
+	
+	_this.config = { 
+
+		// TODO: Determine Dynamically
+		'target': 'd3to3_panel',
+		'source': undefined,
+
+		'mouseControls': false,
+		'3D': false,
+		'wireframe': false
+	};
 
 	_this.model = { 
-		axis: { 
-			x: [], 
-			y: [] 
-		}, 
-		content: [],
+		axes: [],
 		canvas: { 
+			offsetLeft: 0,
+			offsetTop: 0,
 			width: null, 
 			height: null 
-		}
+		},
+		content: []
 	}; 
 
 	_this.initializer = ({
@@ -29,7 +56,22 @@ var d3to3 = (function () {
 		}
 	}).init();
 
+	_this.configure = function(properties){
 
-	// Setup Utils
-	observerFactory = new ObserverFactory();
+		for (property in properties){
+			this.config[property] = properties[property];				
+		}
+		return this;
+	}
+	_this.render = function(properties){
+		try {
+			_this.controller();
+		} catch(err ){
+			console.error(_this.about.name + " - Failed to render output - "+ err);
+		}
+	}
+
+
+
+	if (_this.loaded) {
 

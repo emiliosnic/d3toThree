@@ -1,7 +1,57 @@
 
+/**
+ *   File: 
+ *         utils/helpers.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
+
+/**
+ * Extract Node Protype
+ */ 
+
+Object.prototype.extractNode = function(key) {
+	
+	var obj = this;
+
+	if (key in this){
+		obj = this[key];
+	} else {
+		for (var item in this) {
+			if (this.hasOwnProperty(item) && this[item].nodeName === key){
+				obj = this[item];
+				break;
+			}
+		}
+	}
+	return obj;
+};
+
+/**
+ * Extension Helper
+ */ 
+
+function extend (base, extension) {
+  if (arguments.length > 2) 
+  	[].forEach.call(arguments, function (extension) { 
+ 	 	extend(base, extension) 
+ 	})
+  else 
+  	for (var k in extension) 
+  		base[k] = extension[k]
+  return base;
+}
+
+
+/**
+ * Observer Factory
+ */ 
+
 function ObserverFactory(){}
 
 ObserverFactory.queue = [];
+var observerFactory = new ObserverFactory
 
 ObserverFactory.prototype.observe = function() {
 	[].forEach.call(arguments, function (obj) { 
@@ -39,7 +89,6 @@ ObserverFactory.prototype.type = function(type){
 }
 
 ObserverFactory.attr   = function() { this.type = 'attr';   }
-ObserverFactory.each   = function() { this.type = 'each';   }
 ObserverFactory.append = function() { this.type = 'append'; }
 
 ObserverFactory.prototype.notify = function(args) {
@@ -65,3 +114,4 @@ ObserverFactory.prototype.notify = function(args) {
 		}
 	});
 } 
+

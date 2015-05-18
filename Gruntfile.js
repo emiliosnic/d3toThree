@@ -10,12 +10,26 @@ module.exports = function(grunt) {
       dist: {
         src: [
               'src/init.js',
-              'src/hooks.js', 
+              'src/setup.js', 
+              'src/dependencies/OrbitControls.js', 
+              'src/dependencies/TrackballControls.js', 
+              'src/dependencies/CanvasRenderer.js', 
+              'src/dependencies/helvetiker_regular.typeface.js', 
+              'src/scene/materials.js', 
               'src/scene/geometries.js', 
-              'src/scene/renderer.js', 
+              'src/scene/cameras.js', 
+              'src/scene/renderers.js', 
+              'src/scene/controls.js', 
+              'src/views/base.js', 
+              'src/views/axis.js', 
+              'src/views/wireframe.js', 
+              'src/views/circle.js', 
+              'src/scene/lights.js', 
+              'src/scene/parser.js', 
+              'src/controller.js', 
               'src/utils/colors.js',
+              'src/utils/helpers.js',
               'src/utils/units.js',
-              'src/utils/observers.js',
               'src/teardown.js'
               ],
         dest: 'dist/<%= pkg.name %>.js',
@@ -40,7 +54,7 @@ module.exports = function(grunt) {
           livereload: true
         },
       },
-    },
+    }
   });
 
   // Grunt Plugins
@@ -49,5 +63,5 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
 
   // Grunt Tasks
-  grunt.registerTask('default', ['concat', 'uglify', 'watch']);
+  grunt.registerTask('default', ['concat', 'uglify','watch']);
 };

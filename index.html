@@ -10,26 +10,34 @@
 	<!-- Styles -->
 	<link rel="stylesheet" href="assets/reset.css">
 	<link rel="stylesheet" href="assets/style.css">
+	<link rel="stylesheet" href="assets/style.css">
 
 </head>
 <body>
-
-<script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
+	
+	<br>
+	<img src="assets/mvc.png" width="500"/>
 
 	<script src="lib/d3.js"></script>
 	<script src="lib/three.min.js"></script>
-	<script src="dist/d3to3.min.js"></script>
-
+	<script src="dist/d3to3.js"></script>
 	<ul class="panels">
-		<li id="d3_panel"></li>
-		<li id="d3to3_panel"></li>
+		<li>
+			<h2>D3</h2>
+			<div id="d3_panel">
+		</li>
+		<li>
+			<h2>D3to3</h2>
+			<div id="d3to3_panel"></div>
+		</li>
 	</ul>
 
-	<script>
+	<script type="text/javascript">
+
 
 		var margin = {top: 20, right: 20, bottom: 30, left: 40},
-			width  = 600 - margin.left - margin.right,
-			height = 300 - margin.top  - margin.bottom;
+			width  = 550 - margin.left - margin.right,
+			height = 250 - margin.top  - margin.bottom;
 
 		var data = [
 			{'Name': 'Node 1', 'Category': 'A', 'Calories':10 , 'Protein (g)':4, 'radius': 8  },
@@ -42,13 +50,18 @@
 			{'Name': 'Node 8', 'Category': 'C', 'Calories':69 , 'Protein (g)':10, 'radius': 12 },
 			{'Name': 'Node 9', 'Category': 'A', 'Calories':30 , 'Protein (g)':8, 'radius': 12 }
 		];
+		data.forEach(function(d) {
+			d.Calories = +d.Calories;
+			d["Protein (g)"] = +d["Protein (g)"];
+		});
 
 		// Setup x-Axis values
 		var xScale = d3.scale.linear().range([0, width]), 
 			xValue = function(d) { return d.Calories;        },
 			xMap   = function(d) { return xScale(xValue(d)); }, 
 			xAxis  = d3.svg.axis().scale(xScale).orient("bottom");
-
+		
+		
 		// Setup y-Axis values
 		var yScale = d3.scale.linear().range([height, 0]), 
 			yValue = function(d) { return d["Protein (g)"];  }, 
@@ -62,62 +75,58 @@
 		var color = d3.scale.category10(),
 			cValue = function(d) { return d.Category; };
 	
+
 		// Append the graph
-		var svg = d3.select("#d3_panel").append("svg")
+		var svg = d3.select("#d3_panel")
+			.append("svg")
 			.attr("width", width + margin.left + margin.right)
 			.attr("height", height + margin.top + margin.bottom)
 			.append("g")
 			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-		// Load Data
-		data.forEach(function(d) {
-			d.Calories = +d.Calories;
-			d["Protein (g)"] = +d["Protein (g)"];
-		});
 		
-		// don't want dots overlapping axis, so add in buffer to data domain
 		xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
 		yScale.domain([d3.min(data, yValue)-1, d3.max(data, yValue)+1]);
 
-		// x-axis
+		// X Axis
 		svg.append("g")	
 			.attr("class", "x axis")
-			.call(xAxis);
+			.call(xAxis)
+			// #####################
+			.d3to3().axis();
+			// #####################
 
-		// y-axis
+		// Y Axis
 		svg.append("g")
 			.attr("class", "y axis")
 			.call(yAxis)
-			.append("text")
-			.attr("transform", "rotate(-90)");
+			// #####################
+			.d3to3().axis();
+			// #####################
 
 		// Draw Circles
 		svg.selectAll(".dot")
 			.data(data)
 			.enter().append("circle")
-			.attr("class", "dot")
 			.attr("r", rMap)
 			.attr("cx", xMap)
 			.attr("cy", yMap)
-			.style("fill", function(d) { 
-				return color(cValue(d));
-			}) 
-			.on("mouseover", function(d) {
-				d3.select(this)
-					.transition()
-					.duration(200).
-					attr("r", rMap(d)+5);
-			})
-			.on("mouseout", function(d) {
-				d3.select(this)
-					.transition()
-					.duration(200)
-					.attr("r", rMap(d));
-			});
+			.style("fill", function(d) { return color(cValue(d));})
+			// #####################
+			.d3to3().data();
+			// #####################
 
-		// Renderer
-		d3to3.render("d3to3_panel");
+		// #####################
+		d3to3.configure({
 
+			// TODO: Make view optional and extract it from d3to3.data({});
+			'view'  : 'circle',
+			'mouseControls': true
+
+			// '3D': true,
+			// 'wireframe' : true
+
+		}).render();
+		// #####################
 	</script>
 
 </body>
