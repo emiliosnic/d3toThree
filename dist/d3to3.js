@@ -46,13 +46,22 @@ var d3to3 = (function () {
 
 	_this.initializer = ({
 		init: function () {
-			if ((typeof d3 !== 'undefined') 
-				&& (window.WebGLRenderingContext 
-				&& (document.createElement("canvas").getContext("webgl")))) {
 
-				_d3 = Object.create(d3);
-				_this.loaded = true; 
+			if (typeof d3 === 'undefined'){ 
+				console.error(_this.about.name + " - Failed to load D3.js Library.")
+				return;
 			}
+			if (typeof THREE === 'undefined'){ 
+				console.error(_this.about.name + " - Failed to load Three.js Library.")
+				return;
+			}
+			if (!(window.WebGLRenderingContext && (document.createElement("canvas").getContext("webgl")))){
+				console.error(_this.about.name + " - Your browser does not support WebGL/Canvas support.")
+				return;
+			}
+
+			_d3 = Object.create(d3);
+			_this.loaded = true; 
 		}
 	}).init();
 
