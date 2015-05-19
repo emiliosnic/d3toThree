@@ -9,15 +9,13 @@
  
 var RENDERERS = (function () {
 	return {
+
+		// TODO: CHANGE THIS TO DEFAULT
+		
 		WebGL: function (properties) {
 
-			var width = window.innerWidth,
-				height = window.innerHeight;
-
-			if (properties) {
-				width  = properties.width  || width;
-				height = properties.height || height;
-			}
+			var width  = _this.model.canvas.width  || window.innerWidth,
+				height = _this.model.canvas.height || window.innerHeight;
 
 			var renderer = new THREE.WebGLRenderer({ antialias: true });
 				renderer.setClearColor(0xffffff);

@@ -16,15 +16,16 @@ extend(d3.selection.prototype, {
 	d3to3: function() {
 
 		this.axis = function(){
+
 			_this.model.axes.push(this[0].extractNode('g').childNodes);
 			return this;
 		},
 
 		this.data = function(){
 
-			// TODO: Determine type and add to _this.config.view = {{data.view}}
-
 			_this.model.content = this[0];
+			_this.model.view = this[0][0].nodeName;
+
 			return this;
 		}    
 
@@ -110,7 +111,9 @@ _this.setupHooks = ({
 	_d3.selection.prototype.each = function() 	   { return hook_each.apply(this, arguments);      }
 
 		_d3.selection.prototype.attr = function()      { 
-		  	// Notify attr observers
+			/**
+			 * Notify attr observers
+			 */ 
 			observerFactory.notify({'type':'attr', 'key':arguments[0], 'value':arguments[1]});
 		
 			return hook_attr.apply(this, arguments); 
@@ -120,7 +123,9 @@ _this.setupHooks = ({
 
 			observerFactory.notify({'type':'append', 'key':arguments[0], 'value':arguments[1]});
 			
-			// Determine SVG width, height and offsets 
+			/**
+			 * Determine SVG width, height and offsets 
+			 */ 
 
 			if (arguments[0] === 'svg'){
 

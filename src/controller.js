@@ -12,39 +12,46 @@ _this.controller = function(){
 	var camera, renderer, scene, group, container, controls, canvas, light;
 
 	(function () {
+
+		var setupConfigs = function () {	
+
+			/**
+			 * Setup Custom Light (override default)
+			 */ 
+			
+			if (typeof _this.config.light === "object" ) {
+				LIGHTS.default = function(){
+					return _this.config.light;
+				}
+			}
+
+			/**
+			 * Setup Custom Camera (override default)
+			 */ 
+
+			if (typeof _this.config.camera === "object" ) {
+				CAMERAS.default = function(){
+					return _this.config.camera;
+				}
+			}
+		};
+
 		var setupCanvas = function () {	
 
-			container = document.getElementById(_this.config.target);
+			camera   = CAMERAS.DEFAULT();
+			light    = LIGHTS.DEFAULT();
+			renderer = RENDERERS.WebGL();
+			group    = new THREE.Group();
 
-			camera = CAMERAS.Orthographic({ 
-				width    : _this.model.canvas.width,
-				height   : _this.model.canvas.height,
-				position : { x: 0, y:0, z: 100 }
-			});
-
-			light = LIGHTS.Directional({ 
-				color    : "#ffffff", 
-				position: { x:0, y:0, z:20 } 
-			});
-			
-			group = new THREE.Group(),
-			group.position.set(0, 0, 0);
-
-			renderer = RENDERERS.WebGL({
-				width : _this.model.canvas.width, 
-				height: _this.model.canvas.height
-			});
-
-			// Move this inside renderer
-
-			if (_this.config.mouseControls){
+			if (_this.config.controls){
 				controls = CONTROLS.Orbit(camera);
 				controls.addEventListener( 'change', render );
 				renderer.domElement.addEventListener( 'mousewheel',     mousewheel, false );
 				renderer.domElement.addEventListener( 'DOMMouseScroll', mousewheel, false ); 
 			}
-			container.appendChild( renderer.domElement );
 
+			container = document.getElementById(_this.config.target);
+			container.appendChild( renderer.domElement );
 		};
 
 		var removeSVG = function () {
@@ -59,20 +66,17 @@ _this.controller = function(){
 			 * Setup Data View
 			 */ 
 			new VIEW()
-				
-				// TODO: Determine this config dynamically
-
-				.type(_this.config.view)
+				.type(_this.model.view)
 				.loadData(_this.model.content)
 				.appendTo(group);
 
 			/**
 			 * Setup Axes View
 			 */ 
-			_this.model.axes.forEach(function(item){
+			_this.model.axes.forEach(function(axis){
 				new VIEW()
 					.type('axis')
-					.loadData(item)
+					.loadData(axis)
 					.appendTo(group);
 			})
 
@@ -103,7 +107,6 @@ _this.controller = function(){
 		}
 
 		var animate = function () {	
-
 			requestAnimationFrame(animate);
 			render();
 		}
@@ -113,7 +116,6 @@ _this.controller = function(){
 		}
 
 		var mousewheel = function(event) {
-			
 			event.preventDefault();
 			event.stopPropagation();
 
@@ -123,6 +125,7 @@ _this.controller = function(){
 			renderer.render(scene,camera);
 		}
 
+		setupConfigs();
 		setupCanvas();
 		removeSVG();
 		init();

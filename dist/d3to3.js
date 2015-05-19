@@ -27,9 +27,8 @@ var d3to3 = (function () {
 		// TODO: Determine Dynamically
 		'target': 'd3to3_panel',
 		'source': undefined,
-
-		'mouseControls': false,
-		'3D': false,
+		'controls': false,
+		'3D'       : false,
 		'wireframe': false
 	};
 
@@ -41,7 +40,8 @@ var d3to3 = (function () {
 			width: null, 
 			height: null 
 		},
-		content: []
+		content: [],
+		view: undefined
 	}; 
 
 	_this.initializer = ({
@@ -66,9 +66,8 @@ var d3to3 = (function () {
 	}).init();
 
 	_this.configure = function(properties){
-
 		for (property in properties){
-			this.config[property] = properties[property];				
+			this.config[property] = properties[property];
 		}
 		return this;
 	}
@@ -102,15 +101,16 @@ extend(d3.selection.prototype, {
 	d3to3: function() {
 
 		this.axis = function(){
+
 			_this.model.axes.push(this[0].extractNode('g').childNodes);
 			return this;
 		},
 
 		this.data = function(){
 
-			// TODO: Determine type and add to _this.config.view = {{data.view}}
-
 			_this.model.content = this[0];
+			_this.model.view = this[0][0].nodeName;
+
 			return this;
 		}    
 
@@ -196,7 +196,9 @@ _this.setupHooks = ({
 	_d3.selection.prototype.each = function() 	   { return hook_each.apply(this, arguments);      }
 
 		_d3.selection.prototype.attr = function()      { 
-		  	// Notify attr observers
+			/**
+			 * Notify attr observers
+			 */ 
 			observerFactory.notify({'type':'attr', 'key':arguments[0], 'value':arguments[1]});
 		
 			return hook_attr.apply(this, arguments); 
@@ -206,7 +208,9 @@ _this.setupHooks = ({
 
 			observerFactory.notify({'type':'append', 'key':arguments[0], 'value':arguments[1]});
 			
-			// Determine SVG width, height and offsets 
+			/**
+			 * Determine SVG width, height and offsets 
+			 */ 
 
 			if (arguments[0] === 'svg'){
 
@@ -2790,11 +2794,24 @@ THREE.CanvasRenderer = function ( parameters ) {
 
 var MATERIALS = (function () {
 
+
+
 	return {
+
+		DEFAULT: function (color) {
+			// TODO: DETERMINE
+		},
+		LINE: function(color){
+
+		},
+
+		// Remove the following and add support for custom materials instead
 		Basic: function (properties) {
 			var color = (properties && properties.color)? properties.color : 'default';
 			return (new THREE.MeshBasicMaterial({ 'color': COLORS.normalize(color)}));
 		},
+
+
 		Phong: function (properties) {
 
 			// TODO: Determine specular, emmisive using colors and 
@@ -2894,10 +2911,10 @@ var CAMERAS = (function () {
 	
 		var zoom = 0.02, newZoom = zoom, delta = 0;
 
-		// WebKit / Opera / Explorer 9
+		/**
+		 * Support for WebKit / Opera / Explorer 9 / Firefox
+		 */ 
 		delta = (event.wheelDelta)? (event.wheelDelta / 40): delta;
-
-		// Firefox
 		delta = (event.detail)? (- event.detail / 3): delta;
 
 		newZoom -= (delta * 0.001);
@@ -2909,53 +2926,13 @@ var CAMERAS = (function () {
 	}
 
 	return {
-		Orthographic: function (properties) {
+		DEFAULT: function(){
+			var width  = _this.model.canvas.width  || window.innerWidth,
+				height = _this.model.canvas.height || window.innerHeight,
+				zoom   = 0.5;
 
-			var near = 1, 
-				far = 1000, 
-				width = window.innerWidth,
-				height = window.innerHeight,
-				x = 0, y = 0, z = 0,
-				zoom = 0.5;
-
-			if (properties) {
-				near   = properties.near   || near;
-				far    = properties.far    || far;
-				width  = properties.width  || width;
-				height = properties.height || height;
-				x      = properties.position.x || x;
-				y      = properties.position.y || y;
-				z      = properties.position.z || z;
-			}
-
-			var camera = new THREE.OrthographicCamera( zoom * -width, zoom * width, zoom * height, zoom * -height, near, far );
-				camera.position.set(x, y, z);
-				camera.updateZoom = updateZoom;
-
-			return camera;
-		},
-		Perspective: function (properties) {
-
-			var fov = 100, 
-				near = 1, 
-				far = 1000, 
-				x = 0, 
-				y = 0, 
-				z = 0,  
-				aspect = (window.innerWidth / window.innerHeight);
-
-			if (properties) {
-				fov    = properties.fov  || fov;
-				near   = properties.near || near;
-				far    = properties.far  || far;
-				x      = properties.position.x || x;
-				y      = properties.position.y || y;
-				z      = properties.position.z || z;
-				aspect = (properties.width / properties.height) || aspect;
-			}
-
-			var camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-				camera.position.set(x, y, z);
+			var camera = new THREE.OrthographicCamera( zoom * -width, zoom * width, zoom * height, zoom * -height, 1, 1000 );
+				camera.position.set(0, 0, 100);
 				camera.updateZoom = updateZoom;
 
 			return camera;
@@ -2974,15 +2951,13 @@ var CAMERAS = (function () {
  
 var RENDERERS = (function () {
 	return {
+
+		// TODO: CHANGE THIS TO DEFAULT
+		
 		WebGL: function (properties) {
 
-			var width = window.innerWidth,
-				height = window.innerHeight;
-
-			if (properties) {
-				width  = properties.width  || width;
-				height = properties.height || height;
-			}
+			var width  = _this.model.canvas.width  || window.innerWidth,
+				height = _this.model.canvas.height || window.innerHeight;
 
 			var renderer = new THREE.WebGLRenderer({ antialias: true });
 				renderer.setClearColor(0xffffff);
@@ -3180,26 +3155,30 @@ VIEW.wireframe = function() {
 
 	var material = new THREE.LineBasicMaterial( { color: 0xd9d9d9, linewidth: .1 } );
  
-	for ( var i = 0; i <= 38; i ++ ) {
+
+	var width  = _this.model.canvas.width,
+		height = _this.model.canvas.height,
+		step = 25;
+
+	for ( var i = 0; i <= width/step; i ++ ) {
 
 		var line = GEOMETRIES.Line({
-			x1: 0, y1: -500, z1:0,
-			x2: 0, y2: 500 , z2:0,
+			x1: 0, y1: -(width/2), z1:0,
+			x2: 0, y2:  (width/2), z2:0,
 			material: material
 		})
 
-	    line.position.x = (( i * 25 ) - 500) + _this.model.canvas.offsetLeft;
+	    line.position.x = (( i * step ) - (width/2));
 		this.meshes.push(line);
 
 		var line = GEOMETRIES.Line({
-			x1: 0, y1: -500, z1:0,
-			x2: 0, y2: 500 , z2:0,
+			x1: 0, y1: -(width/2), z1:0,
+			x2: 0, y2:  (width/2), z2:0,
 			material: material
 		})
 
-	    line.position.y = (( i * 25 ) - 500) - _this.model.canvas.offsetTop;
+	    line.position.y = (( i * step ) - (width/2));
 	    line.rotation.z = 90 * Math.PI / 180;
-
 		this.meshes.push(line);
 	}
 };
@@ -3252,44 +3231,14 @@ VIEW.circle = function() {
 var LIGHTS = (function () {
 
 	return {
-		Ambient: function (properties) {
-
-			var color = 0xffffff;
-
-			if (properties) {
-				color = COLORS.normalize(properties.color) || color;
-			}
-
-			return new THREE.AmbientLight(color);
-		},
-		Directional: function (properties) {
-		
-			var color = 0xffffff, x=1,  y=1, z=1; 
-
-			if (properties) {
-				color = COLORS.normalize(properties.color) || color;
-				x     = properties.position.x || x;
-				y     = properties.position.y || y;
-				z     = properties.position.z || z;
-			}
-
-			var light = new THREE.DirectionalLight(color);
-				light.position.set(x, y, z).normalize();
+		DEFAULT: function () {
+			var light = new THREE.DirectionalLight(0xffffff);
+				light.position.set(0,0,20).normalize();
 
   			return light;
 		}
 	};
 })();
-
-;
-
-/**
- *   File: 
- *         scene/parser.js
- * 	
- * 	 Description:
- * 	       <TODO> 
- */
 
 ;
 /**
@@ -3305,39 +3254,46 @@ _this.controller = function(){
 	var camera, renderer, scene, group, container, controls, canvas, light;
 
 	(function () {
+
+		var setupConfigs = function () {	
+
+			/**
+			 * Setup Custom Light (override default)
+			 */ 
+			
+			if (typeof _this.config.light === "object" ) {
+				LIGHTS.default = function(){
+					return _this.config.light;
+				}
+			}
+
+			/**
+			 * Setup Custom Camera (override default)
+			 */ 
+
+			if (typeof _this.config.camera === "object" ) {
+				CAMERAS.default = function(){
+					return _this.config.camera;
+				}
+			}
+		};
+
 		var setupCanvas = function () {	
 
-			container = document.getElementById(_this.config.target);
+			camera   = CAMERAS.DEFAULT();
+			light    = LIGHTS.DEFAULT();
+			renderer = RENDERERS.WebGL();
+			group    = new THREE.Group();
 
-			camera = CAMERAS.Orthographic({ 
-				width    : _this.model.canvas.width,
-				height   : _this.model.canvas.height,
-				position : { x: 0, y:0, z: 100 }
-			});
-
-			light = LIGHTS.Directional({ 
-				color    : "#ffffff", 
-				position: { x:0, y:0, z:20 } 
-			});
-			
-			group = new THREE.Group(),
-			group.position.set(0, 0, 0);
-
-			renderer = RENDERERS.WebGL({
-				width : _this.model.canvas.width, 
-				height: _this.model.canvas.height
-			});
-
-			// Move this inside renderer
-
-			if (_this.config.mouseControls){
+			if (_this.config.controls){
 				controls = CONTROLS.Orbit(camera);
 				controls.addEventListener( 'change', render );
 				renderer.domElement.addEventListener( 'mousewheel',     mousewheel, false );
 				renderer.domElement.addEventListener( 'DOMMouseScroll', mousewheel, false ); 
 			}
-			container.appendChild( renderer.domElement );
 
+			container = document.getElementById(_this.config.target);
+			container.appendChild( renderer.domElement );
 		};
 
 		var removeSVG = function () {
@@ -3352,20 +3308,17 @@ _this.controller = function(){
 			 * Setup Data View
 			 */ 
 			new VIEW()
-				
-				// TODO: Determine this config dynamically
-
-				.type(_this.config.view)
+				.type(_this.model.view)
 				.loadData(_this.model.content)
 				.appendTo(group);
 
 			/**
 			 * Setup Axes View
 			 */ 
-			_this.model.axes.forEach(function(item){
+			_this.model.axes.forEach(function(axis){
 				new VIEW()
 					.type('axis')
-					.loadData(item)
+					.loadData(axis)
 					.appendTo(group);
 			})
 
@@ -3396,7 +3349,6 @@ _this.controller = function(){
 		}
 
 		var animate = function () {	
-
 			requestAnimationFrame(animate);
 			render();
 		}
@@ -3406,7 +3358,6 @@ _this.controller = function(){
 		}
 
 		var mousewheel = function(event) {
-			
 			event.preventDefault();
 			event.stopPropagation();
 
@@ -3416,6 +3367,7 @@ _this.controller = function(){
 			renderer.render(scene,camera);
 		}
 
+		setupConfigs();
 		setupCanvas();
 		removeSVG();
 		init();
@@ -3441,26 +3393,28 @@ var COLORS = (function () {
 				return hex.length == 1 ? "0" + hex : hex;
 			}
 
-			// Default
-			
+			/**
+			 * Default
+			 */ 
 			if (input == undefined || typeof input !== "string" || input == 'default')
 		    	return "#000000";
 
-			// Normalize HEX
-
+			/**
+			 * Normalize HEX
+			 */ 
 			if (input.charAt(0) === '#') {
 				return ((input.length > 6 )? input.substring(0,7):input);
 			
 			} else {
 				
-				// Convert from RGB
-
+				/**
+				 * Convert from RGB
+				 */ 
 				var rgb = /\(([^)]+)\)/.exec(input)[1].split(',');
 				var r = parseInt(rgb[0]),
 					g = parseInt(rgb[1]),
 					b = parseInt(rgb[2]);
 				
-				// Else if this is rgb call rgba
 				return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 			}
 		}
@@ -3561,10 +3515,10 @@ ObserverFactory.append = function() { this.type = 'append'; }
 
 ObserverFactory.prototype.notify = function(args) {
 
-	var key = args.key || {},
+	var key     = args.key     || {},
 		keyType = args.keyType || {},
-		value = args.value || {},
-		type = args.type || {};
+		value   = args.value   || {},
+		type    = args.type    || {};
 
 	if (!ObserverFactory.hasOwnProperty(type))
 		return;
@@ -3597,7 +3551,7 @@ var UNITS = (function () {
 		extractTranslation: function (input) {
 			
 			if (typeof input !== "string")
-				return { x: -1, y: -1};
+				return { x: 0, y: 0};
 
 			var translation = /\(([^)]+)\)/.exec(input)[1].split(','),
 				offsetX = parseInt(translation[0]) || 0,
@@ -3612,8 +3566,6 @@ var UNITS = (function () {
 
 			var points = [],
 				parsedInput = input.split(/(?=[MVHV])/);
-
-			// Extract points 
 
 			parsedInput.forEach(function(item, i){
 
@@ -3631,7 +3583,9 @@ var UNITS = (function () {
 				}
 			});
 
-			// Normalize all points to numbers 
+			/**
+			 * Normalize all points to numbers 
+			 */ 
 
 			for (var j = 1; j < points.length; j++) {
 				if (points[j].x == "V") {
@@ -3644,10 +3598,20 @@ var UNITS = (function () {
 			return points;
 		},
 		normalizeV: function(value) {
-			return (value <= _this.model.canvas.height) ? (_this.model.canvas.height/2 - value): -(_this.model.canvas.height/2 - value); 
+
+			var normalizedValue = (_this.model.canvas.height/2 - value),
+				normalizedValue = (value <= _this.model.canvas.height)? normalizedValue: -normalizedValue;
+
+			return normalizedValue;
+
 		},
 		normalizeH: function(value) {
-			return (value <= _this.model.canvas.width) ? -(_this.model.canvas.width/2 - value): (_this.model.canvas.width/2 - value); 
+
+			var normalizedValue = (_this.model.canvas.width/2 - value),
+				normalizedValue = (value <= _this.model.canvas.width)? -normalizedValue: normalizedValue;
+
+			return normalizedValue;
+
 		}
 	};
 })();

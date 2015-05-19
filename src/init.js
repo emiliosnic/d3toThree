@@ -27,9 +27,8 @@ var d3to3 = (function () {
 		// TODO: Determine Dynamically
 		'target': 'd3to3_panel',
 		'source': undefined,
-
-		'mouseControls': false,
-		'3D': false,
+		'controls': false,
+		'3D'       : false,
 		'wireframe': false
 	};
 
@@ -41,7 +40,8 @@ var d3to3 = (function () {
 			width: null, 
 			height: null 
 		},
-		content: []
+		content: [],
+		view: undefined
 	}; 
 
 	_this.initializer = ({
@@ -66,9 +66,8 @@ var d3to3 = (function () {
 	}).init();
 
 	_this.configure = function(properties){
-
 		for (property in properties){
-			this.config[property] = properties[property];				
+			this.config[property] = properties[property];
 		}
 		return this;
 	}

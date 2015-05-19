@@ -10,11 +10,24 @@
 
 var MATERIALS = (function () {
 
+
+
 	return {
+
+		DEFAULT: function (color) {
+			// TODO: DETERMINE
+		},
+		LINE: function(color){
+
+		},
+
+		// Remove the following and add support for custom materials instead
 		Basic: function (properties) {
 			var color = (properties && properties.color)? properties.color : 'default';
 			return (new THREE.MeshBasicMaterial({ 'color': COLORS.normalize(color)}));
 		},
+
+
 		Phong: function (properties) {
 
 			// TODO: Determine specular, emmisive using colors and 

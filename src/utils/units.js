@@ -12,7 +12,7 @@ var UNITS = (function () {
 		extractTranslation: function (input) {
 			
 			if (typeof input !== "string")
-				return { x: -1, y: -1};
+				return { x: 0, y: 0};
 
 			var translation = /\(([^)]+)\)/.exec(input)[1].split(','),
 				offsetX = parseInt(translation[0]) || 0,
@@ -27,8 +27,6 @@ var UNITS = (function () {
 
 			var points = [],
 				parsedInput = input.split(/(?=[MVHV])/);
-
-			// Extract points 
 
 			parsedInput.forEach(function(item, i){
 
@@ -46,7 +44,9 @@ var UNITS = (function () {
 				}
 			});
 
-			// Normalize all points to numbers 
+			/**
+			 * Normalize all points to numbers 
+			 */ 
 
 			for (var j = 1; j < points.length; j++) {
 				if (points[j].x == "V") {
@@ -59,10 +59,20 @@ var UNITS = (function () {
 			return points;
 		},
 		normalizeV: function(value) {
-			return (value <= _this.model.canvas.height) ? (_this.model.canvas.height/2 - value): -(_this.model.canvas.height/2 - value); 
+
+			var normalizedValue = (_this.model.canvas.height/2 - value),
+				normalizedValue = (value <= _this.model.canvas.height)? normalizedValue: -normalizedValue;
+
+			return normalizedValue;
+
 		},
 		normalizeH: function(value) {
-			return (value <= _this.model.canvas.width) ? -(_this.model.canvas.width/2 - value): (_this.model.canvas.width/2 - value); 
+
+			var normalizedValue = (_this.model.canvas.width/2 - value),
+				normalizedValue = (value <= _this.model.canvas.width)? -normalizedValue: normalizedValue;
+
+			return normalizedValue;
+
 		}
 	};
 })();

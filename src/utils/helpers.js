@@ -93,10 +93,10 @@ ObserverFactory.append = function() { this.type = 'append'; }
 
 ObserverFactory.prototype.notify = function(args) {
 
-	var key = args.key || {},
+	var key     = args.key     || {},
 		keyType = args.keyType || {},
-		value = args.value || {},
-		type = args.type || {};
+		value   = args.value   || {},
+		type    = args.type    || {};
 
 	if (!ObserverFactory.hasOwnProperty(type))
 		return;
