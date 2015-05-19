@@ -24,7 +24,7 @@ extend(d3.selection.prototype, {
 		this.data = function(){
 
 			_this.model.content = this[0];
-			_this.model.view = this[0][0].nodeName;
+			_this.model.type = this[0][0].nodeName;
 
 			return this;
 		}    

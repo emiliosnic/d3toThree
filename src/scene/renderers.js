@@ -12,7 +12,7 @@ var RENDERERS = (function () {
 
 		// TODO: CHANGE THIS TO DEFAULT
 		
-		WebGL: function (properties) {
+		DEFAULT: function (properties) {
 
 			var width  = _this.model.canvas.width  || window.innerWidth,
 				height = _this.model.canvas.height || window.innerHeight;

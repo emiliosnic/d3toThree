@@ -34,13 +34,29 @@ _this.controller = function(){
 					return _this.config.camera;
 				}
 			}
+
+			/**
+			 * Setup Custom Materials (override default)
+			 */ 
+
+			if (typeof _this.config.material_2D === "object" ) {
+				MATERIAL.DEFAULT_2D = function(){
+					return _this.config.material_2D;
+				}
+			}
+			if (typeof _this.config.material_3D === "object" ) {
+				MATERIAL.DEFAULT_3D = function(){
+					return _this.config.material_3D;
+				}
+			}
+
 		};
 
 		var setupCanvas = function () {	
 
 			camera   = CAMERAS.DEFAULT();
 			light    = LIGHTS.DEFAULT();
-			renderer = RENDERERS.WebGL();
+			renderer = RENDERERS.DEFAULT();
 			group    = new THREE.Group();
 
 			if (_this.config.controls){
@@ -66,7 +82,7 @@ _this.controller = function(){
 			 * Setup Data View
 			 */ 
 			new VIEW()
-				.type(_this.model.view)
+				.type(_this.model.type)
 				.loadData(_this.model.content)
 				.appendTo(group);
 

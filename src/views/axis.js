@@ -38,7 +38,7 @@ VIEW.axis = function() {
 					endY = startY - tickLine.y;
 
 				this.meshes.push(
-					GEOMETRIES.Line({ 
+					GEOMETRIES.LINE({ 
 						x1: startX, y1: startY, z1:0,
 						x2: endX  , y2: endY  , z2:0
 					})
@@ -56,7 +56,7 @@ VIEW.axis = function() {
 					};
 
 				this.meshes.push(
-					GEOMETRIES.Text({
+					GEOMETRIES.TEXT({
 						text: textData,
 						x: (startX + textOffsets.x + tickLine.x), 
 						y: (startY - textOffsets.y - tickLine.y), 
@@ -81,7 +81,7 @@ VIEW.axis = function() {
 						endY   = UNITS.normalizeV(parseInt(points[j].y))   - _this.model.canvas.offsetTop;
 
 					this.meshes.push(
-						GEOMETRIES.Line({
+						GEOMETRIES.LINE({
 							x1: startX, y1: startY, z1:0,
 							x2: endX,   y2:endY   , z2:0
 						})

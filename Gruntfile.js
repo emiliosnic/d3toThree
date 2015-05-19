@@ -11,10 +11,6 @@ module.exports = function(grunt) {
         src: [
               'src/init.js',
               'src/setup.js', 
-              'src/dependencies/OrbitControls.js', 
-              'src/dependencies/TrackballControls.js', 
-              'src/dependencies/CanvasRenderer.js', 
-              'src/dependencies/helvetiker_regular.typeface.js', 
               'src/scene/materials.js', 
               'src/scene/geometries.js', 
               'src/scene/cameras.js', 
@@ -30,7 +26,11 @@ module.exports = function(grunt) {
               'src/utils/colors.js',
               'src/utils/helpers.js',
               'src/utils/units.js',
-              'src/teardown.js'
+              'src/teardown.js',
+              'src/dependencies/OrbitControls.js', 
+              'src/dependencies/TrackballControls.js', 
+              'src/dependencies/CanvasRenderer.js', 
+              'src/dependencies/helvetiker_regular.typeface.js', 
               ],
         dest: 'dist/<%= pkg.name %>.js',
       },

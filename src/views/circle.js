@@ -27,10 +27,10 @@ VIEW.circle = function() {
 
 			if (_this.config['3D']){
 				// 3D Mode
-				that.meshes.push(GEOMETRIES.Sphere({ radius: radius, color: color, x: x, y: y, z: 0}));
+				that.meshes.push(GEOMETRIES.SPHERE({ radius: radius, color: color, x: x, y: y, z: 0}));
 			} else {
 				// 2D Mode
-				that.meshes.push(GEOMETRIES.Circle({ radius: radius, color: color, x: x, y: y, z: 0}));
+				that.meshes.push(GEOMETRIES.CIRCLE({ radius: radius, color: color, x: x, y: y, z: 0}));
 			}
 		});
 	}

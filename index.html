@@ -39,7 +39,7 @@
 			width  = 550 - margin.left - margin.right,
 			height = 250 - margin.top  - margin.bottom;
 
-		var data = [
+		var nodes = [
 			{'Name': 'Node 1', 'Category': 'A', 'Calories':10 , 'Protein (g)':4, 'radius': 8  },
 			{'Name': 'Node 2', 'Category': 'A', 'Calories':20 , 'Protein (g)':6, 'radius': 9  },
 			{'Name': 'Node 3', 'Category': 'B', 'Calories':30 , 'Protein (g)':2, 'radius': 8  },
@@ -50,7 +50,7 @@
 			{'Name': 'Node 8', 'Category': 'C', 'Calories':69 , 'Protein (g)':10, 'radius': 12 },
 			{'Name': 'Node 9', 'Category': 'A', 'Calories':30 , 'Protein (g)':8, 'radius': 12 }
 		];
-		data.forEach(function(d) {
+		nodes.forEach(function(d) {
 			d.Calories = +d.Calories;
 			d["Protein (g)"] = +d["Protein (g)"];
 		});
@@ -84,8 +84,8 @@
 			.append("g")
 			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 		
-		xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
-		yScale.domain([d3.min(data, yValue)-1, d3.max(data, yValue)+1]);
+		xScale.domain([d3.min(nodes, xValue)-1, d3.max(nodes, xValue)+1]);
+		yScale.domain([d3.min(nodes, yValue)-1, d3.max(nodes, yValue)+1]);
 
 		// X Axis
 		svg.append("g")	
@@ -105,7 +105,7 @@
 
 		// Draw Circles
 		svg.selectAll()
-			.data(data)
+			.data(nodes)
 			.enter().append("circle")
 			.attr("r", rMap)
 			.attr("cx", xMap)
@@ -116,15 +116,13 @@
 			// #####################
 
 		// #####################
+		
 		d3to3.configure({
-
-			// TODO: Make view optional and extract it from d3to3.data({});
-			'view'  : 'circle',
-			'3D': true,
 			'controls': true,
+			'3D': true,
 			// 'wireframe' : true
-
 		}).render();
+
 		// #####################
 	</script>
 

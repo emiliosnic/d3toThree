@@ -41,7 +41,7 @@ var d3to3 = (function () {
 			height: null 
 		},
 		content: [],
-		view: undefined
+		type: undefined
 	}; 
 
 	_this.initializer = ({

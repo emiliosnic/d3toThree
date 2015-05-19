@@ -10,41 +10,19 @@
 
 var MATERIALS = (function () {
 
-
-
 	return {
-
-		DEFAULT: function (color) {
-			// TODO: DETERMINE
-		},
-		LINE: function(color){
-
-		},
-
-		// Remove the following and add support for custom materials instead
-		Basic: function (properties) {
-			var color = (properties && properties.color)? properties.color : 'default';
-			return (new THREE.MeshBasicMaterial({ 'color': COLORS.normalize(color)}));
-		},
-
-
-		Phong: function (properties) {
-
-			// TODO: Determine specular, emmisive using colors and 
-			//  some fractions that can be updated in the config
-			//
+		DEFAULT_3D: function (color) {
 			return (new THREE.MeshPhongMaterial({
-				color:    COLORS.normalize(properties.color),
-				specular: COLORS.normalize(properties.specular),
-				emmisive: COLORS.normalize(properties.emmisive),
-		        shininess: 100
+				color    : COLORS.normalize(color),
+				specular : 0x494949,
+				emmisive : 0xffffff,
+		        shininess: 10
 			}));
 		},
-		Lambertian: function (properties) {
-
+		DEFAULT_2D: function (color) {
+			return (new THREE.MeshBasicMaterial({ 'color': COLORS.normalize(color)}));
 		},
-		LineBasic: function (properties) {
-			var color = (properties && properties.color)? properties.color : 'default';
+		LINE: function (color) {
 			return (new THREE.LineBasicMaterial({ 'color': COLORS.normalize(color)}));
 		}
 	};
