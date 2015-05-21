@@ -40,7 +40,17 @@ var GEOMETRIES = (function () {
 		},
 		LINE: function (properties) {
 
-			var material = properties.material ||  MATERIALS.LINE();
+			var material = properties.material ||  MATERIALS.LINE(properties.color, properties.thickness);
+
+			var geometry = new THREE.Geometry();
+				geometry.vertices.push(new THREE.Vector3(properties.x1, properties.y1, properties.z1));
+				geometry.vertices.push(new THREE.Vector3(properties.x2, properties.y2, properties.z2));
+
+			return new THREE.Line(geometry, material);
+		},
+		AXIS: function (properties) {
+
+			var material = properties.material ||  MATERIALS.AXIS();
 
 			var geometry = new THREE.Geometry();
 				geometry.vertices.push(new THREE.Vector3(properties.x1, properties.y1, properties.z1));
@@ -48,5 +58,6 @@ var GEOMETRIES = (function () {
 
 			return new THREE.Line(geometry, material);
 		}
-	};
+	}
+
 })();

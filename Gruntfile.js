@@ -17,6 +17,7 @@ module.exports = function(grunt) {
               'src/scene/renderers.js', 
               'src/scene/controls.js', 
               'src/views/base.js', 
+              'src/views/line.js', 
               'src/views/axis.js', 
               'src/views/wireframe.js', 
               'src/views/circle.js', 

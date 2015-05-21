@@ -22,7 +22,10 @@ var MATERIALS = (function () {
 		DEFAULT_2D: function (color) {
 			return (new THREE.MeshBasicMaterial({ 'color': COLORS.normalize(color)}));
 		},
-		LINE: function (color) {
+		LINE: function (color, thickness) {
+			return (new THREE.LineBasicMaterial({ 'color': COLORS.normalize(color), 'linewidth': thickness}));
+		},
+		AXIS: function (color, thickness) {
 			return (new THREE.LineBasicMaterial({ 'color': COLORS.normalize(color)}));
 		}
 	};

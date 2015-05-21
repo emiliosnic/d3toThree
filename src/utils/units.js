@@ -9,6 +9,14 @@
 
 var UNITS = (function () {
 	return {
+		extractThickness: function (input) {
+			
+			input = input.replace("stroke-width: ", "");
+			input = input.replace("px;", "");
+
+			var values = parseInt(input) || 1;
+			return values;
+		},
 		extractTranslation: function (input) {
 			
 			if (typeof input !== "string")

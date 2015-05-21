@@ -30,7 +30,7 @@ _this.controller = function(){
 			 */ 
 
 			if (typeof _this.config.camera === "object" ) {
-				CAMERAS.default = function(){
+				CAMERAS.DEFAULT = function(){
 					return _this.config.camera;
 				}
 			}
@@ -81,10 +81,13 @@ _this.controller = function(){
 			/**
 			 * Setup Data View
 			 */ 
-			new VIEW()
-				.type(_this.model.type)
-				.loadData(_this.model.content)
-				.appendTo(group);
+
+			_this.model.content.forEach(function(view){
+				new VIEW()
+					.type(view.type)
+					.loadData(view.data)
+					.appendTo(group);
+			});
 
 			/**
 			 * Setup Axes View

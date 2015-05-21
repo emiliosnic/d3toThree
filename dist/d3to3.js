@@ -40,8 +40,7 @@ var d3to3 = (function () {
 			width: null, 
 			height: null 
 		},
-		content: [],
-		type: undefined
+		content: []
 	}; 
 
 	_this.initializer = ({
@@ -107,10 +106,10 @@ extend(d3.selection.prototype, {
 		},
 
 		this.data = function(){
-
-			_this.model.content = this[0];
-			_this.model.type = this[0][0].nodeName;
-
+			_this.model.content.push({
+				'data' : this[0],
+				'type' : this[0][0].nodeName
+			})
 			return this;
 		}    
 
@@ -399,7 +398,10 @@ var MATERIALS = (function () {
 		DEFAULT_2D: function (color) {
 			return (new THREE.MeshBasicMaterial({ 'color': COLORS.normalize(color)}));
 		},
-		LINE: function (color) {
+		LINE: function (color, thickness) {
+			return (new THREE.LineBasicMaterial({ 'color': COLORS.normalize(color), 'linewidth': thickness}));
+		},
+		AXIS: function (color, thickness) {
 			return (new THREE.LineBasicMaterial({ 'color': COLORS.normalize(color)}));
 		}
 	};
@@ -447,7 +449,17 @@ var GEOMETRIES = (function () {
 		},
 		LINE: function (properties) {
 
-			var material = properties.material ||  MATERIALS.LINE();
+			var material = properties.material ||  MATERIALS.LINE(properties.color, properties.thickness);
+
+			var geometry = new THREE.Geometry();
+				geometry.vertices.push(new THREE.Vector3(properties.x1, properties.y1, properties.z1));
+				geometry.vertices.push(new THREE.Vector3(properties.x2, properties.y2, properties.z2));
+
+			return new THREE.Line(geometry, material);
+		},
+		AXIS: function (properties) {
+
+			var material = properties.material ||  MATERIALS.AXIS();
 
 			var geometry = new THREE.Geometry();
 				geometry.vertices.push(new THREE.Vector3(properties.x1, properties.y1, properties.z1));
@@ -455,7 +467,8 @@ var GEOMETRIES = (function () {
 
 			return new THREE.Line(geometry, material);
 		}
-	};
+	}
+
 })();
 ;
 /**
@@ -611,6 +624,44 @@ VIEW.prototype.appendTo = function(group) {
 ;
 /**
  *   File: 
+ *         views/circle.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
+
+VIEW.line = function() {  
+	
+	this.type = 'line';
+	this.meshes = []; 
+
+	this.load = function(data){
+
+		var that = this;
+	
+		data.forEach(function (item) {
+
+			var attributes = item.extractNode('attributes'),
+				x1_base = attributes.extractNode('x1').nodeValue,
+				x2_base = attributes.extractNode('x2').nodeValue,
+				y1_base = attributes.extractNode('y1').nodeValue,
+				y2_base = attributes.extractNode('y2').nodeValue,
+				thickness_style = attributes.extractNode('style').nodeValue;
+
+			var x1 = UNITS.normalizeH(x1_base) + _this.model.canvas.offsetLeft,
+				x2 = UNITS.normalizeH(x2_base) + _this.model.canvas.offsetLeft,
+ 				y1 = UNITS.normalizeV(y1_base) + _this.model.canvas.offsetTop,
+				y2 = UNITS.normalizeV(y2_base) + _this.model.canvas.offsetTop,
+				thickness = 2 * UNITS.extractThickness(thickness_style);
+
+			that.meshes.push(GEOMETRIES.LINE({ x1: x1, y1: y1, z1:0, x2: x2, y2: y2, z2:0, thickness: thickness}));
+
+		});
+	}
+}
+;
+/**
+ *   File: 
  *         views/axis.js
  * 	
  * 	 Description:
@@ -648,7 +699,7 @@ VIEW.axis = function() {
 					endY = startY - tickLine.y;
 
 				this.meshes.push(
-					GEOMETRIES.LINE({ 
+					GEOMETRIES.AXIS({ 
 						x1: startX, y1: startY, z1:0,
 						x2: endX  , y2: endY  , z2:0
 					})
@@ -691,7 +742,7 @@ VIEW.axis = function() {
 						endY   = UNITS.normalizeV(parseInt(points[j].y))   - _this.model.canvas.offsetTop;
 
 					this.meshes.push(
-						GEOMETRIES.LINE({
+						GEOMETRIES.AXIS({
 							x1: startX, y1: startY, z1:0,
 							x2: endX,   y2:endY   , z2:0
 						})
@@ -833,7 +884,7 @@ _this.controller = function(){
 			 */ 
 
 			if (typeof _this.config.camera === "object" ) {
-				CAMERAS.default = function(){
+				CAMERAS.DEFAULT = function(){
 					return _this.config.camera;
 				}
 			}
@@ -884,10 +935,13 @@ _this.controller = function(){
 			/**
 			 * Setup Data View
 			 */ 
-			new VIEW()
-				.type(_this.model.type)
-				.loadData(_this.model.content)
-				.appendTo(group);
+
+			_this.model.content.forEach(function(view){
+				new VIEW()
+					.type(view.type)
+					.loadData(view.data)
+					.appendTo(group);
+			});
 
 			/**
 			 * Setup Axes View
@@ -1125,6 +1179,14 @@ ObserverFactory.prototype.notify = function(args) {
 
 var UNITS = (function () {
 	return {
+		extractThickness: function (input) {
+			
+			input = input.replace("stroke-width: ", "");
+			input = input.replace("px;", "");
+
+			var values = parseInt(input) || 1;
+			return values;
+		},
 		extractTranslation: function (input) {
 			
 			if (typeof input !== "string")

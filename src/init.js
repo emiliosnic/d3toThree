@@ -40,8 +40,7 @@ var d3to3 = (function () {
 			width: null, 
 			height: null 
 		},
-		content: [],
-		type: undefined
+		content: []
 	}; 
 
 	_this.initializer = ({
