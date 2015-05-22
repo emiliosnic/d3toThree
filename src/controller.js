@@ -100,16 +100,6 @@ _this.controller = function(){
 			})
 
 			/**
-			 * ShowWireframe
-			 */ 
-
-			if (_this.config.wireframe){
-				new VIEW()
-					.type('wireframe')
-					.appendTo(group);
-			}
-
-			/**
 			 * Flush Model
 			 */ 
 

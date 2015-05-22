@@ -12,6 +12,12 @@ VIEW.circle = function() {
 	this.type = 'circle';
 	this.meshes = []; 
 
+
+	/*
+	 * TODO:
+	 * 	Construct a mesh tree, starting from the center object and push all the objects by close neighbours
+	 */ 
+
 	this.load = function(data){
 
 		var that = this;

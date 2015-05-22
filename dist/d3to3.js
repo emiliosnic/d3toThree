@@ -23,13 +23,10 @@ var d3to3 = (function () {
 	 */
 	
 	_this.config = { 
-
-		// TODO: Determine Dynamically
-		'target': 'd3to3_panel',
-		'source': undefined,
-		'controls': false,
-		'3D'       : false,
-		'wireframe': false
+		'target'   : 'd3to3_panel',
+		'source'   : undefined,
+		'controls' : false,
+		'3D'       : false
 	};
 
 	_this.model = { 
@@ -112,7 +109,6 @@ extend(d3.selection.prototype, {
 			})
 			return this;
 		}    
-
 	    return this;
 	}
 });
@@ -192,7 +188,12 @@ _this.setupHooks = ({
 	_d3.selection.prototype.size = function()      { return hook_size.apply(this, arguments);      }
 	_d3.selection.prototype.data = function()      { return hook_data.apply(this, arguments);      }
 	_d3.selection.prototype.call = function() 	   { return hook_call.apply(this, arguments);      }
-	_d3.selection.prototype.each = function() 	   { return hook_each.apply(this, arguments);      }
+	
+
+	_d3.selection.prototype.each = function() 	   { 
+
+		return hook_each.apply(this, arguments);
+	}
 
 		_d3.selection.prototype.attr = function()      { 
 			/**
@@ -234,6 +235,7 @@ _this.setupHooks = ({
 			return hook_append.apply(this, arguments);
 		}
 
+	_this.layout.force             = function() {  return _d3.layout.force();                                   }
 	_this.min                      = function(array, f)  { return _d3.min(array, f);                            }
 	_this.max                      = function(array, f)  { return _d3.max(array, f);                            }
 	_this.sum                      = function(array, f)  { return _d3.sum(array, f);                            }
@@ -346,7 +348,6 @@ _this.setupHooks = ({
 	_this.scale.log                = function() { return _d3.scale.log();                                       }
 	_this.layout.bundle            = function() { return _d3.layout.bundle();                                   }
 	_this.layout.chord             = function() { return _d3.layout.chord();                                    }
-	_this.layout.force             = function() { return _d3.layout.force();                                    }
 	_this.layout.hierarchy         = function() { return _d3.layout.hierarchy();                                }
 	_this.layout.partition         = function() { return _d3.layout.partition();                                }
 	_this.layout.pie               = function() { return _d3.layout.pie();                                      }
@@ -612,11 +613,31 @@ VIEW.prototype.loadData = function(data) {
 
 VIEW.prototype.appendTo = function(group) {
 
-	this.meshes.forEach(function(item){
-		if (group && group instanceof THREE.Group)
-			group.add(item);
-	})
+	/*
+     * Make sure that the meshes are  not touchning 
 
+	var determineDistance = function(position){
+		return Math.abs(position.x) + Math.abs(position.y) + Math.abs(position.z);
+	};
+
+	var center_mesh  = undefined,
+		center_mesh_distance = 9999999999999999;
+
+	for (var i = this.meshes.length - 1; i >= 0; i--) {
+		var distance_from_origin = determineDistance(this.meshes[i].position);
+		if (distance_from_origin < center_mesh_distance){
+			center_mesh_distance = distance_from_origin;
+			center_mesh =this.meshes[i];
+		}
+		console.log("Comparing: " + distance_from_origin + " - " + center_mesh_distance );
+	};
+	*/
+
+	if (group && group instanceof THREE.Group){
+		this.meshes.forEach(function(item){
+			group.add(item);
+		})
+	}
 	VIEW.meshes = [];
 
 	return this;
@@ -654,7 +675,7 @@ VIEW.line = function() {
 				y2 = UNITS.normalizeV(y2_base) + _this.model.canvas.offsetTop,
 				thickness = 2 * UNITS.extractThickness(thickness_style);
 
-			that.meshes.push(GEOMETRIES.LINE({ x1: x1, y1: y1, z1:0, x2: x2, y2: y2, z2:0, thickness: thickness}));
+			that.meshes.push(GEOMETRIES.LINE({ x1: x1, y1: y1, z1:0, x2: x2, y2: y2, z2:0, thickness: thickness, color: '#999999'}));
 
 		});
 	}
@@ -754,48 +775,6 @@ VIEW.axis = function() {
 };
 /**
  *   File: 
- *         views/wireframe.js
- * 	
- * 	 Description:
- * 	       <TODO> 
- */
-
-VIEW.wireframe = function() {  
-
-	this.type = 'wireframe'; 
-	this.meshes = [];
-
-	var material = new THREE.LineBasicMaterial( { color: 0xd9d9d9, linewidth: .1 } );
- 
-
-	var width  = _this.model.canvas.width,
-		height = _this.model.canvas.height,
-		step = 25;
-
-	for ( var i = 0; i <= width/step; i ++ ) {
-
-		var line = GEOMETRIES.Line({
-			x1: 0, y1: -(width/2), z1:0,
-			x2: 0, y2:  (width/2), z2:0,
-			material: material
-		})
-
-	    line.position.x = (( i * step ) - (width/2));
-		this.meshes.push(line);
-
-		var line = GEOMETRIES.Line({
-			x1: 0, y1: -(width/2), z1:0,
-			x2: 0, y2:  (width/2), z2:0,
-			material: material
-		})
-
-	    line.position.y = (( i * step ) - (width/2));
-	    line.rotation.z = 90 * Math.PI / 180;
-		this.meshes.push(line);
-	}
-};
-/**
- *   File: 
  *         views/circle.js
  * 	
  * 	 Description:
@@ -806,6 +785,12 @@ VIEW.circle = function() {
 	
 	this.type = 'circle';
 	this.meshes = []; 
+
+
+	/*
+	 * TODO:
+	 * 	Construct a mesh tree, starting from the center object and push all the objects by close neighbours
+	 */ 
 
 	this.load = function(data){
 
@@ -952,16 +937,6 @@ _this.controller = function(){
 					.loadData(axis)
 					.appendTo(group);
 			})
-
-			/**
-			 * ShowWireframe
-			 */ 
-
-			if (_this.config.wireframe){
-				new VIEW()
-					.type('wireframe')
-					.appendTo(group);
-			}
 
 			/**
 			 * Flush Model

@@ -21,7 +21,6 @@
 		}
 		.link {
 		  stroke: #999;
-		  stroke-opacity: .6;
 		}
 	</style>
 
@@ -183,32 +182,39 @@ var force = d3.layout.force()
     .nodes(graph.nodes)
     .links(graph.links)
     .charge(0)
-    .linkDistance(100)
+    .linkDistance(150)
     .on('end', function() { 
-        d3to3.configure({
-            'controls': true,
-            '3D': true,
-            // 'wireframe' : true
-        }).render();
+
+        console.log("Rendering d3to3 graph...");
+
+        // #####################
+        d3to3
+        .configure({'controls': true, '3D': true })
+        .render();
+        // #####################
+
     })
     .start();
+    console.log(force);
 
 
   var link = svg.selectAll(".link")
-      .data(graph.links)
-    	.enter().append("line")
-      	.attr("class", "link")
-      	.style("stroke-width", function(d) { return Math.sqrt(d.value); })
-		.d3to3().data();
+    .data(graph.links)
+    .enter()
+    .append("line")
+    .attr("class", "link")
+    .style("stroke-width", function(d) { return Math.sqrt(d.value); })
+	.d3to3().data();
 
 
   var node = svg.selectAll(".node")
-      .data(graph.nodes)
-    .enter().append("circle")
-      .attr("class", "node")
-      .attr("r", function(d) { return Math.floor(Math.random() * 8) + 4; })
-      .style("fill", function(d) { return color(d.group); })
-		.d3to3().data();
+    .data(graph.nodes)
+    .enter()
+    .append("circle")
+    .attr("class", "node")
+    .attr("r", function(d) { return Math.floor(Math.random() * 8) + 4; })
+    .style("fill", function(d) { return color(d.group); })
+    .d3to3().data();
 
   force.on("tick", function() {
     link.attr("x1", function(d) { return d.source.x; })

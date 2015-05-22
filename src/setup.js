@@ -28,7 +28,6 @@ extend(d3.selection.prototype, {
 			})
 			return this;
 		}    
-
 	    return this;
 	}
 });
@@ -108,7 +107,12 @@ _this.setupHooks = ({
 	_d3.selection.prototype.size = function()      { return hook_size.apply(this, arguments);      }
 	_d3.selection.prototype.data = function()      { return hook_data.apply(this, arguments);      }
 	_d3.selection.prototype.call = function() 	   { return hook_call.apply(this, arguments);      }
-	_d3.selection.prototype.each = function() 	   { return hook_each.apply(this, arguments);      }
+	
+
+	_d3.selection.prototype.each = function() 	   { 
+
+		return hook_each.apply(this, arguments);
+	}
 
 		_d3.selection.prototype.attr = function()      { 
 			/**
@@ -150,6 +154,7 @@ _this.setupHooks = ({
 			return hook_append.apply(this, arguments);
 		}
 
+	_this.layout.force             = function() {  return _d3.layout.force();                                   }
 	_this.min                      = function(array, f)  { return _d3.min(array, f);                            }
 	_this.max                      = function(array, f)  { return _d3.max(array, f);                            }
 	_this.sum                      = function(array, f)  { return _d3.sum(array, f);                            }
@@ -262,7 +267,6 @@ _this.setupHooks = ({
 	_this.scale.log                = function() { return _d3.scale.log();                                       }
 	_this.layout.bundle            = function() { return _d3.layout.bundle();                                   }
 	_this.layout.chord             = function() { return _d3.layout.chord();                                    }
-	_this.layout.force             = function() { return _d3.layout.force();                                    }
 	_this.layout.hierarchy         = function() { return _d3.layout.hierarchy();                                }
 	_this.layout.partition         = function() { return _d3.layout.partition();                                }
 	_this.layout.pie               = function() { return _d3.layout.pie();                                      }

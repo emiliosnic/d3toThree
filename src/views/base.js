@@ -34,11 +34,31 @@ VIEW.prototype.loadData = function(data) {
 
 VIEW.prototype.appendTo = function(group) {
 
-	this.meshes.forEach(function(item){
-		if (group && group instanceof THREE.Group)
-			group.add(item);
-	})
+	/*
+     * Make sure that the meshes are  not touchning 
 
+	var determineDistance = function(position){
+		return Math.abs(position.x) + Math.abs(position.y) + Math.abs(position.z);
+	};
+
+	var center_mesh  = undefined,
+		center_mesh_distance = 9999999999999999;
+
+	for (var i = this.meshes.length - 1; i >= 0; i--) {
+		var distance_from_origin = determineDistance(this.meshes[i].position);
+		if (distance_from_origin < center_mesh_distance){
+			center_mesh_distance = distance_from_origin;
+			center_mesh =this.meshes[i];
+		}
+		console.log("Comparing: " + distance_from_origin + " - " + center_mesh_distance );
+	};
+	*/
+
+	if (group && group instanceof THREE.Group){
+		this.meshes.forEach(function(item){
+			group.add(item);
+		})
+	}
 	VIEW.meshes = [];
 
 	return this;

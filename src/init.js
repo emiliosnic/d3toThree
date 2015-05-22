@@ -23,13 +23,10 @@ var d3to3 = (function () {
 	 */
 	
 	_this.config = { 
-
-		// TODO: Determine Dynamically
-		'target': 'd3to3_panel',
-		'source': undefined,
-		'controls': false,
-		'3D'       : false,
-		'wireframe': false
+		'target'   : 'd3to3_panel',
+		'source'   : undefined,
+		'controls' : false,
+		'3D'       : false
 	};
 
 	_this.model = { 
