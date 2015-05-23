@@ -8,6 +8,15 @@
  */
 
 var GEOMETRIES = (function () {
+
+	unhide = function(){
+		this.material.opacity = 1;
+		this.material.transparent = true;
+	}
+	hide = function(){
+		this.material.opacity = 0.1;
+		this.material.transparent = true;
+	}
 	return {
 		CIRCLE: function (properties) {
 			var circle = new THREE.Mesh(new THREE.CircleGeometry(properties.radius, 64), MATERIALS.DEFAULT_2D(properties.color));
@@ -18,6 +27,8 @@ var GEOMETRIES = (function () {
 		SPHERE: function (properties) {
 			var sphere = new THREE.Mesh(new THREE.SphereGeometry(properties.radius, 64, 64), MATERIALS.DEFAULT_3D(properties.color));
 				sphere.position.set(properties.x, properties.y, properties.z);
+				sphere.unhide = unhide;
+				sphere.hide = hide;
 
 			return sphere;
 		},
@@ -46,7 +57,11 @@ var GEOMETRIES = (function () {
 				geometry.vertices.push(new THREE.Vector3(properties.x1, properties.y1, properties.z1));
 				geometry.vertices.push(new THREE.Vector3(properties.x2, properties.y2, properties.z2));
 
-			return new THREE.Line(geometry, material);
+			var line = new THREE.Line(geometry, material);
+				line.unhide = unhide;
+				line.hide = hide;
+
+			return line;
 		},
 		AXIS: function (properties) {
 
@@ -56,7 +71,9 @@ var GEOMETRIES = (function () {
 				geometry.vertices.push(new THREE.Vector3(properties.x1, properties.y1, properties.z1));
 				geometry.vertices.push(new THREE.Vector3(properties.x2, properties.y2, properties.z2));
 
-			return new THREE.Line(geometry, material);
+			var line = new THREE.Line(geometry, material);
+
+			return line;
 		}
 	}
 

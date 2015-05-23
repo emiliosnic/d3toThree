@@ -8,6 +8,7 @@
  */
 
 var UNITS = (function () {
+
 	return {
 		extractThickness: function (input) {
 			
@@ -30,6 +31,18 @@ var UNITS = (function () {
 				x: offsetX,
 				y: offsetY
 			};
+		},
+		extractRotation: function (input) {
+			if (typeof input !== "string")
+				return 0;
+
+			// Convert to clockwise
+			var degrees = /\(([^)]+)\)/.exec(input)[1],
+				degrees = (degrees<0)? (360 - Math.abs(degrees)): degrees;
+
+			var radians = THREE.Math.degToRad(degrees);
+
+			return radians;
 		},
 		extractSVGPath: function(input) {
 
@@ -71,16 +84,16 @@ var UNITS = (function () {
 			var normalizedValue = (_this.model.canvas.height/2 - value),
 				normalizedValue = (value <= _this.model.canvas.height)? normalizedValue: -normalizedValue;
 
-			return normalizedValue;
-
+			return (normalizedValue - _this.model.canvas.offsetTop);
 		},
 		normalizeH: function(value) {
 
 			var normalizedValue = (_this.model.canvas.width/2 - value),
 				normalizedValue = (value <= _this.model.canvas.width)? -normalizedValue: normalizedValue;
 
-			return normalizedValue;
+			return (normalizedValue + _this.model.canvas.offsetLeft);
 
 		}
+
 	};
 })();

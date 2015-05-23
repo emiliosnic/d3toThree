@@ -1,0 +1,200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>D3to3</title>
+	<meta name="description" content="D3to3">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+	<!-- Styles -->
+	<link rel="stylesheet" href="../assets/reset.css">
+	<link rel="stylesheet" href="../assets/style.css">
+	<link rel="stylesheet" href="../assets/style.css">
+
+
+
+	<style type="text/css">
+		.node {
+		  stroke: #fff;
+		  stroke-width: 1.5px;
+		}
+		.link {
+		  stroke: #999;
+		}
+	</style>
+
+</head>
+<body>
+	
+	<br>
+	<img src="../assets/mvc.png" width="500"/>
+
+	<script src="../lib/d3.js"></script>
+	<script src="../lib/three.min.js"></script>
+	<script src="../dist/d3to3.js"></script>
+
+
+	<ul class="panels">
+		<li>
+			<h2>D3</h2>
+			<div id="d3_panel">
+		</li>
+		<li>
+			<h2>D3to3</h2>
+			<div id="d3to3_panel"></div>
+		</li>
+	</ul>
+
+<script src="real_data.js"></script> 
+<!--<script src="demo_data.js"></script> -->
+
+	<script type="text/javascript">
+/*
+var networkData = {
+  "nodes":[
+    {"name":"Myriel","group":1},
+    {"name":"Myriel2","group":2},
+  ],
+  "links":[
+    {"source":0,"target":1,"value":1},
+    {"source":1,"target":0,"value":3},
+  ]
+}
+*/
+
+
+// MUST SEE
+// MUST SEE
+// MUST SEE
+
+
+// http://threejs.org/examples/#css3d_sprites
+// http://threejs.org/examples/#css3d_molecules
+// http://bost.ocks.org/mike/fisheye/
+
+// MUST SEE
+// MUST SEE
+// MUST SEE
+
+var width = 500,
+    height = 500;
+
+
+var color = d3.scale.category20();
+
+/*    graph.nodes[1].x = 200;
+    graph.nodes[1].y = 100;
+    graph.nodes[2].x = 300;
+    graph.nodes[2].y = 100;
+    graph.nodes[3].x = 400;
+    graph.nodes[3].y = 100;
+*/
+
+function tick() {
+  link.attr("x1", function(d) { return d.source.x; })
+      .attr("y1", function(d) { return d.source.y; })
+      .attr("x2", function(d) { return d.target.x; })
+      .attr("y2", function(d) { return d.target.y; });
+  node.attr("cx", function(d) { return d.x; })
+      .attr("cy", function(d) { return d.y; });
+}
+
+var svg = d3.select("#d3_panel").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+
+var force = d3.layout.force()
+    .size([width, height])
+    .linkDistance(200)
+/*    
+    .linkStrength(0.1)
+    .friction(0.9)
+    .linkDistance(200)
+    .charge(-100)
+    .gravity(0.1)
+    .theta(0.8)
+    .alpha(0.1);
+*/
+
+
+    force
+    .nodes(networkData.nodes)
+    .links(networkData.links)
+    .on('end', function() { 
+
+        console.log("Rendering d3to3 network...");
+
+        // #####################
+ 
+       d3to3
+        .configure({
+            '3D': true,
+            'controls': true, 
+            'orbit': false, 
+            'network': true, 
+        })
+        .render();
+        // #####################
+    }); 
+    var n = networkData.nodes.length;
+
+    console.log("LENGTH");
+    console.log(n);
+
+    force.start();
+    for (var i=n; i>0; --i){
+        force.tick();
+    }
+    force.stop();
+
+
+  var link = svg.selectAll(".link")
+    .data(networkData.links)
+    .enter()
+    .append("line")
+    .attr("class", "link")
+    .attr("x1",function(d){ return d.source.x; })
+    .attr("y1",function(d){ return d.source.y; })
+    .attr("x2",function(d){ return d.target.x; })
+    .attr("y2",function(d){ return d.target.y; })
+    .style("stroke-width", function(d) { return Math.sqrt(d.value); })
+	.d3to3().data();
+
+
+  var node = svg.selectAll(".node")
+    .data(networkData.nodes)
+    .enter()
+    .append("circle")
+    .attr("class", "node")
+    .attr("cx", function(d){return d.x;})
+    .attr("NAME-REMOVE-THIS", function(d){return d.name;})
+    .attr("cy", function(d){return d.y;})
+    .attr("r", function(d) {return 4; }) //return Math.floor(Math.random() * 8) + 4; })
+    .style("fill", function(d) { return color(d.group); })
+    .d3to3().data();
+
+
+    // TODO: 
+    // ADD ON MOUSE OVER FOR NODES
+    //      SHOW TOOLTIP WITH NODE NAME
+
+    // ADD ON MOUSE OVER FOR EDGES
+    //      SHOW TOOLTIP WITH EDGE CONNECTION (2 Nodes) and strength
+
+  force.on("tick", function() {
+    link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node.attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+  });
+
+
+	</script>
+
+</body>
+</html>

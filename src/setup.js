@@ -13,11 +13,27 @@
 
 extend(d3.selection.prototype, { 
 
-	d3to3: function() {
+	d3to3: function() {	
+
+
+
+		// TODO:
+		// TODO:
+
+		// REMOVE _this.prototypes --> they are useless? 
+		
+		// TODO:
+		// TODO:
+
+		// Also add support for 1+ svg elements in screen (with init: source and target)
+
+		
 
 		this.axis = function(){
-
-			_this.model.axes.push(this[0].extractNode('g').childNodes);
+			_this.model.axes.push({
+				'data'      : this[0].extractNode('g').childNodes,
+				'transform' : this[0].extractNode('g').attributes.extractNode('transform').nodeValue
+			})
 			return this;
 		},
 
@@ -25,6 +41,19 @@ extend(d3.selection.prototype, {
 			_this.model.content.push({
 				'data' : this[0],
 				'type' : this[0][0].nodeName
+			})
+			return this;
+		}
+		this.text = function(){
+
+			var sprite = this[0].extractNode('text');
+			
+			_this.model.texts.push({
+				'x'   : (sprite.attributes.extractNode('x').nodeValue) || 0,
+				'y'   : (sprite.attributes.extractNode('y').nodeValue) || 0,
+				'val' : sprite.textContent,
+				'transform' : sprite.attributes.extractNode('transform').nodeValue,
+				'length' : sprite.textLength.baseVal.value
 			})
 			return this;
 		}    

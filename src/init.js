@@ -25,12 +25,14 @@ var d3to3 = (function () {
 	_this.config = { 
 		'target'   : 'd3to3_panel',
 		'source'   : undefined,
-		'controls' : false,
-		'3D'       : false
+		'controls' : true,
+		'3D'       : false,
+		'orbit'    : false
 	};
 
 	_this.model = { 
 		axes: [],
+		texts: [],
 		canvas: { 
 			offsetLeft: 0,
 			offsetTop: 0,

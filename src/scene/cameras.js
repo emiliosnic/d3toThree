@@ -27,6 +27,14 @@ var CAMERAS = (function () {
 		this.bottom = - newZoom * (this.top   / zoom);
 	}
 
+	orbitAroundCenter = function(scene){
+		var timer = Date.now() * 0.0001;
+		
+		this.position.x = Math.cos( timer ) * 500;
+		this.position.z = Math.sin( timer ) * 500;
+		this.lookAt( scene.position );
+	}
+
 	return {
 		DEFAULT: function(){
 			var width  = _this.model.canvas.width  || window.innerWidth,
@@ -36,6 +44,8 @@ var CAMERAS = (function () {
 			var camera = new THREE.OrthographicCamera( zoom * -width, zoom * width, zoom * height, zoom * -height, 1, 1000 );
 				camera.position.set(0, 0, 100);
 				camera.updateZoom = updateZoom;
+				camera.orbitAroundCenter = orbitAroundCenter;
+
 
 			return camera;
 		}

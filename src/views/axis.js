@@ -12,8 +12,11 @@ VIEW.axis = function() {
 	this.type = 'axis';    
 	this.meshes = [];
 
-	this.load = function(data){
+	this.load = function(axis){
 
+		var data = axis.data,
+			transform = UNITS.extractTranslation(axis.transform);
+			
 		for (index = 0; index < data.length; index++){
 
 			/**
@@ -32,10 +35,10 @@ VIEW.axis = function() {
 						y: parseInt(data[index].childNodes.extractNode('line').attributes.extractNode('y2').nodeValue)
 					};
 
-				var startX = UNITS.normalizeH(tickPosition.x) + _this.model.canvas.offsetLeft,
-					startY = UNITS.normalizeV(tickPosition.y) - _this.model.canvas.offsetTop,
-					endX = startX + tickLine.x,
-					endY = startY - tickLine.y;
+				var startX = UNITS.normalizeH(tickPosition.x + transform.x),
+					startY = UNITS.normalizeV(tickPosition.y + transform.y), 
+					endX   = startX + tickLine.x,
+					endY   = startY - tickLine.y;
 
 				this.meshes.push(
 					GEOMETRIES.AXIS({ 
@@ -52,7 +55,7 @@ VIEW.axis = function() {
 					textSize = parseFloat(text.attributes.extractNode('dy').nodeValue),
 					textOffsets = {
 						x: parseInt(text.attributes.extractNode('x').nodeValue),
-						y: parseInt(text.attributes.extractNode('y').nodeValue)
+						y: parseInt(text.attributes.extractNode('y').nodeValue) 
 					};
 
 				this.meshes.push(
@@ -75,10 +78,10 @@ VIEW.axis = function() {
 
 				for (var j = 1; j < points.length; j++) {
 
-					var startY = UNITS.normalizeV(parseInt(points[j-1].y)) - _this.model.canvas.offsetTop;
-						startX = UNITS.normalizeH(parseInt(points[j-1].x)) + _this.model.canvas.offsetLeft;
-						endX   = UNITS.normalizeH(parseInt(points[j].x))   + _this.model.canvas.offsetLeft;
-						endY   = UNITS.normalizeV(parseInt(points[j].y))   - _this.model.canvas.offsetTop;
+					var startY = UNITS.normalizeV(parseInt(points[j-1].y)) - transform.y;
+						startX = UNITS.normalizeH(parseInt(points[j-1].x)) + transform.x;
+						endX   = UNITS.normalizeH(parseInt(points[j].x))   + transform.x;
+						endY   = UNITS.normalizeV(parseInt(points[j].y))   - transform.y;
 
 					this.meshes.push(
 						GEOMETRIES.AXIS({

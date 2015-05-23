@@ -25,12 +25,14 @@ var d3to3 = (function () {
 	_this.config = { 
 		'target'   : 'd3to3_panel',
 		'source'   : undefined,
-		'controls' : false,
-		'3D'       : false
+		'controls' : true,
+		'3D'       : false,
+		'orbit'    : false
 	};
 
 	_this.model = { 
 		axes: [],
+		texts: [],
 		canvas: { 
 			offsetLeft: 0,
 			offsetTop: 0,
@@ -94,11 +96,27 @@ var d3to3 = (function () {
 
 extend(d3.selection.prototype, { 
 
-	d3to3: function() {
+	d3to3: function() {	
+
+
+
+		// TODO:
+		// TODO:
+
+		// REMOVE _this.prototypes --> they are useless? 
+		
+		// TODO:
+		// TODO:
+
+		// Also add support for 1+ svg elements in screen (with init: source and target)
+
+		
 
 		this.axis = function(){
-
-			_this.model.axes.push(this[0].extractNode('g').childNodes);
+			_this.model.axes.push({
+				'data'      : this[0].extractNode('g').childNodes,
+				'transform' : this[0].extractNode('g').attributes.extractNode('transform').nodeValue
+			})
 			return this;
 		},
 
@@ -106,6 +124,19 @@ extend(d3.selection.prototype, {
 			_this.model.content.push({
 				'data' : this[0],
 				'type' : this[0][0].nodeName
+			})
+			return this;
+		}
+		this.text = function(){
+
+			var sprite = this[0].extractNode('text');
+			
+			_this.model.texts.push({
+				'x'   : (sprite.attributes.extractNode('x').nodeValue) || 0,
+				'y'   : (sprite.attributes.extractNode('y').nodeValue) || 0,
+				'val' : sprite.textContent,
+				'transform' : sprite.attributes.extractNode('transform').nodeValue,
+				'length' : sprite.textLength.baseVal.value
 			})
 			return this;
 		}    
@@ -418,6 +449,15 @@ var MATERIALS = (function () {
  */
 
 var GEOMETRIES = (function () {
+
+	unhide = function(){
+		this.material.opacity = 1;
+		this.material.transparent = true;
+	}
+	hide = function(){
+		this.material.opacity = 0.1;
+		this.material.transparent = true;
+	}
 	return {
 		CIRCLE: function (properties) {
 			var circle = new THREE.Mesh(new THREE.CircleGeometry(properties.radius, 64), MATERIALS.DEFAULT_2D(properties.color));
@@ -428,6 +468,8 @@ var GEOMETRIES = (function () {
 		SPHERE: function (properties) {
 			var sphere = new THREE.Mesh(new THREE.SphereGeometry(properties.radius, 64, 64), MATERIALS.DEFAULT_3D(properties.color));
 				sphere.position.set(properties.x, properties.y, properties.z);
+				sphere.unhide = unhide;
+				sphere.hide = hide;
 
 			return sphere;
 		},
@@ -456,7 +498,11 @@ var GEOMETRIES = (function () {
 				geometry.vertices.push(new THREE.Vector3(properties.x1, properties.y1, properties.z1));
 				geometry.vertices.push(new THREE.Vector3(properties.x2, properties.y2, properties.z2));
 
-			return new THREE.Line(geometry, material);
+			var line = new THREE.Line(geometry, material);
+				line.unhide = unhide;
+				line.hide = hide;
+
+			return line;
 		},
 		AXIS: function (properties) {
 
@@ -466,7 +512,9 @@ var GEOMETRIES = (function () {
 				geometry.vertices.push(new THREE.Vector3(properties.x1, properties.y1, properties.z1));
 				geometry.vertices.push(new THREE.Vector3(properties.x2, properties.y2, properties.z2));
 
-			return new THREE.Line(geometry, material);
+			var line = new THREE.Line(geometry, material);
+
+			return line;
 		}
 	}
 
@@ -500,6 +548,14 @@ var CAMERAS = (function () {
 		this.bottom = - newZoom * (this.top   / zoom);
 	}
 
+	orbitAroundCenter = function(scene){
+		var timer = Date.now() * 0.0001;
+		
+		this.position.x = Math.cos( timer ) * 500;
+		this.position.z = Math.sin( timer ) * 500;
+		this.lookAt( scene.position );
+	}
+
 	return {
 		DEFAULT: function(){
 			var width  = _this.model.canvas.width  || window.innerWidth,
@@ -509,6 +565,8 @@ var CAMERAS = (function () {
 			var camera = new THREE.OrthographicCamera( zoom * -width, zoom * width, zoom * height, zoom * -height, 1, 1000 );
 				camera.position.set(0, 0, 100);
 				camera.updateZoom = updateZoom;
+				camera.orbitAroundCenter = orbitAroundCenter;
+
 
 			return camera;
 		}
@@ -534,12 +592,101 @@ var RENDERERS = (function () {
 			var width  = _this.model.canvas.width  || window.innerWidth,
 				height = _this.model.canvas.height || window.innerHeight;
 
-			var renderer = new THREE.WebGLRenderer({ antialias: true });
+
+			var renderer = new THREE.WebGLRenderer();
 				renderer.setClearColor(0xffffff);
 				renderer.setPixelRatio(window.devicePixelRatio);
 				renderer.setSize(width, height)
 
 			return renderer;
+		}
+	};
+})();
+
+;
+/**
+ *   File: 
+ *         scene/lights.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
+
+
+var GROUPS = (function () {
+	
+	randomIntFromInterval = function(min,max){
+    	return Math.floor(Math.random()*(max-min+1)+min);
+	}
+
+	expandZ = function(){
+
+		var nodeGroups = [];
+			totalConnectedLines = 0;
+		
+		var that = this;
+		this.children.forEach(function(circle, circleIndex){
+			if (circle.type == "Mesh"){
+
+				var groupConnectedLinesIndices = []; 
+
+				that.children.forEach(function(line, lineIndex){
+				
+					// Find All intersecting Lines 
+					if (line.type == "Line"){
+						for (var vertexIndex = 0; vertexIndex <=1; vertexIndex++) {
+							
+							var xDiff = (Math.abs(line.geometry.vertices[vertexIndex].x) - Math.abs(circle.position.x)),
+								yDiff = (Math.abs(line.geometry.vertices[vertexIndex].y) - Math.abs(circle.position.y)),
+								zDiff = (Math.abs(line.geometry.vertices[vertexIndex].z) - Math.abs(circle.position.z));
+
+							if (Math.abs(xDiff + yDiff + zDiff) < 0.1){
+								// line.geometry.vertices[vertexIndex].z = zDepth;
+								// line.geometry.verticesNeedUpdate = true;
+								totalConnectedLines+=1;
+								groupConnectedLinesIndices.push({
+									'lineIndex':lineIndex,
+									'vertexIndex':vertexIndex
+								});
+							}
+						}
+					}
+				})
+				nodeGroups.push({
+					'circleIndex': circleIndex,
+					'lineIndices': groupConnectedLinesIndices
+				})
+			}
+		});
+
+		nodeGroups.forEach(function(nodeGroup){
+
+			var zDepth = 1;
+
+			if (nodeGroup.lineIndices.length > 0) {
+				zDepth = 5000 * (nodeGroup.lineIndices.length)/ totalConnectedLines; 
+				zDepth = (Math.random()>0.5)? -zDepth : zDepth;
+				console.log(zDepth);
+			}
+
+			// Update node depth
+			that.children[nodeGroup.circleIndex].position.setZ(zDepth);
+			
+			// Update line depths
+			nodeGroup.lineIndices.forEach(function(line){
+				that.children[line.lineIndex].geometry.vertices[line.vertexIndex].z = zDepth;
+				that.children[line.lineIndex].geometry.verticesNeedUpdate = true;
+			});
+		})
+
+	}
+
+	return {
+		DEFAULT: function () {
+			var group = new THREE.Group();
+			group.expandZ = expandZ;
+
+			return group;
 		}
 	};
 })();
@@ -629,12 +776,12 @@ VIEW.prototype.appendTo = function(group) {
 			center_mesh_distance = distance_from_origin;
 			center_mesh =this.meshes[i];
 		}
-		console.log("Comparing: " + distance_from_origin + " - " + center_mesh_distance );
 	};
 	*/
 
 	if (group && group instanceof THREE.Group){
 		this.meshes.forEach(function(item){
+			item.userData.parent = group;
 			group.add(item);
 		})
 	}
@@ -669,10 +816,10 @@ VIEW.line = function() {
 				y2_base = attributes.extractNode('y2').nodeValue,
 				thickness_style = attributes.extractNode('style').nodeValue;
 
-			var x1 = UNITS.normalizeH(x1_base) + _this.model.canvas.offsetLeft,
-				x2 = UNITS.normalizeH(x2_base) + _this.model.canvas.offsetLeft,
- 				y1 = UNITS.normalizeV(y1_base) + _this.model.canvas.offsetTop,
-				y2 = UNITS.normalizeV(y2_base) + _this.model.canvas.offsetTop,
+			var x1 = UNITS.normalizeH(x1_base),
+				x2 = UNITS.normalizeH(x2_base),
+ 				y1 = UNITS.normalizeV(y1_base),
+				y2 = UNITS.normalizeV(y2_base),
 				thickness = 2 * UNITS.extractThickness(thickness_style);
 
 			that.meshes.push(GEOMETRIES.LINE({ x1: x1, y1: y1, z1:0, x2: x2, y2: y2, z2:0, thickness: thickness, color: '#999999'}));
@@ -694,8 +841,11 @@ VIEW.axis = function() {
 	this.type = 'axis';    
 	this.meshes = [];
 
-	this.load = function(data){
+	this.load = function(axis){
 
+		var data = axis.data,
+			transform = UNITS.extractTranslation(axis.transform);
+			
 		for (index = 0; index < data.length; index++){
 
 			/**
@@ -714,10 +864,10 @@ VIEW.axis = function() {
 						y: parseInt(data[index].childNodes.extractNode('line').attributes.extractNode('y2').nodeValue)
 					};
 
-				var startX = UNITS.normalizeH(tickPosition.x) + _this.model.canvas.offsetLeft,
-					startY = UNITS.normalizeV(tickPosition.y) - _this.model.canvas.offsetTop,
-					endX = startX + tickLine.x,
-					endY = startY - tickLine.y;
+				var startX = UNITS.normalizeH(tickPosition.x + transform.x),
+					startY = UNITS.normalizeV(tickPosition.y + transform.y), 
+					endX   = startX + tickLine.x,
+					endY   = startY - tickLine.y;
 
 				this.meshes.push(
 					GEOMETRIES.AXIS({ 
@@ -734,7 +884,7 @@ VIEW.axis = function() {
 					textSize = parseFloat(text.attributes.extractNode('dy').nodeValue),
 					textOffsets = {
 						x: parseInt(text.attributes.extractNode('x').nodeValue),
-						y: parseInt(text.attributes.extractNode('y').nodeValue)
+						y: parseInt(text.attributes.extractNode('y').nodeValue) 
 					};
 
 				this.meshes.push(
@@ -757,10 +907,10 @@ VIEW.axis = function() {
 
 				for (var j = 1; j < points.length; j++) {
 
-					var startY = UNITS.normalizeV(parseInt(points[j-1].y)) - _this.model.canvas.offsetTop;
-						startX = UNITS.normalizeH(parseInt(points[j-1].x)) + _this.model.canvas.offsetLeft;
-						endX   = UNITS.normalizeH(parseInt(points[j].x))   + _this.model.canvas.offsetLeft;
-						endY   = UNITS.normalizeV(parseInt(points[j].y))   - _this.model.canvas.offsetTop;
+					var startY = UNITS.normalizeV(parseInt(points[j-1].y)) - transform.y;
+						startX = UNITS.normalizeH(parseInt(points[j-1].x)) + transform.x;
+						endX   = UNITS.normalizeH(parseInt(points[j].x))   + transform.x;
+						endY   = UNITS.normalizeV(parseInt(points[j].y))   - transform.y;
 
 					this.meshes.push(
 						GEOMETRIES.AXIS({
@@ -771,6 +921,50 @@ VIEW.axis = function() {
 				}
 			}
 		}
+	}
+};
+/**
+ *   File: 
+ *         views/text.js
+ * 	
+ * 	 Description:
+ * 	       <TODO> 
+ */
+
+VIEW.text = function() {  
+
+	this.type = 'text';    
+	this.meshes = [];
+
+	var that = this;
+
+	this.load = function(text){
+
+
+		// UNITS.extractRotation(text.transform)
+
+		var offsetX  = UNITS.normalizeH(text.x),
+			offsetY  = UNITS.normalizeV(text.y),
+			rotation = UNITS.extractRotation(text.transform);
+
+			// If there is a text rotation remove text.length 
+
+
+		if (! rotation) {
+ 			offsetX -= text.length;
+		}
+
+		var mesh = GEOMETRIES.TEXT({ x: offsetX, y: offsetY, z: 0, text: text.val});
+
+		/*
+		if (rotation) {
+			mesh.geometry.applyMatrix(new THREE.Matrix4().makeRotationZ(rotation));
+		}
+		*/
+
+
+		that.meshes.push(mesh);
+
 	}
 };
 /**
@@ -802,15 +996,23 @@ VIEW.circle = function() {
 				offsetY = item.cy.baseVal.value,
 				color   = COLORS.normalize(item.style.cssText.slice(6));
 
-			var x = UNITS.normalizeH(offsetX) + _this.model.canvas.offsetLeft;
-				y = UNITS.normalizeV(offsetY) - _this.model.canvas.offsetTop;
-
+			var x = UNITS.normalizeH(offsetX),
+				y = UNITS.normalizeV(offsetY);
+				
 			if (_this.config['3D']){
 				// 3D Mode
-				that.meshes.push(GEOMETRIES.SPHERE({ radius: radius, color: color, x: x, y: y, z: 0}));
+
+				var sphere = GEOMETRIES.SPHERE({ radius: radius, color: color, x: x, y: y, z: 0});
+				if (item.connectedMeshes && item.connectedMeshes.length > 0){
+					sphere.connectedMeshes = item.connectedMeshes;
+				}
+
+				that.meshes.push(sphere);
+
 			} else {
 				// 2D Mode
-				that.meshes.push(GEOMETRIES.CIRCLE({ radius: radius, color: color, x: x, y: y, z: 0}));
+				var circle = GEOMETRIES.CIRCLE({ radius: radius, color: color, x: x, y: y, z: 0});
+				that.meshes.push(circle);
 			}
 		});
 	}
@@ -827,10 +1029,23 @@ VIEW.circle = function() {
 
 var LIGHTS = (function () {
 
+	var zDepth = 1;
+
+	alignToPosition = function(position){
+		this.position
+		.set(
+			position.x, 
+			position.y, 
+			position.z - zDepth
+		)
+		.normalize();
+	}
+
 	return {
 		DEFAULT: function () {
 			var light = new THREE.DirectionalLight(0xffffff);
-				light.position.set(0,0,20).normalize();
+				light.position.set(0,0,zDepth).normalize();
+				light.alignToPosition = alignToPosition;
 
   			return light;
 		}
@@ -846,38 +1061,43 @@ var LIGHTS = (function () {
  * 	       <TODO> 
  */
 
+
 _this.controller = function(){
 
-	var camera, renderer, scene, group, container, controls, canvas, light;
+	var camera, renderer, scene, group, container, controls, canvas, light, mouse, raycaster;
 
 	(function () {
 
 		var setupConfigs = function () {	
 
+ 			// TODO: FIX
+ 			// 		 THIS WONT WORK WITH CUSTOM LIGHT OR CAMERA
+
 			/**
 			 * Setup Custom Light (override default)
 			 */ 
-			
+			/*
 			if (typeof _this.config.light === "object" ) {
 				LIGHTS.default = function(){
 					return _this.config.light;
 				}
 			}
-
+			*/
 			/**
 			 * Setup Custom Camera (override default)
 			 */ 
-
+			/*
 			if (typeof _this.config.camera === "object" ) {
 				CAMERAS.DEFAULT = function(){
 					return _this.config.camera;
 				}
 			}
+			*/
 
 			/**
 			 * Setup Custom Materials (override default)
 			 */ 
-
+			/*
 			if (typeof _this.config.material_2D === "object" ) {
 				MATERIAL.DEFAULT_2D = function(){
 					return _this.config.material_2D;
@@ -888,22 +1108,35 @@ _this.controller = function(){
 					return _this.config.material_3D;
 				}
 			}
-
+			*/
 		};
 
 		var setupCanvas = function () {	
 
-			camera   = CAMERAS.DEFAULT();
-			light    = LIGHTS.DEFAULT();
-			renderer = RENDERERS.DEFAULT();
-			group    = new THREE.Group();
+			camera    = CAMERAS.DEFAULT();
+			light     = LIGHTS.DEFAULT();
+			renderer  = RENDERERS.DEFAULT();
+			group     = GROUPS.DEFAULT();
+			mouse     = new THREE.Vector3();
+			raycaster = new THREE.Raycaster();
 
 			if (_this.config.controls){
 				controls = CONTROLS.Orbit(camera);
-				controls.addEventListener( 'change', render );
+				controls.addEventListener( 'change', function(){
+					camera.updateProjectionMatrix();
+					light.alignToPosition(camera.position); 
+					render();
+				});
 				renderer.domElement.addEventListener( 'mousewheel',     mousewheel, false );
 				renderer.domElement.addEventListener( 'DOMMouseScroll', mousewheel, false ); 
+				renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
+				console.log("2");
+				console.log(renderer.domElement.width);
+				console.log(renderer.domElement.height);
+
 			}
+
 
 			container = document.getElementById(_this.config.target);
 			container.appendChild( renderer.domElement );
@@ -939,10 +1172,31 @@ _this.controller = function(){
 			})
 
 			/**
+			 * Setup Text View
+			 */ 
+			_this.model.texts.forEach(function(text){
+				new VIEW()
+					.type('text')
+					.loadData(text)
+					.appendTo(group);
+			})
+
+
+			/**
 			 * Flush Model
 			 */ 
 
 			_this.model.content = {};
+
+
+			/**
+			 * IScene
+			 */ 
+
+			if (_this.config.network && _this.config['3D']){
+				group.expandZ();
+			}
+
 
 			/**
 			 * Setup Scene
@@ -952,15 +1206,33 @@ _this.controller = function(){
 				.add(camera)
 				.add(light)
 				.add(group);
-		}
 
+
+		}
 		var animate = function () {	
 			requestAnimationFrame(animate);
+
+			// stats2.begin();
+
 			render();
+
+			// stats2.end();
 		}
 
 		var render = function() {	
+
+			if (_this.config.orbit){
+				camera.orbitAroundCenter(scene);
+				light.alignToPosition(camera.position); 
+			}
 			renderer.render( scene, camera );
+		}
+
+		function onWindowResize() {
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			render();
 		}
 
 		var mousewheel = function(event) {
@@ -972,6 +1244,92 @@ _this.controller = function(){
 
 			renderer.render(scene,camera);
 		}
+		
+
+		function onDocumentMouseMove( event ) {
+
+			event.preventDefault();
+
+
+			var xPerc = (UNITS.normalizeH(event.offsetX)/renderer.domElement.width  * 4 ),
+				yPerc = (UNITS.normalizeV(event.offsetY)/renderer.domElement.height * 4 );
+
+			mouse.set( xPerc, yPerc, - 1); 
+			mouse.unproject( camera );
+
+			var dir = new THREE.Vector3();
+				dir.set( 0, 0, - 1 ).transformDirection( camera.matrixWorld );
+
+			raycaster.set(mouse,dir);
+
+			var intersects = raycaster.intersectObjects( group.children, true );
+
+			if (intersects.length>0){
+					
+				// De-highlihgt meshes in group
+				group.children.forEach(function(object){
+					object.hide();
+				})
+
+				intersects.forEach(function(intersection){
+
+					// Highlight intersected objects
+					intersection.object.unhide();
+
+					/**
+					 * Network Connector - Show connected nodes
+					 */ 
+
+					if (_this.config.network){
+						group.children.forEach(function(line){
+							if (line.type == "Line"){
+								for (var verticeIndex = 0; verticeIndex <=1; verticeIndex++) {
+
+									var xDiff = (Math.abs(line.geometry.vertices[verticeIndex].x) - Math.abs(intersection.object.position.x)),
+										yDiff = (Math.abs(line.geometry.vertices[verticeIndex].y) - Math.abs(intersection.object.position.y)),
+										zDiff = (Math.abs(line.geometry.vertices[verticeIndex].z) - Math.abs(intersection.object.position.z));
+
+									if (Math.abs(xDiff + yDiff + zDiff) < 0.1){
+										// Unhide Line
+										line.unhide();
+										
+										// Update end nodes with colors
+										group.children.forEach(function(node){
+											if (node.type == "Mesh" && node != intersection.object){
+												for (var verticeIndex = 0; verticeIndex <=1; verticeIndex++) {
+
+													var xDiff2 = (Math.abs(line.geometry.vertices[verticeIndex].x) - Math.abs(node.position.x)),
+														yDiff2 = (Math.abs(line.geometry.vertices[verticeIndex].y) - Math.abs(node.position.y)),
+														zDiff2 = (Math.abs(line.geometry.vertices[verticeIndex].z) - Math.abs(node.position.z));
+
+													if (Math.abs(xDiff2 + yDiff2 + zDiff2) < 0.1){
+														node.unhide();		
+													}
+												}
+											}
+										})
+									}
+								};
+
+							}
+						})
+					}
+
+					// if intersection.object.conncetedMeshse != null 
+					//   then call unhide on connected meshes!
+
+				})
+			} else {
+				// De-highlihgt meshes in group
+				group.children.forEach(function(object){
+					object.unhide();
+				})
+			}
+		}
+
+		/*
+		 * Setup Scene
+		 */
 
 		setupConfigs();
 		setupCanvas();
@@ -1153,6 +1511,7 @@ ObserverFactory.prototype.notify = function(args) {
  */
 
 var UNITS = (function () {
+
 	return {
 		extractThickness: function (input) {
 			
@@ -1175,6 +1534,18 @@ var UNITS = (function () {
 				x: offsetX,
 				y: offsetY
 			};
+		},
+		extractRotation: function (input) {
+			if (typeof input !== "string")
+				return 0;
+
+			// Convert to clockwise
+			var degrees = /\(([^)]+)\)/.exec(input)[1],
+				degrees = (degrees<0)? (360 - Math.abs(degrees)): degrees;
+
+			var radians = THREE.Math.degToRad(degrees);
+
+			return radians;
 		},
 		extractSVGPath: function(input) {
 
@@ -1216,17 +1587,17 @@ var UNITS = (function () {
 			var normalizedValue = (_this.model.canvas.height/2 - value),
 				normalizedValue = (value <= _this.model.canvas.height)? normalizedValue: -normalizedValue;
 
-			return normalizedValue;
-
+			return (normalizedValue - _this.model.canvas.offsetTop);
 		},
 		normalizeH: function(value) {
 
 			var normalizedValue = (_this.model.canvas.width/2 - value),
 				normalizedValue = (value <= _this.model.canvas.width)? -normalizedValue: normalizedValue;
 
-			return normalizedValue;
+			return (normalizedValue + _this.model.canvas.offsetLeft);
 
 		}
+
 	};
 })();
 ;

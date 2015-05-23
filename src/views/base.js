@@ -50,12 +50,12 @@ VIEW.prototype.appendTo = function(group) {
 			center_mesh_distance = distance_from_origin;
 			center_mesh =this.meshes[i];
 		}
-		console.log("Comparing: " + distance_from_origin + " - " + center_mesh_distance );
 	};
 	*/
 
 	if (group && group instanceof THREE.Group){
 		this.meshes.forEach(function(item){
+			item.userData.parent = group;
 			group.add(item);
 		})
 	}

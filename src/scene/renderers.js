@@ -17,7 +17,8 @@ var RENDERERS = (function () {
 			var width  = _this.model.canvas.width  || window.innerWidth,
 				height = _this.model.canvas.height || window.innerHeight;
 
-			var renderer = new THREE.WebGLRenderer({ antialias: true });
+
+			var renderer = new THREE.WebGLRenderer();
 				renderer.setClearColor(0xffffff);
 				renderer.setPixelRatio(window.devicePixelRatio);
 				renderer.setSize(width, height)
