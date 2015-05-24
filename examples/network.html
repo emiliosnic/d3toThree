@@ -27,9 +27,6 @@
 </head>
 <body>
 	
-	<br>
-	<img src="../assets/mvc.png" width="500"/>
-
 	<script src="../lib/d3.js"></script>
 	<script src="../lib/three.min.js"></script>
 	<script src="../dist/d3to3.js"></script>
@@ -46,8 +43,7 @@
 		</li>
 	</ul>
 
-<script src="real_data.js"></script> 
-<!--<script src="demo_data.js"></script> -->
+<script src="network_data.js"></script> 
 
 	<script type="text/javascript">
 /*
@@ -64,10 +60,14 @@ var networkData = {
 */
 
 
+
+
 // MUST SEE
 // MUST SEE
 // MUST SEE
 
+// RENAME TO 
+// d-ThreeDim
 
 // http://threejs.org/examples/#css3d_sprites
 // http://threejs.org/examples/#css3d_molecules
@@ -91,6 +91,12 @@ var color = d3.scale.category20();
     graph.nodes[3].y = 100;
 */
 
+
+/*
+
+    TODO: ADD D3 - TIP
+*/
+
 function tick() {
   link.attr("x1", function(d) { return d.source.x; })
       .attr("y1", function(d) { return d.source.y; })
@@ -100,22 +106,21 @@ function tick() {
       .attr("cy", function(d) { return d.y; });
 }
 
-var svg = d3.select("#d3_panel").append("svg")
+var svg = d3.select("#d3_panel")
+    .append("svg")
     .attr("width", width)
     .attr("height", height);
 
 
 var force = d3.layout.force()
     .size([width, height])
-    .linkDistance(200)
-/*    
-    .linkStrength(0.1)
-    .friction(0.9)
+    .linkDistance(130)
+    .linkStrength(0.2)
+    .friction(0.1)
     .linkDistance(200)
     .charge(-100)
-    .gravity(0.1)
-    .theta(0.8)
-    .alpha(0.1);
+    .gravity(0.1);
+/*    
 */
 
 
@@ -123,31 +128,25 @@ var force = d3.layout.force()
     .nodes(networkData.nodes)
     .links(networkData.links)
     .on('end', function() { 
-
-        console.log("Rendering d3to3 network...");
-
-        // #####################
- 
-       d3to3
-        .configure({
+    console.log("Rendering d3to3 network...");
+       d3to3.render({
+            'source' : 'd3_panel',
+            'target' : 'd3to3_panel', 
             '3D': true,
             'controls': true, 
-            'orbit': false, 
+            'orbit': true, 
             'network': true, 
         })
-        .render();
-        // #####################
     }); 
     var n = networkData.nodes.length;
 
-    console.log("LENGTH");
-    console.log(n);
 
     force.start();
     for (var i=n; i>0; --i){
         force.tick();
     }
     force.stop();
+
 
 
   var link = svg.selectAll(".link")

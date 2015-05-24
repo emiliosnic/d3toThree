@@ -21,25 +21,19 @@ VIEW.circle = function() {
 	this.load = function(data){
 
 		var that = this;
-	
+
 		data.forEach(function (item) {
 			var radius  = item.r.baseVal.value,
 				offsetX = item.cx.baseVal.value,
 				offsetY = item.cy.baseVal.value,
 				color   = COLORS.normalize(item.style.cssText.slice(6));
 
-			var x = UNITS.normalizeH(offsetX),
-				y = UNITS.normalizeV(offsetY);
-				
-			if (_this.config['3D']){
+			var x = UNITS.normalizeH(offsetX, that.properties.canvas),
+				y = UNITS.normalizeV(offsetY, that.properties.canvas);
+	
+			if (that.properties['3D']){
 				// 3D Mode
-
-				var sphere = GEOMETRIES.SPHERE({ radius: radius, color: color, x: x, y: y, z: 0});
-				if (item.connectedMeshes && item.connectedMeshes.length > 0){
-					sphere.connectedMeshes = item.connectedMeshes;
-				}
-
-				that.meshes.push(sphere);
+				that.meshes.push(GEOMETRIES.SPHERE({ radius: radius, color: color, x: x, y: y, z: 0}));
 
 			} else {
 				// 2D Mode

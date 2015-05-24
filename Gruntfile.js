@@ -27,6 +27,7 @@ module.exports = function(grunt) {
               'src/scene/parser.js', 
               'src/controller.js', 
               'src/utils/colors.js',
+              'src/utils/logger.js',
               'src/utils/helpers.js',
               'src/utils/units.js',
               'src/teardown.js',

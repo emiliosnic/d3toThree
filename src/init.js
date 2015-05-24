@@ -22,39 +22,30 @@ var d3to3 = (function () {
 	 * Default Config
 	 */
 	
-	_this.config = { 
-		'target'   : 'd3to3_panel',
-		'source'   : undefined,
-		'controls' : true,
-		'3D'       : false,
-		'orbit'    : false
-	};
+	 _this.instances = {};
+	 _this.currentInstance = undefined;
 
-	_this.model = { 
-		axes: [],
-		texts: [],
-		canvas: { 
-			offsetLeft: 0,
-			offsetTop: 0,
-			width: null, 
-			height: null 
-		},
-		content: []
-	}; 
+	/*
 
+		Instance are going ot be contrllers that are initialized with:
+		 - model 
+		 - config 
+
+		And controller should be initiali 
+	*/	 
 	_this.initializer = ({
 		init: function () {
 
 			if (typeof d3 === 'undefined'){ 
-				console.error(_this.about.name + " - Failed to load D3.js Library.")
+				LOGGER.report({'message': 'Failed to load D3.JS Library'});
 				return;
 			}
 			if (typeof THREE === 'undefined'){ 
-				console.error(_this.about.name + " - Failed to load Three.js Library.")
+				LOGGER.report({'message': 'Failed to load Three.JS Library'});
 				return;
 			}
 			if (!(window.WebGLRenderingContext && (document.createElement("canvas").getContext("webgl")))){
-				console.error(_this.about.name + " - Your browser does not support WebGL/Canvas support.")
+				LOGGER.report({'message': 'Your browser does not support WebGL/Canvas support.'});
 				return;
 			}
 
@@ -63,21 +54,26 @@ var d3to3 = (function () {
 		}
 	}).init();
 
-	_this.configure = function(properties){
-		for (property in properties){
-			this.config[property] = properties[property];
-		}
-		return this;
-	}
 	_this.render = function(properties){
 		try {
-			_this.controller();
+
+			if (Object.keys(_this.instances).length > 0 ){ 
+				
+				if (   properties.hasOwnProperty('source')
+					&& _this.instances.hasOwnProperty(properties['source'])) {
+
+					_this.instances[properties['source']].configure(properties)
+					_this.instances[properties['source']].setup();
+
+				}
+			} else {
+				LOGGER.report({'message': 'Failed to render output. No SVG source was set!'});
+			}
+			
 		} catch(err ){
-			console.error(_this.about.name + " - Failed to render output - "+ err);
+				LOGGER.report({'message': 'Failed to render output.', 'error': err});
 		}
 	}
-
-
 
 	if (_this.loaded) {
 

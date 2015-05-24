@@ -9,7 +9,9 @@
  
 var CAMERAS = (function () {
 
-	updateZoom = function(event){
+	var _orbit = 0;
+
+	_updateZoom = function(event){
 	
 		var zoom = 0.02, newZoom = zoom, delta = 0;
 
@@ -27,25 +29,25 @@ var CAMERAS = (function () {
 		this.bottom = - newZoom * (this.top   / zoom);
 	}
 
-	orbitAroundCenter = function(scene){
-		var timer = Date.now() * 0.0001;
-		
+	_orbitAroundCenter = function(scene){
+		var timer = _orbit * 0.0001;
+			_orbit = _orbit + 10;
+
 		this.position.x = Math.cos( timer ) * 500;
 		this.position.z = Math.sin( timer ) * 500;
 		this.lookAt( scene.position );
 	}
 
 	return {
-		DEFAULT: function(){
-			var width  = _this.model.canvas.width  || window.innerWidth,
-				height = _this.model.canvas.height || window.innerHeight,
+		DEFAULT: function(width, height){
+			var width  = width  || window.innerWidth,
+				height = height || window.innerHeight,
 				zoom   = 0.5;
 
 			var camera = new THREE.OrthographicCamera( zoom * -width, zoom * width, zoom * height, zoom * -height, 1, 1000 );
 				camera.position.set(0, 0, 100);
-				camera.updateZoom = updateZoom;
-				camera.orbitAroundCenter = orbitAroundCenter;
-
+				camera.updateZoom = _updateZoom;
+				camera.orbitAroundCenter = _orbitAroundCenter;
 
 			return camera;
 		}

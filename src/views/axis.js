@@ -35,8 +35,8 @@ VIEW.axis = function() {
 						y: parseInt(data[index].childNodes.extractNode('line').attributes.extractNode('y2').nodeValue)
 					};
 
-				var startX = UNITS.normalizeH(tickPosition.x + transform.x),
-					startY = UNITS.normalizeV(tickPosition.y + transform.y), 
+				var startX = UNITS.normalizeH(tickPosition.x + transform.x, this.properties.canvas),
+					startY = UNITS.normalizeV(tickPosition.y + transform.y, this.properties.canvas), 
 					endX   = startX + tickLine.x,
 					endY   = startY - tickLine.y;
 
@@ -78,10 +78,10 @@ VIEW.axis = function() {
 
 				for (var j = 1; j < points.length; j++) {
 
-					var startY = UNITS.normalizeV(parseInt(points[j-1].y)) - transform.y;
-						startX = UNITS.normalizeH(parseInt(points[j-1].x)) + transform.x;
-						endX   = UNITS.normalizeH(parseInt(points[j].x))   + transform.x;
-						endY   = UNITS.normalizeV(parseInt(points[j].y))   - transform.y;
+					var startY = UNITS.normalizeV(parseInt(points[j-1].y), this.properties.canvas) - transform.y;
+						startX = UNITS.normalizeH(parseInt(points[j-1].x), this.properties.canvas) + transform.x;
+						endX   = UNITS.normalizeH(parseInt(points[j].x), this.properties.canvas  ) + transform.x;
+						endY   = UNITS.normalizeV(parseInt(points[j].y), this.properties.canvas  ) - transform.y;
 
 					this.meshes.push(
 						GEOMETRIES.AXIS({

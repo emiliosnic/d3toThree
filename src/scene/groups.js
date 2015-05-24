@@ -10,11 +10,7 @@
 
 var GROUPS = (function () {
 	
-	randomIntFromInterval = function(min,max){
-    	return Math.floor(Math.random()*(max-min+1)+min);
-	}
-
-	expandZ = function(){
+	_expandZ = function(){
 
 		var nodeGroups = [];
 			totalConnectedLines = 0;
@@ -54,16 +50,17 @@ var GROUPS = (function () {
 			}
 		});
 
+		var plus = true;
 		nodeGroups.forEach(function(nodeGroup){
 
 			var zDepth = 1;
 
 			if (nodeGroup.lineIndices.length > 0) {
 				zDepth = 5000 * (nodeGroup.lineIndices.length)/ totalConnectedLines; 
-				zDepth = (Math.random()>0.5)? -zDepth : zDepth;
-				console.log(zDepth);
+				zDepth = (plus)? -zDepth : zDepth;
 			}
-
+			plus = !plus;
+			
 			// Update node depth
 			that.children[nodeGroup.circleIndex].position.setZ(zDepth);
 			
@@ -75,11 +72,48 @@ var GROUPS = (function () {
 		})
 
 	}
+	_highlightConnectedNodes = function(origin){
+		var that = this;
+		this.children.forEach(function(line){
+			if (line.type == "Line"){
+				for (var verticeIndex = 0; verticeIndex <=1; verticeIndex++) {
 
+					var xDiff = (Math.abs(line.geometry.vertices[verticeIndex].x) - Math.abs(origin.position.x)),
+						yDiff = (Math.abs(line.geometry.vertices[verticeIndex].y) - Math.abs(origin.position.y)),
+						zDiff = (Math.abs(line.geometry.vertices[verticeIndex].z) - Math.abs(origin.position.z));
+
+					if (Math.abs(xDiff + yDiff + zDiff) < 0.1){
+						// Unhide Line
+						line.show();
+						
+						// Update end nodes with colors
+						that.children.forEach(function(node){
+							if (node.type == "Mesh" && node != origin){
+								for (var verticeIndex = 0; verticeIndex <=1; verticeIndex++) {
+
+									var xDiff2 = (Math.abs(line.geometry.vertices[verticeIndex].x) - Math.abs(node.position.x)),
+										yDiff2 = (Math.abs(line.geometry.vertices[verticeIndex].y) - Math.abs(node.position.y)),
+										zDiff2 = (Math.abs(line.geometry.vertices[verticeIndex].z) - Math.abs(node.position.z));
+
+									if (Math.abs(xDiff2 + yDiff2 + zDiff2) < 0.1){
+										node.show();
+										line.material.color.set(node.material.color);
+										line.verticesNeedUpdate = true;
+									}
+								}
+							}
+						})
+					}
+				};
+			}
+		})
+	}
+	
 	return {
 		DEFAULT: function () {
 			var group = new THREE.Group();
-			group.expandZ = expandZ;
+			group.expandZ = _expandZ;
+			group.highlightConnectedNodes = _highlightConnectedNodes;
 
 			return group;
 		}

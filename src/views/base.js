@@ -13,14 +13,13 @@ VIEW.prototype.type = function(type){
 	var constr = type;
 
 	if (typeof VIEW[constr] !== "function"){
-		console.error(_this.about.name + " - Failed to construct VIEW - Caller:"+ arguments.callee.caller.name)
+		LOGGER.report({'message': ('Failed to construct VIEW - Caller '+arguments.callee.caller.name)});
 	}
 	if (typeof VIEW[constr].prototype.type !== "function") { 
 		VIEW[constr].prototype = new VIEW();
 	}
 	return new VIEW[constr]();
 }
-
 
 VIEW.prototype.setProperties = function(properties) {
 	this.properties = properties;

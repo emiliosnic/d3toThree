@@ -79,19 +79,19 @@ var UNITS = (function () {
 			}
 			return points;
 		},
-		normalizeV: function(value) {
+		normalizeV: function(value, canvas) {
 
-			var normalizedValue = (_this.model.canvas.height/2 - value),
-				normalizedValue = (value <= _this.model.canvas.height)? normalizedValue: -normalizedValue;
+			var normalizedValue = (canvas.height/2 - value),
+				normalizedValue = (value <= canvas.height)? normalizedValue: -normalizedValue;
 
-			return (normalizedValue - _this.model.canvas.offsetTop);
+			return (normalizedValue - canvas.offsetTop);
 		},
-		normalizeH: function(value) {
+		normalizeH: function(value, canvas) {
+			var normalizedValue = (canvas.width/2 - value),
+			
+				normalizedValue = (value <= canvas.width)? -normalizedValue: normalizedValue;
 
-			var normalizedValue = (_this.model.canvas.width/2 - value),
-				normalizedValue = (value <= _this.model.canvas.width)? -normalizedValue: normalizedValue;
-
-			return (normalizedValue + _this.model.canvas.offsetLeft);
+			return (normalizedValue + canvas.offsetLeft);
 
 		}
 

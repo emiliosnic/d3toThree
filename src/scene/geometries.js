@@ -9,26 +9,39 @@
 
 var GEOMETRIES = (function () {
 
-	unhide = function(){
+
+
+	// TODO:
+	//	 FIX HOW UNHIDE AND HIDE ARE CALLED!!
+	// 	PUT IN PROTOTYPES
+
+	_show = function(){
+		this.material.color.set(this.savedColor);
 		this.material.opacity = 1;
 		this.material.transparent = true;
+		this.verticesNeedUpdate = true;
 	}
-	hide = function(){
+	_hide = function(){
 		this.material.opacity = 0.1;
 		this.material.transparent = true;
 	}
+
 	return {
 		CIRCLE: function (properties) {
 			var circle = new THREE.Mesh(new THREE.CircleGeometry(properties.radius, 64), MATERIALS.DEFAULT_2D(properties.color));
 				circle.position.set(properties.x, properties.y, properties.z);
+				circle.show = _show;
+				circle.hide = _hide;
+				circle.savedColor = COLORS.normalize(properties.color);
 
 			return circle;
 		},
 		SPHERE: function (properties) {
 			var sphere = new THREE.Mesh(new THREE.SphereGeometry(properties.radius, 64, 64), MATERIALS.DEFAULT_3D(properties.color));
 				sphere.position.set(properties.x, properties.y, properties.z);
-				sphere.unhide = unhide;
-				sphere.hide = hide;
+				sphere.show = _show;
+				sphere.hide = _hide;
+				sphere.savedColor = COLORS.normalize(properties.color);
 
 			return sphere;
 		},
@@ -46,6 +59,8 @@ var GEOMETRIES = (function () {
 					properties.x - WIDTH/2, 
 					properties.y - WIDTH/2, 
 					properties.z );
+				textMesh.show = function(){};
+				textMesh.hide = function(){};
 
 			return textMesh;
 		},
@@ -58,8 +73,9 @@ var GEOMETRIES = (function () {
 				geometry.vertices.push(new THREE.Vector3(properties.x2, properties.y2, properties.z2));
 
 			var line = new THREE.Line(geometry, material);
-				line.unhide = unhide;
-				line.hide = hide;
+				line.show = _show;
+				line.hide = _hide;
+				line.savedColor = COLORS.normalize(properties.color);
 
 			return line;
 		},
@@ -71,9 +87,11 @@ var GEOMETRIES = (function () {
 				geometry.vertices.push(new THREE.Vector3(properties.x1, properties.y1, properties.z1));
 				geometry.vertices.push(new THREE.Vector3(properties.x2, properties.y2, properties.z2));
 
-			var line = new THREE.Line(geometry, material);
+			var axis = new THREE.Line(geometry, material);
+				axis.show = function(){};
+				axis.hide = function(){};
 
-			return line;
+			return axis;
 		}
 	}
 

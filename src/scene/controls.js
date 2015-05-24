@@ -9,9 +9,10 @@
 
 var CONTROLS = (function () {
 
-	setup = function(controls){
+	_setup = function(controls){
 		controls.rotateSpeed = 1.0;
 		controls.zoomSpeed   = 1.0;
+		controls.damping     = 0.2;
 		controls.noZoom      = true;
 		controls.dynamicDampingFactor = 1.0;
 	}
@@ -19,13 +20,13 @@ var CONTROLS = (function () {
 	return {
 		Trackball: function (camera) {
 			var	controls = new THREE.TrackballControls(camera);
-				setup(controls);
+				_setup(controls);
 
 			return controls;
 		},
 		Orbit: function (camera) {
 			var	controls = new THREE.OrbitControls( camera );
-				setup(controls);
+				_setup(controls);
 
 			return controls;
 		}	

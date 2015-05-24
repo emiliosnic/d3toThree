@@ -12,7 +12,7 @@ var LIGHTS = (function () {
 
 	var zDepth = 1;
 
-	alignToPosition = function(position){
+	_alignToPosition = function(position){
 		this.position
 		.set(
 			position.x, 
@@ -26,7 +26,7 @@ var LIGHTS = (function () {
 		DEFAULT: function () {
 			var light = new THREE.DirectionalLight(0xffffff);
 				light.position.set(0,0,zDepth).normalize();
-				light.alignToPosition = alignToPosition;
+				light.alignToPosition = _alignToPosition;
 
   			return light;
 		}

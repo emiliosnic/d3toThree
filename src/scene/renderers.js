@@ -12,11 +12,10 @@ var RENDERERS = (function () {
 
 		// TODO: CHANGE THIS TO DEFAULT
 		
-		DEFAULT: function (properties) {
+		DEFAULT: function (width, height) {
 
-			var width  = _this.model.canvas.width  || window.innerWidth,
-				height = _this.model.canvas.height || window.innerHeight;
-
+			var width  = width  || window.innerWidth,
+				height = height || window.innerHeight;
 
 			var renderer = new THREE.WebGLRenderer();
 				renderer.setClearColor(0xffffff);

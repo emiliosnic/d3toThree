@@ -20,6 +20,11 @@ extend(d3.selection.prototype, {
 		// TODO:
 		// TODO:
 
+		// TODO:
+		// USE THE FOLLOWING DETECTOR
+
+		// http://threejs.org/examples/js/Detector.js
+
 		// REMOVE _this.prototypes --> they are useless? 
 		
 		// TODO:
@@ -27,10 +32,13 @@ extend(d3.selection.prototype, {
 
 		// Also add support for 1+ svg elements in screen (with init: source and target)
 
+		// TODO:
+		// TODO:
 		
 
 		this.axis = function(){
-			_this.model.axes.push({
+
+			_this.instances[_this.currentInstance].model.axes.push({
 				'data'      : this[0].extractNode('g').childNodes,
 				'transform' : this[0].extractNode('g').attributes.extractNode('transform').nodeValue
 			})
@@ -38,7 +46,7 @@ extend(d3.selection.prototype, {
 		},
 
 		this.data = function(){
-			_this.model.content.push({
+			_this.instances[_this.currentInstance].model.content.push({
 				'data' : this[0],
 				'type' : this[0][0].nodeName
 			})
@@ -48,7 +56,7 @@ extend(d3.selection.prototype, {
 
 			var sprite = this[0].extractNode('text');
 			
-			_this.model.texts.push({
+			_this.instances[_this.currentInstance].model.texts.push({
 				'x'   : (sprite.attributes.extractNode('x').nodeValue) || 0,
 				'y'   : (sprite.attributes.extractNode('y').nodeValue) || 0,
 				'val' : sprite.textContent,
@@ -162,21 +170,24 @@ _this.setupHooks = ({
 
 			if (arguments[0] === 'svg'){
 
-				_this.model.canvas.source = this[0][0].id;
+				// For each SVG create a new graph 
+				// Createa controller for each canvas
+				var svgID = this[0][0].id;
+				_this.instances[svgID] = new Controller();
+				_this.currentInstance = svgID;
 
 				observerFactory.observe(
 					observerFactory.type('attr').expectKey('width').then(function(value){
-						_this.model.canvas.width = value;
+						_this.instances[svgID].canvas.width = value;
 					}),
 					observerFactory.type('attr').expectKey('height').then(function(value){
-						_this.model.canvas.height = value;
+						_this.instances[svgID].canvas.height = value;
 					}),
 					observerFactory.type('append').expectKey('g').then(function(value){}),
 					observerFactory.type('attr').expectKey('transform').then(function(value){
 						var offsets = UNITS.extractTranslation(value);
-							_this.model.canvas.offsetLeft = offsets.x;
-							_this.model.canvas.offsetTop  = offsets.y;
-
+							_this.instances[svgID].canvas.offsetLeft = offsets.x;
+							_this.instances[svgID].canvas.offsetTop  = offsets.y;
 					})
 				);
 			} 
