@@ -688,7 +688,6 @@ VIEW.line = function() {
 
 	this.load = function(data){
 
-
 		var that = this;
 
 		data.forEach(function (item) {
