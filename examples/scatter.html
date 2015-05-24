@@ -32,23 +32,13 @@
 		</li>
 	</ul>
 
+    <script src="scatter_data.js"></script>
 	<script type="text/javascript">
 
 		var margin = {top: 20, right: 20, bottom: 30, left: 40},
 			width  = 550 - margin.left - margin.right,
 			height = 250 - margin.top  - margin.bottom;
 
-		var nodes = [
-			{'Name': 'Node 1', 'Category': 'A', 'Calories':10 , 'Protein (g)':4, 'radius': 8  },
-			{'Name': 'Node 2', 'Category': 'A', 'Calories':20 , 'Protein (g)':6, 'radius': 9  },
-			{'Name': 'Node 3', 'Category': 'B', 'Calories':30 , 'Protein (g)':2, 'radius': 8  },
-			{'Name': 'Node 4', 'Category': 'B', 'Calories':40 , 'Protein (g)':2, 'radius': 16  },
-			{'Name': 'Node 5', 'Category': 'A', 'Calories':60 , 'Protein (g)':3, 'radius': 11 },
-			{'Name': 'Node 6', 'Category': 'A', 'Calories':80 , 'Protein (g)':8, 'radius': 10  },
-			{'Name': 'Node 7', 'Category': 'C', 'Calories':63 , 'Protein (g)':7, 'radius': 20 },
-			{'Name': 'Node 8', 'Category': 'C', 'Calories':69 , 'Protein (g)':10, 'radius': 12 },
-			{'Name': 'Node 9', 'Category': 'A', 'Calories':30 , 'Protein (g)':8, 'radius': 12 }
-		];
 		nodes.forEach(function(d) {
 			d.Calories = +d.Calories;
 			d["Protein (g)"] = +d["Protein (g)"];
