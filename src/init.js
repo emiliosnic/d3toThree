@@ -61,13 +61,11 @@ var d3to3 = (function () {
 	_this.render = function(properties){
 		try {
 			if (Object.keys(_this.instances).length > 0 ){ 
-				
+
 				if (   properties.hasOwnProperty('source')
 					&& _this.instances.hasOwnProperty(properties['source'])) {
-
 					_this.instances[properties['source']].configure(properties)
 					_this.instances[properties['source']].setup();
-
 				}
 			} else {
 				LOGGER.report({'message': 'Failed to render output. No SVG source was set!'});

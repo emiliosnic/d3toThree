@@ -20,8 +20,7 @@ extend(d3.selection.prototype, {
 				'transform' : this[0].extractNode('g').attributes.extractNode('transform').nodeValue
 			})
 			return this;
-		},
-
+		}
 		this.data = function(){
 			_this.instances[_this.currentInstance].model.content.push({
 				'data' : this[0],
@@ -29,17 +28,18 @@ extend(d3.selection.prototype, {
 			})
 			return this;
 		}
-		this.text = function(){
 
+		this.text = function(){
 			var sprite = this[0].extractNode('text');
-			
 			_this.instances[_this.currentInstance].model.texts.push({
-				'x'   : (sprite.attributes.extractNode('x').nodeValue) || 0,
-				'y'   : (sprite.attributes.extractNode('y').nodeValue) || 0,
-				'val' : sprite.textContent,
+				'x'         : (sprite.attributes.extractNode('x').nodeValue) || 0,
+				'y'         : (sprite.attributes.extractNode('y').nodeValue) || 0,
+				'val'       : sprite.textContent,
 				'transform' : sprite.attributes.extractNode('transform').nodeValue,
-				'length' : sprite.textLength.baseVal.value
+				'length'    : sprite.textLength.baseVal.value,
+				'type'      : this[0][0].nodeName
 			})
+
 			return this;
 		}    
 	    return this;

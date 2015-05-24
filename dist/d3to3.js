@@ -61,13 +61,11 @@ var d3to3 = (function () {
 	_this.render = function(properties){
 		try {
 			if (Object.keys(_this.instances).length > 0 ){ 
-				
+
 				if (   properties.hasOwnProperty('source')
 					&& _this.instances.hasOwnProperty(properties['source'])) {
-
 					_this.instances[properties['source']].configure(properties)
 					_this.instances[properties['source']].setup();
-
 				}
 			} else {
 				LOGGER.report({'message': 'Failed to render output. No SVG source was set!'});
@@ -100,8 +98,7 @@ extend(d3.selection.prototype, {
 				'transform' : this[0].extractNode('g').attributes.extractNode('transform').nodeValue
 			})
 			return this;
-		},
-
+		}
 		this.data = function(){
 			_this.instances[_this.currentInstance].model.content.push({
 				'data' : this[0],
@@ -109,17 +106,18 @@ extend(d3.selection.prototype, {
 			})
 			return this;
 		}
-		this.text = function(){
 
+		this.text = function(){
 			var sprite = this[0].extractNode('text');
-			
 			_this.instances[_this.currentInstance].model.texts.push({
-				'x'   : (sprite.attributes.extractNode('x').nodeValue) || 0,
-				'y'   : (sprite.attributes.extractNode('y').nodeValue) || 0,
-				'val' : sprite.textContent,
+				'x'         : (sprite.attributes.extractNode('x').nodeValue) || 0,
+				'y'         : (sprite.attributes.extractNode('y').nodeValue) || 0,
+				'val'       : sprite.textContent,
 				'transform' : sprite.attributes.extractNode('transform').nodeValue,
-				'length' : sprite.textLength.baseVal.value
+				'length'    : sprite.textLength.baseVal.value,
+				'type'      : this[0][0].nodeName
 			})
+
 			return this;
 		}    
 	    return this;
@@ -831,18 +829,16 @@ VIEW.text = function() {
 	this.type = 'text';    
 	this.meshes = [];
 
-	var that = this;
-
 	this.load = function(text){
 
-		var offsetX  = UNITS.normalizeH(text.x),
-			offsetY  = UNITS.normalizeV(text.y),
+		var offsetX  = UNITS.normalizeH(text.x, this.properties.canvas),
+			offsetY  = UNITS.normalizeV(text.y, this.properties.canvas),
 			rotation = UNITS.extractRotation(text.transform);
 
 		if (! rotation) 
  			offsetX -= text.length;
 
-		that.meshes.push(GEOMETRIES.TEXT({ x: offsetX, y: offsetY, z: 0, text: text.val}));
+		this.meshes.push(GEOMETRIES.TEXT({ x: offsetX, y: offsetY, z: 0, text: text.val}));
 	}
 };
 /**
@@ -1014,7 +1010,15 @@ function Controller() {
 		
 		// Setup Data View
 
+
+		console.log("SETUP VIEWS");
+
+
 		_controller.model.content.forEach(function(view){
+
+			console.log("View...");
+			console.log(view);
+
 			new VIEW()
 				.type(view.type)
 				.setProperties({
@@ -1039,12 +1043,11 @@ function Controller() {
 				.appendTo(group);
 		})
 
-
 		// Setup Text View
 
 		_controller.model.texts.forEach(function(text){
 			new VIEW()
-				.type('text')
+				.type(text.type)
 				.setProperties({
 					'canvas':_controller.canvas,
 					'3D':    _controller.config['3D']
@@ -1055,7 +1058,7 @@ function Controller() {
 
 		// Flush Model
 
-		_controller.model.content = {};
+		_controller.model.content = [];
 
 		// Flush the SVG tree (If source and targer are the same)
 
@@ -1075,6 +1078,8 @@ function Controller() {
 			.add(camera)
 			.add(light)
 			.add(group);
+
+
 	}
 
 	/**
@@ -1179,7 +1184,20 @@ function Controller() {
 	 * Public Methods
 	 */ 
 
+	_controller.updateMeshes = function(){
+
+		console.log("UPDATING MESHES");
+		console.log(_controller.model.content);
+
+        if (group instanceof THREE.Group){
+	        scene.remove(group);
+        }
+        setupViews();
+
+	}
+
 	_controller.setup = function(){
+
 		setupCanvas();
 		setupViews();
 		animate();

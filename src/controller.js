@@ -89,7 +89,15 @@ function Controller() {
 		
 		// Setup Data View
 
+
+		console.log("SETUP VIEWS");
+
+
 		_controller.model.content.forEach(function(view){
+
+			console.log("View...");
+			console.log(view);
+
 			new VIEW()
 				.type(view.type)
 				.setProperties({
@@ -114,12 +122,11 @@ function Controller() {
 				.appendTo(group);
 		})
 
-
 		// Setup Text View
 
 		_controller.model.texts.forEach(function(text){
 			new VIEW()
-				.type('text')
+				.type(text.type)
 				.setProperties({
 					'canvas':_controller.canvas,
 					'3D':    _controller.config['3D']
@@ -130,7 +137,7 @@ function Controller() {
 
 		// Flush Model
 
-		_controller.model.content = {};
+		_controller.model.content = [];
 
 		// Flush the SVG tree (If source and targer are the same)
 
@@ -150,6 +157,8 @@ function Controller() {
 			.add(camera)
 			.add(light)
 			.add(group);
+
+
 	}
 
 	/**
@@ -254,7 +263,20 @@ function Controller() {
 	 * Public Methods
 	 */ 
 
+	_controller.updateMeshes = function(){
+
+		console.log("UPDATING MESHES");
+		console.log(_controller.model.content);
+
+        if (group instanceof THREE.Group){
+	        scene.remove(group);
+        }
+        setupViews();
+
+	}
+
 	_controller.setup = function(){
+
 		setupCanvas();
 		setupViews();
 		animate();
