@@ -34,7 +34,6 @@
 
 	<script type="text/javascript">
 
-
 		var margin = {top: 20, right: 20, bottom: 30, left: 40},
 			width  = 550 - margin.left - margin.right,
 			height = 250 - margin.top  - margin.bottom;
@@ -91,17 +90,13 @@
 		svg.append("g")	
 			.attr("class", "x axis")
 			.call(xAxis)
-			// #####################
 			.d3to3().axis();
-			// #####################
 
 		// Y Axis
 		svg.append("g")
 			.attr("class", "y axis")
 			.call(yAxis)
-			// #####################
 			.d3to3().axis();
-			// #####################
 
 		// Draw Circles
 		svg.selectAll()
@@ -111,18 +106,13 @@
 			.attr("cx", xMap)
 			.attr("cy", yMap)
 			.style("fill", function(d) { return color(cValue(d));})
-			// #####################
 			.d3to3().data();
-			// #####################
 
-		// #####################
-		
 		d3to3.render({
 			'source': 'd3_panel',
 			'target': 'd3to3_panel'
 		})
 
-		// #####################
 	</script>
 
 </body>

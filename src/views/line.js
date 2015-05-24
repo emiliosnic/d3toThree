@@ -14,7 +14,9 @@ VIEW.line = function() {
 
 	this.load = function(data){
 
+
 		var that = this;
+
 		data.forEach(function (item) {
 
 			var attributes = item.extractNode('attributes'),
@@ -30,7 +32,19 @@ VIEW.line = function() {
 				y2 = UNITS.normalizeV(y2_base, that.properties.canvas),
 				thickness = 2 * UNITS.extractThickness(thickness_style);
 
-			that.meshes.push(GEOMETRIES.LINE({ x1: x1, y1: y1, z1:0, x2: x2, y2: y2, z2:0, thickness: thickness, color: '#999999'}));
+
+			// Setup default parameters
+			var lineColor = 0x000000;
+
+			// Update with external style (if any)
+			if (    that.properties.style 
+				&& that.properties.style[that.type]
+				&& that.properties.style[that.type].color){
+
+				lineColor = that.properties.style[that.type].color;
+			}
+
+			that.meshes.push(GEOMETRIES.LINE({ x1: x1, y1: y1, z1:0, x2: x2, y2: y2, z2:0, thickness: thickness, color: lineColor}));
 
 		});
 	}

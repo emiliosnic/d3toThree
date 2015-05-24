@@ -93,8 +93,9 @@ function Controller() {
 			new VIEW()
 				.type(view.type)
 				.setProperties({
-					'canvas':_controller.canvas,
-					'3D':    _controller.config['3D']
+					'canvas': _controller.canvas,
+					'3D'    : _controller.config['3D'],
+					'style' : _controller.config.style
 				})
 				.loadData(view.data)
 				.appendTo(group);

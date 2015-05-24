@@ -13,14 +13,9 @@
 	<link rel="stylesheet" href="../assets/style.css">
 
 
-
 	<style type="text/css">
-		.node {
-		  stroke: #fff;
-		  stroke-width: 1.5px;
-		}
 		.link {
-		  stroke: #999;
+		  stroke: #808080;
 		}
 	</style>
 
@@ -136,6 +131,11 @@ var force = d3.layout.force()
             'controls': true, 
             'orbit': true, 
             'network': true, 
+            'style': {
+                'line': {
+                    'color':'#808080'
+                } 
+            },
         })
     }); 
     var n = networkData.nodes.length;
