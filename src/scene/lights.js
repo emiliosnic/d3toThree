@@ -12,13 +12,14 @@ var LIGHTS = (function () {
 
 	var zDepth = 1;
 
+	/**
+	 * Align light to given position
+	 */ 
+
 	_alignToPosition = function(position){
-		this.position
-		.set(
-			position.x, 
-			position.y, 
-			position.z - zDepth
-		)
+		this
+		.position
+		.set( position.x, position.y, position.z - zDepth)
 		.normalize();
 	}
 

@@ -9,30 +9,30 @@
 
 var d3to3 = (function () {
 
-	var _this = {},
-		_d3   = {};
-
-	_this.loaded = false;
-	_this.about = {
-		name: "d3to3",
-		version: "0.0.1"
-	};
-
 	/**
-	 * Default Config
+	 * Library Configuration
 	 */
+
+	var _d3   = {};
+	var _this = {
+		loaded: false,
+		about: {
+			name: "d3to3",
+			version: "0.0.1"
+		}			
+	};
 	
+	/**
+	 * Controller Instances
+	 */
+
 	 _this.instances = {};
 	 _this.currentInstance = undefined;
 
-	/*
+	/**
+	 * Intiializer
+	 */
 
-		Instance are going ot be contrllers that are initialized with:
-		 - model 
-		 - config 
-
-		And controller should be initiali 
-	*/	 
 	_this.initializer = ({
 		init: function () {
 
@@ -54,9 +54,12 @@ var d3to3 = (function () {
 		}
 	}).init();
 
+	/**
+	 * Public API
+	 */
+
 	_this.render = function(properties){
 		try {
-
 			if (Object.keys(_this.instances).length > 0 ){ 
 				
 				if (   properties.hasOwnProperty('source')
@@ -69,11 +72,9 @@ var d3to3 = (function () {
 			} else {
 				LOGGER.report({'message': 'Failed to render output. No SVG source was set!'});
 			}
-			
 		} catch(err ){
 				LOGGER.report({'message': 'Failed to render output.', 'error': err});
 		}
 	}
 
 	if (_this.loaded) {
-

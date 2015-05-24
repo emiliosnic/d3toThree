@@ -25,7 +25,7 @@ var MATERIALS = (function () {
 		LINE: function (color, thickness) {
 			return (new THREE.LineBasicMaterial({ 'color': COLORS.normalize(color), 'linewidth': thickness}));
 		},
-		AXIS: function (color, thickness) {
+		AXIS: function (color) {
 			return (new THREE.LineBasicMaterial({ 'color': COLORS.normalize(color)}));
 		}
 	};

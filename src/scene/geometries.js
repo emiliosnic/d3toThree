@@ -9,20 +9,23 @@
 
 var GEOMETRIES = (function () {
 
-
-
-	// TODO:
-	//	 FIX HOW UNHIDE AND HIDE ARE CALLED!!
-	// 	PUT IN PROTOTYPES
+	/**
+	 * Restore object color and opacity
+	 */ 
 
 	_show = function(){
 		this.material.color.set(this.savedColor);
-		this.material.opacity = 1;
+		this.material.opacity     = 1;
 		this.material.transparent = true;
-		this.verticesNeedUpdate = true;
+		this.verticesNeedUpdate   = true;
 	}
+
+	/**
+	 * Hide object (by setting low opacity)
+	 */ 
+
 	_hide = function(){
-		this.material.opacity = 0.1;
+		this.material.opacity     = 0.1;
 		this.material.transparent = true;
 	}
 
@@ -59,6 +62,8 @@ var GEOMETRIES = (function () {
 					properties.x - WIDTH/2, 
 					properties.y - WIDTH/2, 
 					properties.z );
+
+				// Disable hide and show controls for text sprites
 				textMesh.show = function(){};
 				textMesh.hide = function(){};
 
@@ -88,6 +93,8 @@ var GEOMETRIES = (function () {
 				geometry.vertices.push(new THREE.Vector3(properties.x2, properties.y2, properties.z2));
 
 			var axis = new THREE.Line(geometry, material);
+
+				// Disable hide and show controls for axis
 				axis.show = function(){};
 				axis.hide = function(){};
 

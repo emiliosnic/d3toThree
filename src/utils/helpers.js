@@ -80,7 +80,7 @@ ObserverFactory.prototype.type = function(type){
 	var constr = type;
 
 	if (typeof ObserverFactory[constr] !== "function"){
-		// TOODO: Handle error  
+		LOGGER.report({'message': ('Failed to create Observer Factory instance - Caller '+arguments.callee.caller.name)});
 	}
 	if (typeof ObserverFactory[constr].prototype.drive !== "function") { 
 		ObserverFactory[constr].prototype = new ObserverFactory();

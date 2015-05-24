@@ -16,6 +16,7 @@ var UNITS = (function () {
 			input = input.replace("px;", "");
 
 			var values = parseInt(input) || 1;
+	
 			return values;
 		},
 		extractTranslation: function (input) {
@@ -37,6 +38,7 @@ var UNITS = (function () {
 				return 0;
 
 			// Convert to clockwise
+
 			var degrees = /\(([^)]+)\)/.exec(input)[1],
 				degrees = (degrees<0)? (360 - Math.abs(degrees)): degrees;
 
@@ -65,9 +67,7 @@ var UNITS = (function () {
 				}
 			});
 
-			/**
-			 * Normalize all points to numbers 
-			 */ 
+			// Normalize all points to numbers 
 
 			for (var j = 1; j < points.length; j++) {
 				if (points[j].x == "V") {
@@ -86,13 +86,12 @@ var UNITS = (function () {
 
 			return (normalizedValue - canvas.offsetTop);
 		},
+
 		normalizeH: function(value, canvas) {
 			var normalizedValue = (canvas.width/2 - value),
-			
 				normalizedValue = (value <= canvas.width)? -normalizedValue: normalizedValue;
 
 			return (normalizedValue + canvas.offsetLeft);
-
 		}
 
 	};

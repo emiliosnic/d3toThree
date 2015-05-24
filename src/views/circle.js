@@ -12,12 +12,6 @@ VIEW.circle = function() {
 	this.type = 'circle';
 	this.meshes = []; 
 
-
-	/*
-	 * TODO:
-	 * 	Construct a mesh tree, starting from the center object and push all the objects by close neighbours
-	 */ 
-
 	this.load = function(data){
 
 		var that = this;
@@ -32,11 +26,15 @@ VIEW.circle = function() {
 				y = UNITS.normalizeV(offsetY, that.properties.canvas);
 	
 			if (that.properties['3D']){
-				// 3D Mode
+				/*
+				 * 3D View
+				 */
 				that.meshes.push(GEOMETRIES.SPHERE({ radius: radius, color: color, x: x, y: y, z: 0}));
 
 			} else {
-				// 2D Mode
+				/*
+				 * 2D View
+				 */
 				var circle = GEOMETRIES.CIRCLE({ radius: radius, color: color, x: x, y: y, z: 0});
 				that.meshes.push(circle);
 			}

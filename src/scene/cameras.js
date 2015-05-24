@@ -9,11 +9,16 @@
  
 var CAMERAS = (function () {
 
-	var _orbit = 0;
+	var _orbitDelta = 0;
 
+	/**
+	 * Zoom support for orthogonal Camera
+	 */ 
 	_updateZoom = function(event){
 	
-		var zoom = 0.02, newZoom = zoom, delta = 0;
+		var zoom    = 0.02, 
+			newZoom = zoom, 
+			delta   = 0;
 
 		/**
 		 * Support for WebKit / Opera / Explorer 9 / Firefox
@@ -29,12 +34,18 @@ var CAMERAS = (function () {
 		this.bottom = - newZoom * (this.top   / zoom);
 	}
 
+	/**
+	 * Orbits camera around scene center in linear form
+	 */ 
 	_orbitAroundCenter = function(scene){
-		var timer = _orbit * 0.0001;
-			_orbit = _orbit + 10;
+		var orbitAmount = _orbitDelta * 0.0001;
+			_orbitDelta = _orbitDelta + 10;
 
-		this.position.x = Math.cos( timer ) * 500;
-		this.position.z = Math.sin( timer ) * 500;
+		// Update camera position
+		this.position.x = Math.cos( orbitAmount ) * 500;
+		this.position.z = Math.sin( orbitAmount ) * 500;
+
+		// Orient camera to scene center
 		this.lookAt( scene.position );
 	}
 
@@ -42,10 +53,11 @@ var CAMERAS = (function () {
 		DEFAULT: function(width, height){
 			var width  = width  || window.innerWidth,
 				height = height || window.innerHeight,
-				zoom   = 0.5;
+				zoom   = 0.5,
+				zDepth = 100;
 
 			var camera = new THREE.OrthographicCamera( zoom * -width, zoom * width, zoom * height, zoom * -height, 1, 1000 );
-				camera.position.set(0, 0, 100);
+				camera.position.set(0, 0, zDepth);
 				camera.updateZoom = _updateZoom;
 				camera.orbitAroundCenter = _orbitAroundCenter;
 

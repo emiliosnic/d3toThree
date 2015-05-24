@@ -9,9 +9,6 @@
  
 var RENDERERS = (function () {
 	return {
-
-		// TODO: CHANGE THIS TO DEFAULT
-		
 		DEFAULT: function (width, height) {
 
 			var width  = width  || window.innerWidth,

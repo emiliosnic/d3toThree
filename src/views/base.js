@@ -33,25 +33,6 @@ VIEW.prototype.loadData = function(data) {
 
 VIEW.prototype.appendTo = function(group) {
 
-	/*
-     * Make sure that the meshes are  not touchning 
-
-	var determineDistance = function(position){
-		return Math.abs(position.x) + Math.abs(position.y) + Math.abs(position.z);
-	};
-
-	var center_mesh  = undefined,
-		center_mesh_distance = 9999999999999999;
-
-	for (var i = this.meshes.length - 1; i >= 0; i--) {
-		var distance_from_origin = determineDistance(this.meshes[i].position);
-		if (distance_from_origin < center_mesh_distance){
-			center_mesh_distance = distance_from_origin;
-			center_mesh =this.meshes[i];
-		}
-	};
-	*/
-
 	if (group && group instanceof THREE.Group){
 		this.meshes.forEach(function(item){
 			item.userData.parent = group;

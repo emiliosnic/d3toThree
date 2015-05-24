@@ -32,8 +32,6 @@ module.exports = function(grunt) {
               'src/utils/units.js',
               'src/teardown.js',
               'src/dependencies/OrbitControls.js', 
-              'src/dependencies/TrackballControls.js', 
-              'src/dependencies/CanvasRenderer.js', 
               'src/dependencies/helvetiker_regular.typeface.js', 
               ],
         dest: 'dist/<%= pkg.name %>.js',

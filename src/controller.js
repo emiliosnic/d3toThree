@@ -15,36 +15,41 @@ function Controller() {
 	/**
 	 * Initialize Controller
 	 */ 
-		_controller.config = { 
-			'source'   : undefined, 
-			'target'   : undefined,
-			'controls' : false,
-			'3D'       : false,
-			'orbit'    : false
-		};
-		_controller.canvas = {
-			offsetLeft: 0,
-			offsetTop: 0,
-			width: null, 
-			height: null 
+
+	_controller.initializer = ({
+		init: function () {
+			_controller.config = { 
+				'source'   : undefined, 
+				'target'   : undefined,
+				'controls' : false,
+				'3D'       : false,
+				'orbit'    : false
+			};
+			_controller.canvas = {
+				offsetLeft : 0,
+				offsetTop  : 0,
+				width      : null, 
+				height     : null 
+			}
+			_controller.model = { 
+				axes    : [],
+				texts   : [],
+				content : []
+			}; 
 		}
-
-		_controller.model = { 
-			axes: [],
-			texts: [],
-			content: []
-		}; 
-
-		/*
-			.render({
-				'svg':    <ID>  // required, check the model to find hte correct ID
-				'target':  <TARGET> // optinoal, default makes it source and erase
-			})
-		*/
+	}).init();
 
 
-	var camera, renderer, scene, group, container, controls, canvas, light, mouse, raycaster;
-	var ENABLE_ANIMATION = true;
+	/**
+	 * Create protected canvas objects 
+	 */ 
+
+	var camera, renderer, scene, group, container, controls, canvas, light, mouse, raycaster,
+		ENABLE_ANIMATION = true;
+
+	/**
+	 * Setup WebGL Canvas 
+	 */ 
 
 	var setupCanvas = function () {	
 
@@ -76,11 +81,13 @@ function Controller() {
 		container.appendChild( renderer.domElement );
 	};
 
+	/**
+	 * Setup Views 
+	 */ 
 
-	var init = function () {	
-		/**
-		 * Setup Data View
-		 */ 
+	var setupViews = function () {	
+		
+		// Setup Data View
 
 		_controller.model.content.forEach(function(view){
 			new VIEW()
@@ -93,9 +100,8 @@ function Controller() {
 				.appendTo(group);
 		});
 
-		/**
-		 * Setup Axes View
-		 */ 
+		// Setup Axes View
+
 		_controller.model.axes.forEach(function(axis){
 			new VIEW()
 				.type('axis')
@@ -108,9 +114,8 @@ function Controller() {
 		})
 
 
-		/**
-		 * Setup Text View
-		 */ 
+		// Setup Text View
+
 		_controller.model.texts.forEach(function(text){
 			new VIEW()
 				.type('text')
@@ -122,50 +127,43 @@ function Controller() {
 				.appendTo(group);
 		})
 
-
-		/**
-		 * Flush Model
-		 */ 
+		// Flush Model
 
 		_controller.model.content = {};
 
-
-		/**
-		 * IScene
-		 */ 
-		if (_controller.config.network && _controller.config['3D']){
-			group.expandZ();
-		}
-
-
-		/**
-		 * Setup Scene
-		 */ 
-
-		scene = (new THREE.Scene())
-			.add(camera)
-			.add(light)
-			.add(group);
-
-		/**
-		 * If source and targer are the same, then flush the SVG tree
-		 */ 
+		// Flush the SVG tree (If source and targer are the same)
 
 		if (_controller.config.source == _controller.config.target || _controller.config.target == undefined){
 			document.getElementById(_controller.config.source).getElementsByTagName('svg')[0].remove();
 		} 
 
+		// Process network graph (if any)
+
+		if (_controller.config.network && _controller.config['3D']){
+			group.expandZ();
+		}
+
+		// Populate scene 
+
+		scene = (new THREE.Scene())
+			.add(camera)
+			.add(light)
+			.add(group);
 	}
+
+	/**
+	 * Animate helper
+	 */ 
 
 	var animate = function () {	
+
 		requestAnimationFrame(animate);
-
-		// stats2.begin();
-
 		render();
-
-		// stats2.end();
 	}
+
+	/**
+	 * Render helper
+	 */ 
 
 	var render = function() {	
 		if (ENABLE_ANIMATION && _controller.config.orbit ){
@@ -176,14 +174,24 @@ function Controller() {
 		renderer.render( scene, camera );
 	}
 
+	/**
+	 * Window resize helper
+	 */ 
+
 	function onWindowResize() {
+
 		camera.aspect = window.innerWidth / window.innerHeight;
 		camera.updateProjectionMatrix();
 		renderer.setSize( window.innerWidth, window.innerHeight );
 		render();
 	}
 
+	/**
+	 * Mouse Wheel helper (for orthogonal camera)
+	 */ 
+
 	var mousewheel = function(event) {
+
 		event.preventDefault();
 		event.stopPropagation();
 
@@ -193,10 +201,16 @@ function Controller() {
 		renderer.render(scene,camera);
 	}
 	
+	/**
+	 * Mouse Move processing (for network and 3D mode)
+	 */ 
 
 	function onDocumentMouseMove( event ) {
-
+		
 		event.preventDefault();
+
+		if (!_controller.config.network || !_controller.config['3D'])
+			return;
 
 		var xPerc = (UNITS.normalizeH(event.offsetX-_controller.canvas.offsetLeft,_controller.canvas)/renderer.domElement.width  * 4 ),
 			yPerc = (UNITS.normalizeV(event.offsetY-_controller.canvas.offsetTop, _controller.canvas)/renderer.domElement.height * 4 );
@@ -235,21 +249,30 @@ function Controller() {
 		}
 	}
 
-	// 	PUBLIC METHODS
+	/**
+	 * Public Methods
+	 */ 
+
 	_controller.setup = function(){
 		setupCanvas();
-		init();
+		setupViews();
 		animate();
 	}
+
 	_controller.configure = function(properties){
 		try {
 			for (property in properties){
 				_controller.config[property] = properties[property];
 			} 
 		} catch (err){
-			LOGGER.report({'message': 'Failed to setup configuration', 'error':err });
+			LOGGER.report({'message': 'Failed to configure library ', 'error':err });
 		}
 	}
+
+	/**
+	 * Return instance reference
+	 */ 
+
 	return _controller ;
 }
 

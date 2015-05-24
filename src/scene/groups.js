@@ -10,12 +10,17 @@
 
 var GROUPS = (function () {
 	
+	/**
+	 * Determine z offsets for group's meshes and expand
+	 */ 
+
 	_expandZ = function(){
 
 		var nodeGroups = [];
 			totalConnectedLines = 0;
 		
 		var that = this;
+
 		this.children.forEach(function(circle, circleIndex){
 			if (circle.type == "Mesh"){
 
@@ -32,8 +37,6 @@ var GROUPS = (function () {
 								zDiff = (Math.abs(line.geometry.vertices[vertexIndex].z) - Math.abs(circle.position.z));
 
 							if (Math.abs(xDiff + yDiff + zDiff) < 0.1){
-								// line.geometry.vertices[vertexIndex].z = zDepth;
-								// line.geometry.verticesNeedUpdate = true;
 								totalConnectedLines+=1;
 								groupConnectedLinesIndices.push({
 									'lineIndex':lineIndex,
@@ -70,10 +73,16 @@ var GROUPS = (function () {
 				that.children[line.lineIndex].geometry.verticesNeedUpdate = true;
 			});
 		})
-
 	}
+
+	/**
+	 * Call hide on connected nodes for network groups
+	 */ 
+
 	_highlightConnectedNodes = function(origin){
+
 		var that = this;
+
 		this.children.forEach(function(line){
 			if (line.type == "Line"){
 				for (var verticeIndex = 0; verticeIndex <=1; verticeIndex++) {
@@ -83,6 +92,7 @@ var GROUPS = (function () {
 						zDiff = (Math.abs(line.geometry.vertices[verticeIndex].z) - Math.abs(origin.position.z));
 
 					if (Math.abs(xDiff + yDiff + zDiff) < 0.1){
+
 						// Unhide Line
 						line.show();
 						
@@ -104,7 +114,7 @@ var GROUPS = (function () {
 							}
 						})
 					}
-				};
+				}
 			}
 		})
 	}
