@@ -1,18 +1,24 @@
 
 /**
- *   File: 
- *         utils/units.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: utils/units.js
  */
 
 var UNITS = (function () {
+
 	return {
+		extractThickness: function (input) {
+			
+			input = input.replace("stroke-width: ", "");
+			input = input.replace("px;", "");
+
+			var values = parseInt(input) || 1;
+	
+			return values;
+		},
 		extractTranslation: function (input) {
 			
 			if (typeof input !== "string")
-				return { x: -1, y: -1};
+				return { x: 0, y: 0};
 
 			var translation = /\(([^)]+)\)/.exec(input)[1].split(','),
 				offsetX = parseInt(translation[0]) || 0,
@@ -23,12 +29,23 @@ var UNITS = (function () {
 				y: offsetY
 			};
 		},
+		extractRotation: function (input) {
+			if (typeof input !== "string")
+				return 0;
+
+			// Convert to clockwise
+
+			var degrees = /\(([^)]+)\)/.exec(input)[1],
+				degrees = (degrees<0)? (360 - Math.abs(degrees)): degrees;
+
+			var radians = THREE.Math.degToRad(degrees);
+
+			return radians;
+		},
 		extractSVGPath: function(input) {
 
 			var points = [],
 				parsedInput = input.split(/(?=[MVHV])/);
-
-			// Extract points 
 
 			parsedInput.forEach(function(item, i){
 
@@ -58,11 +75,20 @@ var UNITS = (function () {
 			}
 			return points;
 		},
-		normalizeV: function(value) {
-			return (value <= _this.model.canvas.height) ? (_this.model.canvas.height/2 - value): -(_this.model.canvas.height/2 - value); 
+		normalizeV: function(value, canvas) {
+
+			var normalizedValue = (canvas.height/2 - value),
+				normalizedValue = (value <= canvas.height)? normalizedValue: -normalizedValue;
+
+			return (normalizedValue - canvas.offsetTop);
 		},
-		normalizeH: function(value) {
-			return (value <= _this.model.canvas.width) ? -(_this.model.canvas.width/2 - value): (_this.model.canvas.width/2 - value); 
+
+		normalizeH: function(value, canvas) {
+			var normalizedValue = (canvas.width/2 - value),
+				normalizedValue = (value <= canvas.width)? -normalizedValue: normalizedValue;
+
+			return (normalizedValue + canvas.offsetLeft);
 		}
+
 	};
 })();

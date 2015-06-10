@@ -1,10 +1,6 @@
 
 /**
- *   File: 
- *         views/circle.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: views/circle.js
  */
 
 VIEW.circle = function() {  
@@ -15,22 +11,28 @@ VIEW.circle = function() {
 	this.load = function(data){
 
 		var that = this;
-	
+		
 		data.forEach(function (item) {
 			var radius  = item.r.baseVal.value,
 				offsetX = item.cx.baseVal.value,
 				offsetY = item.cy.baseVal.value,
 				color   = COLORS.normalize(item.style.cssText.slice(6));
 
-			var x = UNITS.normalizeH(offsetX) + _this.model.canvas.offsetLeft;
-				y = UNITS.normalizeV(offsetY) - _this.model.canvas.offsetTop;
+			var x = UNITS.normalizeH(offsetX, that.properties.canvas),
+				y = UNITS.normalizeV(offsetY, that.properties.canvas);
+		
+			if (that.properties['3D']){
+				/*
+				 * 3D View
+				 */
+				that.meshes.push(GEOMETRIES.SPHERE({ radius: radius, color: color, x: x, y: y, z: 0}));
 
-			if (_this.config['3D']){
-				// 3D Mode
-				that.meshes.push(GEOMETRIES.Sphere({ radius: radius, color: color, x: x, y: y, z: 0}));
 			} else {
-				// 2D Mode
-				that.meshes.push(GEOMETRIES.Circle({ radius: radius, color: color, x: x, y: y, z: 0}));
+				/*
+				 * 2D View
+				 */
+				var circle = GEOMETRIES.CIRCLE({ radius: radius, color: color, x: x, y: y, z: 0});
+				that.meshes.push(circle);
 			}
 		});
 	}

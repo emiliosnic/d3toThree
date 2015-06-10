@@ -1,10 +1,6 @@
 
 /**
- *   File: 
- *         utils/helpers.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: utils/helpers.js
  */
 
 /**
@@ -80,7 +76,7 @@ ObserverFactory.prototype.type = function(type){
 	var constr = type;
 
 	if (typeof ObserverFactory[constr] !== "function"){
-		// TOODO: Handle error  
+		LOGGER.report({'message': ('Failed to create Observer Factory instance - Caller '+arguments.callee.caller.name)});
 	}
 	if (typeof ObserverFactory[constr].prototype.drive !== "function") { 
 		ObserverFactory[constr].prototype = new ObserverFactory();
@@ -93,10 +89,10 @@ ObserverFactory.append = function() { this.type = 'append'; }
 
 ObserverFactory.prototype.notify = function(args) {
 
-	var key = args.key || {},
+	var key     = args.key     || {},
 		keyType = args.keyType || {},
-		value = args.value || {},
-		type = args.type || {};
+		value   = args.value   || {},
+		type    = args.type    || {};
 
 	if (!ObserverFactory.hasOwnProperty(type))
 		return;

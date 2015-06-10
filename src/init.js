@@ -1,77 +1,78 @@
 
 /**
- *   File: 
- *         init.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: init.js
  */
 
 var d3to3 = (function () {
 
-	var _this = {},
-		_d3   = {};
+	/**
+	 * Library Configuration
+	 */
 
-	_this.loaded = false;
-	_this.about = {
-		name: "d3to3",
-		version: "0.0.1"
+	var _d3   = {};
+	var _this = {
+		loaded: false,
+		about: {
+			name: "d3to3",
+			version: "0.0.1"
+		}			
 	};
+	
+	/**
+	 * Controller Instances
+	 */
+
+	 _this.instances = {};
+	 _this.currentInstance = undefined;
 
 	/**
-	 * Default Config
+	 * Intiializer
 	 */
-	
-	_this.config = { 
-
-		// TODO: Determine Dynamically
-		'target': 'd3to3_panel',
-		'source': undefined,
-
-		'mouseControls': false,
-		'3D': false,
-		'wireframe': false
-	};
-
-	_this.model = { 
-		axes: [],
-		canvas: { 
-			offsetLeft: 0,
-			offsetTop: 0,
-			width: null, 
-			height: null 
-		},
-		content: []
-	}; 
 
 	_this.initializer = ({
 		init: function () {
-			if ((typeof d3 !== 'undefined') 
-				&& (window.WebGLRenderingContext 
-				&& (document.createElement("canvas").getContext("webgl")))) {
 
-				_d3 = Object.create(d3);
-				_this.loaded = true; 
+			if (typeof d3 === 'undefined'){ 
+				LOGGER.report({'message': 'Failed to load D3.JS Library'});
+				return;
 			}
+			if (typeof THREE === 'undefined'){ 
+				LOGGER.report({'message': 'Failed to load Three.JS Library'});
+				return;
+			}
+			if (!(window.WebGLRenderingContext && (document.createElement("canvas").getContext("webgl")))){
+				LOGGER.report({'message': 'Your browser does not support WebGL/Canvas support.'});
+				return;
+			}
+
+			_d3 = Object.create(d3);
+			_this.loaded = true; 
 		}
 	}).init();
 
-	_this.configure = function(properties){
+	/**
+	 * Public API
+	 */
 
-		for (property in properties){
-			this.config[property] = properties[property];				
-		}
-		return this;
+
+	_this.updateData = function(properties){
+		_this.instances[properties['source']].updateMeshes(properties['data']);
 	}
+	
+	_this.baseData = function(properties){
+		_this.instances[properties['source']].updateMeshes(properties['data']);
+	}
+	
 	_this.render = function(properties){
-		try {
-			_this.controller();
-		} catch(err ){
-			console.error(_this.about.name + " - Failed to render output - "+ err);
+		if (Object.keys(_this.instances).length > 0 ){ 
+			if (   properties.hasOwnProperty('source')
+				&& _this.instances.hasOwnProperty(properties['source'])) {
+				_this.instances[properties['source']].configure(properties)
+				_this.instances[properties['source']].setup();
+			}
+		} else {
+			LOGGER.report({'message': 'Failed to render output. No SVG source was set!'});
 		}
 	}
-
-
 
 	if (_this.loaded) {
-

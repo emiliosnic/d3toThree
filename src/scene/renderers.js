@@ -1,25 +1,16 @@
 
 /**
- *   File: 
- *         scene/renderers.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: scene/renderers.js
  */
  
 var RENDERERS = (function () {
 	return {
-		WebGL: function (properties) {
+		DEFAULT: function (width, height) {
 
-			var width = window.innerWidth,
-				height = window.innerHeight;
+			var width  = width  || window.innerWidth,
+				height = height || window.innerHeight;
 
-			if (properties) {
-				width  = properties.width  || width;
-				height = properties.height || height;
-			}
-
-			var renderer = new THREE.WebGLRenderer({ antialias: true });
+			var renderer = new THREE.WebGLRenderer({'antialiasing': true});
 				renderer.setClearColor(0xffffff);
 				renderer.setPixelRatio(window.devicePixelRatio);
 				renderer.setSize(width, height)
