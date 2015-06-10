@@ -153,15 +153,6 @@
 			.text("life expectancy (years)")
 			.d3to3().text();
 
-		// Add the year label; the value is set on transition.
-		var label = svg.append("text")
-			.attr("class", "year label")
-			.attr("text-anchor", "end")
-			.attr("y", height - 24)
-			.attr("x", width)
-			.text(1800)
-			.d3to3().text();
-
 		// A bisector since many nation's data is sparsely-defined.
 		var bisect = d3.bisector(function(d) { return d[0]; });
 
@@ -209,6 +200,13 @@
 		// After the transition finishes, you can mouseover to change the year.
 
 		var startYear = 1800*2;	
+
+		d3to3.baseData({
+			'data': dot,
+			'source': 'd3_panel',
+			'target': 'd3to3_panel',
+		});
+
 		
 		setInterval(function(){
 
@@ -216,16 +214,12 @@
 				return;
 
 			stats.begin();
-			console.log("...1");
-
 			displayYear(startYear/2);
-
 			startYear = startYear+1;
-
-
 			stats.end();
 
-		}, 1000 / 60 );
+		}, 2000 / 60 );
+
 
 		// Tweens the entire chart by first tweening the year, and then the data.
 		// For the interpolated data, the dots and label are redrawn.
@@ -236,8 +230,14 @@
 
 		// Updates the display to show the specified year.
 		function displayYear(year) {
+			
 			dot.data(interpolateData(year), key).call(position).sort(order);
-			label.text(Math.round(year));
+
+			d3to3.updateData({
+				'data' : dot,
+				'source': 'd3_panel',
+				'target': 'd3to3_panel',
+			});
 		}
 
 		// Interpolates the dataset for the given (fractional) year.
@@ -265,6 +265,8 @@
 				}
 			return a[1];
 		}
+
+		
 
 		d3to3.render({
 			'source': 'd3_panel',

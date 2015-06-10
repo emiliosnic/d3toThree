@@ -1,10 +1,6 @@
 
 /**
- *   File: 
- *         init.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: init.js
  */
 
 var d3to3 = (function () {
@@ -58,20 +54,24 @@ var d3to3 = (function () {
 	 * Public API
 	 */
 
-	_this.render = function(properties){
-		try {
-			if (Object.keys(_this.instances).length > 0 ){ 
 
-				if (   properties.hasOwnProperty('source')
-					&& _this.instances.hasOwnProperty(properties['source'])) {
-					_this.instances[properties['source']].configure(properties)
-					_this.instances[properties['source']].setup();
-				}
-			} else {
-				LOGGER.report({'message': 'Failed to render output. No SVG source was set!'});
+	_this.updateData = function(properties){
+		_this.instances[properties['source']].updateMeshes(properties['data']);
+	}
+	
+	_this.baseData = function(properties){
+		_this.instances[properties['source']].updateMeshes(properties['data']);
+	}
+	
+	_this.render = function(properties){
+		if (Object.keys(_this.instances).length > 0 ){ 
+			if (   properties.hasOwnProperty('source')
+				&& _this.instances.hasOwnProperty(properties['source'])) {
+				_this.instances[properties['source']].configure(properties)
+				_this.instances[properties['source']].setup();
 			}
-		} catch(err ){
-				LOGGER.report({'message': 'Failed to render output.', 'error': err});
+		} else {
+			LOGGER.report({'message': 'Failed to render output. No SVG source was set!'});
 		}
 	}
 

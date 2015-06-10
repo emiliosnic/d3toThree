@@ -1,10 +1,6 @@
 
 /**
- *   File: 
- *         utils/colors.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: utils/colors.js
  */
 
 var COLORS = (function () {

@@ -1,10 +1,6 @@
 
 /**
- *   File: 
- *         views/circle.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: views/line.js
  */
 
 VIEW.line = function() {  

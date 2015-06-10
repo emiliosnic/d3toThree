@@ -1,12 +1,7 @@
 
 /**
- *   File: 
- *         renderer.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: controller.js
  */
-
 
 function Controller() {
 
@@ -60,6 +55,7 @@ function Controller() {
 		mouse     = new THREE.Vector3();
 		raycaster = new THREE.Raycaster();
 
+
 		if (_controller.config.controls){
 			controls = CONTROLS.Orbit(camera);
 			controls.addEventListener( 'change', function(){
@@ -87,30 +83,20 @@ function Controller() {
 
 	var setupViews = function () {	
 		
-		// Setup Data View
-
-
-		console.log("SETUP VIEWS");
-
-
-		_controller.model.content.forEach(function(view){
-
-			console.log("View...");
-			console.log(view);
-
+		// Setup Data Views
+		_controller.model.content.forEach(function(model){
 			new VIEW()
-				.type(view.type)
+				.type(model.type)
 				.setProperties({
 					'canvas': _controller.canvas,
 					'3D'    : _controller.config['3D'],
 					'style' : _controller.config.style
 				})
-				.loadData(view.data)
+				.loadData(model.data)
 				.appendTo(group);
 		});
 
-		// Setup Axes View
-
+		// Setup Axes Views
 		_controller.model.axes.forEach(function(axis){
 			new VIEW()
 				.type('axis')
@@ -122,8 +108,9 @@ function Controller() {
 				.appendTo(group);
 		})
 
-		// Setup Text View
 
+
+		// Setup Text Views
 		_controller.model.texts.forEach(function(text){
 			new VIEW()
 				.type(text.type)
@@ -136,7 +123,6 @@ function Controller() {
 		})
 
 		// Flush Model
-
 		_controller.model.content = [];
 
 		// Flush the SVG tree (If source and targer are the same)
@@ -147,8 +133,11 @@ function Controller() {
 
 		// Process network graph (if any)
 
-		if (_controller.config.network && _controller.config['3D']){
-			group.expandZ();
+		if (   _controller.config.network 
+			&& _controller.config.network['zDepth'] 
+			&& _controller.config['3D']){
+			
+			group.expandNetworkDepth(_controller.config.network['zDepth']);
 		}
 
 		// Populate scene 
@@ -157,8 +146,6 @@ function Controller() {
 			.add(camera)
 			.add(light)
 			.add(group);
-
-
 	}
 
 	/**
@@ -166,9 +153,8 @@ function Controller() {
 	 */ 
 
 	var animate = function () {	
-
-		requestAnimationFrame(animate);
 		render();
+		requestAnimationFrame(animate);
 	}
 
 	/**
@@ -176,11 +162,14 @@ function Controller() {
 	 */ 
 
 	var render = function() {	
+		
+
 		if (ENABLE_ANIMATION && _controller.config.orbit ){
 			camera.orbitAroundCenter(scene);
 			light.alignToPosition(camera.position); 
 		}
 		camera.updateProjectionMatrix();
+
 		renderer.render( scene, camera );
 	}
 
@@ -263,16 +252,48 @@ function Controller() {
 	 * Public Methods
 	 */ 
 
-	_controller.updateMeshes = function(){
+	_controller.addedMeshes = false;
 
-		console.log("UPDATING MESHES");
-		console.log(_controller.model.content);
+	_controller.updateMeshes = function(data){
 
-        if (group instanceof THREE.Group){
-	        scene.remove(group);
-        }
-        setupViews();
+		if (!_controller.addedMeshes){
+			_controller.model.content.push({ 
+				'data' : data[0],
+				'type' : data[0][0].nodeName
+			});
+			_controller.addedMeshes = true;
+		}  else {
 
+			var dataIndex = 0;
+
+	        if (! group instanceof THREE.Group)
+				return;	
+
+			group.children.forEach(function(mesh, meshIndex){
+				if (mesh.geometry.type == "CircleGeometry" || mesh.geometry.type == "SphereGeometry"){
+
+					var baseX = data[0][dataIndex].cx.baseVal.value;
+					var baseY = data[0][dataIndex].cy.baseVal.value;
+					var baseRadius = data[0][dataIndex].r.baseVal.value;
+					var scaleR = baseRadius / mesh.geometry.boundingSphere.radius;
+
+					var x = UNITS.normalizeH(baseX, _controller.canvas),
+						y = UNITS.normalizeV(baseY, _controller.canvas);
+
+
+					mesh.scale.x = scaleR;
+					mesh.scale.y = scaleR;
+					mesh.scale.z = scaleR;
+
+					mesh.position.setX(x);
+					mesh.position.setX(x);
+					mesh.position.setY(y);
+
+					dataIndex++;
+
+				}
+	        })
+		}
 	}
 
 	_controller.setup = function(){
@@ -288,7 +309,7 @@ function Controller() {
 				_controller.config[property] = properties[property];
 			} 
 		} catch (err){
-			LOGGER.report({'message': 'Failed to configure library ', 'error':err });
+			LOGGER.report({'message': 'Configuration failed.', 'error':err });
 		}
 	}
 

@@ -1,10 +1,6 @@
 
 /**
- *   File: 
- *         scene/controls.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: scene/controls.js
  */
 
 var CONTROLS = (function () {

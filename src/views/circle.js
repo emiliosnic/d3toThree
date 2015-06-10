@@ -1,10 +1,6 @@
 
 /**
- *   File: 
- *         views/circle.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: views/circle.js
  */
 
 VIEW.circle = function() {  
@@ -15,7 +11,7 @@ VIEW.circle = function() {
 	this.load = function(data){
 
 		var that = this;
-
+		
 		data.forEach(function (item) {
 			var radius  = item.r.baseVal.value,
 				offsetX = item.cx.baseVal.value,
@@ -24,7 +20,7 @@ VIEW.circle = function() {
 
 			var x = UNITS.normalizeH(offsetX, that.properties.canvas),
 				y = UNITS.normalizeV(offsetY, that.properties.canvas);
-	
+		
 			if (that.properties['3D']){
 				/*
 				 * 3D View

@@ -1,10 +1,6 @@
 
 /**
- *   File: 
- *         views/_base.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: views/base.js
  */
 
 function VIEW(){};

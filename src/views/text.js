@@ -1,10 +1,6 @@
 
 /**
- *   File: 
- *         views/text.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: views/text.js
  */
 
 VIEW.text = function() {  

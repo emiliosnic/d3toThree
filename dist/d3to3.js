@@ -1,10 +1,6 @@
 
 /**
- *   File: 
- *         init.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: init.js
  */
 
 var d3to3 = (function () {
@@ -58,45 +54,51 @@ var d3to3 = (function () {
 	 * Public API
 	 */
 
-	_this.render = function(properties){
-		try {
-			if (Object.keys(_this.instances).length > 0 ){ 
 
-				if (   properties.hasOwnProperty('source')
-					&& _this.instances.hasOwnProperty(properties['source'])) {
-					_this.instances[properties['source']].configure(properties)
-					_this.instances[properties['source']].setup();
-				}
-			} else {
-				LOGGER.report({'message': 'Failed to render output. No SVG source was set!'});
+	_this.updateData = function(properties){
+		_this.instances[properties['source']].updateMeshes(properties['data']);
+	}
+	
+	_this.baseData = function(properties){
+		_this.instances[properties['source']].updateMeshes(properties['data']);
+	}
+	
+	_this.render = function(properties){
+		if (Object.keys(_this.instances).length > 0 ){ 
+			if (   properties.hasOwnProperty('source')
+				&& _this.instances.hasOwnProperty(properties['source'])) {
+				_this.instances[properties['source']].configure(properties)
+				_this.instances[properties['source']].setup();
 			}
-		} catch(err ){
-				LOGGER.report({'message': 'Failed to render output.', 'error': err});
+		} else {
+			LOGGER.report({'message': 'Failed to render output. No SVG source was set!'});
 		}
 	}
 
 	if (_this.loaded) {
 ;
 /**
- *   File: 
- *         setup.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: setup.js
  */
 
-/**
- * Extend D3
- */ 
+// Extend D3
 
 extend(d3.selection.prototype, { 
 
 	d3to3: function() {	
-		this.axis = function(){
+		this.axis = function(properties){
+
+			var depthAxis = false; 
+			if (properties && properties['depthAxis']){
+				depthAxis = properties['depthAxis'];
+			}
+
 			_this.instances[_this.currentInstance].model.axes.push({
-				'data'      : this[0].extractNode('g').childNodes,
-				'transform' : this[0].extractNode('g').attributes.extractNode('transform').nodeValue
+				'data'       : this[0].extractNode('g').childNodes,
+				'depthAxis': depthAxis,
+				'transform'  : this[0].extractNode('g').attributes.extractNode('transform').nodeValue
 			})
+
 			return this;
 		}
 		this.data = function(){
@@ -125,10 +127,7 @@ extend(d3.selection.prototype, {
 });
 
 
-/**
- * Setup D3 Hooks
- */ 
-
+// Setup D3 Hooks
 
 _this.setupHooks = ({
 	setup: function () {
@@ -168,7 +167,7 @@ _this.setupHooks = ({
 		_d3.selection.enter.prototype.select = function() { return hook_enter_select.apply(this, arguments); }
 		_d3.selection.enter.prototype.insert = function() { return hook_enter_insert.apply(this, arguments); }
 		_d3.selection.enter.prototype.size   = function() { return hook_enter_size.apply(this, arguments);   }
-		_d3.selection.enter.prototype.append = function() {return hook_append.apply(this, arguments);        }
+		_d3.selection.enter.prototype.append = function() { return hook_append.apply(this, arguments);       }
 		_d3.selection.prototype.selectAll    = function() { return hook_selectAll.apply(this, arguments);    }
 		_d3.selection.prototype.select       = function() { return hook_select.apply(this, arguments);       }
 		_d3.selection.prototype.classed      = function() { return hook_classed.apply(this, arguments);      }
@@ -187,7 +186,7 @@ _this.setupHooks = ({
 		_d3.selection.prototype.size         = function() { return hook_size.apply(this, arguments);         }
 		_d3.selection.prototype.data         = function() { return hook_data.apply(this, arguments);         }
 		_d3.selection.prototype.call         = function() { return hook_call.apply(this, arguments);         }
-		_d3.selection.prototype.each         = function() {  return hook_each.apply(this, arguments);        }
+		_d3.selection.prototype.each         = function() { return hook_each.apply(this, arguments);         }
 
 		_d3.selection.prototype.attr = function()      { 
 			/**
@@ -198,7 +197,6 @@ _this.setupHooks = ({
 			return hook_attr.apply(this, arguments); 
 		}
 		_d3.selection.prototype.append = function(){ 
-
 			observerFactory.notify({'type':'append', 'key':arguments[0], 'value':arguments[1]});
 			
 			/**
@@ -206,7 +204,6 @@ _this.setupHooks = ({
 			 */ 
 
 			if (arguments[0] === 'svg'){
-
 				var svgID = this[0][0].id;
 				
 				/**
@@ -239,13 +236,8 @@ _this.setupHooks = ({
 }).setup();
 ;
 /**
- *   File: 
- *         scene/materials.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: scene/materials.js
  */
-
 
 var MATERIALS = (function () {
 
@@ -272,11 +264,7 @@ var MATERIALS = (function () {
 
 ;
 /**
- *   File: 
- *         scene/geometries.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: scene/geometries.js
  */
 
 var GEOMETRIES = (function () {
@@ -377,11 +365,7 @@ var GEOMETRIES = (function () {
 })();
 ;
 /**
- *   File: 
- *         scene/cameras.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: scene/cameras.js
  */
  
 var CAMERAS = (function () {
@@ -415,12 +399,13 @@ var CAMERAS = (function () {
 	 * Orbits camera around scene center in linear form
 	 */ 
 	_orbitAroundCenter = function(scene){
-		var orbitAmount = _orbitDelta * 0.0001;
-			_orbitDelta = _orbitDelta + 10;
+
+		var date = new Date(); // for now
+			date =date * 0.0001;
 
 		// Update camera position
-		this.position.x = Math.cos( orbitAmount ) * 500;
-		this.position.z = Math.sin( orbitAmount ) * 500;
+		this.position.x = Math.cos( date ) * 500;
+		this.position.z = Math.sin( date ) * 500;
 
 		// Orient camera to scene center
 		this.lookAt( scene.position );
@@ -433,7 +418,7 @@ var CAMERAS = (function () {
 				zoom   = 0.5,
 				zDepth = 100;
 
-			var camera = new THREE.OrthographicCamera( zoom * -width, zoom * width, zoom * height, zoom * -height, 1, 1000 );
+			var camera = new THREE.OrthographicCamera( zoom * -width, zoom * width, zoom * height, zoom * -height, -10000, 10000 );
 				camera.position.set(0, 0, zDepth);
 				camera.updateZoom = _updateZoom;
 				camera.orbitAroundCenter = _orbitAroundCenter;
@@ -445,11 +430,7 @@ var CAMERAS = (function () {
 
 ;
 /**
- *   File: 
- *         scene/renderers.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: scene/renderers.js
  */
  
 var RENDERERS = (function () {
@@ -459,7 +440,7 @@ var RENDERERS = (function () {
 			var width  = width  || window.innerWidth,
 				height = height || window.innerHeight;
 
-			var renderer = new THREE.WebGLRenderer();
+			var renderer = new THREE.WebGLRenderer({'antialiasing': true});
 				renderer.setClearColor(0xffffff);
 				renderer.setPixelRatio(window.devicePixelRatio);
 				renderer.setSize(width, height)
@@ -471,52 +452,70 @@ var RENDERERS = (function () {
 
 ;
 /**
- *   File: 
- *         scene/lights.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: scene/groups.js
  */
 
 
 var GROUPS = (function () {
-	
+
+
 	/**
-	 * Determine z offsets for group's meshes and expand
+	 * Find all intersecting lines in a sphere and return an array with the corresponding group-indices of these lines meshes
 	 */ 
 
-	_expandZ = function(){
+	_findIntersectingLines = function(properties){
 
-		var nodeGroups = [];
-			totalConnectedLines = 0;
+		var intersectingObjects = [];
+
+		properties.group.children.forEach(function(line, lineIndex){
 		
-		var that = this;
+			// Find All intersecting Lines 
+			if (line.type == "Line"){
+				for (var vertexIndex = 0; vertexIndex <=1; vertexIndex++) {
+					
+					var xDiff = (Math.abs(line.geometry.vertices[vertexIndex].x) - Math.abs(properties.baseObject.position.x)),
+						yDiff = (Math.abs(line.geometry.vertices[vertexIndex].y) - Math.abs(properties.baseObject.position.y)),
+						zDiff = (Math.abs(line.geometry.vertices[vertexIndex].z) - Math.abs(properties.baseObject.position.z));
 
-		this.children.forEach(function(circle, circleIndex){
-			if (circle.type == "Mesh"){
-
-				var groupConnectedLinesIndices = []; 
-
-				that.children.forEach(function(line, lineIndex){
-				
-					// Find All intersecting Lines 
-					if (line.type == "Line"){
-						for (var vertexIndex = 0; vertexIndex <=1; vertexIndex++) {
-							
-							var xDiff = (Math.abs(line.geometry.vertices[vertexIndex].x) - Math.abs(circle.position.x)),
-								yDiff = (Math.abs(line.geometry.vertices[vertexIndex].y) - Math.abs(circle.position.y)),
-								zDiff = (Math.abs(line.geometry.vertices[vertexIndex].z) - Math.abs(circle.position.z));
-
-							if (Math.abs(xDiff + yDiff + zDiff) < 0.1){
-								totalConnectedLines+=1;
-								groupConnectedLinesIndices.push({
-									'lineIndex':lineIndex,
-									'vertexIndex':vertexIndex
-								});
-							}
-						}
+					if (Math.abs(xDiff + yDiff + zDiff) < 0.1){
+						intersectingObjects.push({
+							'lineIndex':lineIndex,
+							'vertexIndex':vertexIndex
+						});
 					}
-				})
+				}
+			}
+		});
+
+		return intersectingObjects;
+	}
+
+	/**
+	 * Determine z offsets for group's meshes for network graphs
+	 */ 
+
+	_expandNetworkDepth = function(type){
+		switch (type){
+			case 'degree-centrality'     : _expandUsingDegreeCentrality(this);      break;
+			default                      : _expandUsingDegreeCentrality(this);
+		}
+	}
+
+	/**
+	 * Expand graph using degree centrality
+	 */ 
+
+	_expandUsingDegreeCentrality = function(group){
+
+		var nodeGroups = [],
+			that = group;
+		
+		group.children.forEach(function(circle, circleIndex){
+			if (circle.type == "Mesh" && circle.geometry.type == "SphereGeometry"){
+				var groupConnectedLinesIndices =  _findIntersectingLines({
+					'group'      : that,
+					'baseObject' : circle
+				});
 				nodeGroups.push({
 					'circleIndex': circleIndex,
 					'lineIndices': groupConnectedLinesIndices
@@ -524,25 +523,29 @@ var GROUPS = (function () {
 			}
 		});
 
-		var plus = true;
+		var maxDepth = 0,
+			zDepth   = 0;
+
 		nodeGroups.forEach(function(nodeGroup){
 
-			var zDepth = 1;
-
 			if (nodeGroup.lineIndices.length > 0) {
-				zDepth = 5000 * (nodeGroup.lineIndices.length)/ totalConnectedLines; 
-				zDepth = (plus)? -zDepth : zDepth;
+				zDepth = 5 * (nodeGroup.lineIndices.length); 
+				if (zDepth >= maxDepth){
+					maxDepth = zDepth
+				}
 			}
-			plus = !plus;
-			
+
 			// Update node depth
-			that.children[nodeGroup.circleIndex].position.setZ(zDepth);
+			group.children[nodeGroup.circleIndex].position.setZ(zDepth);
 			
 			// Update line depths
 			nodeGroup.lineIndices.forEach(function(line){
 				that.children[line.lineIndex].geometry.vertices[line.vertexIndex].z = zDepth;
 				that.children[line.lineIndex].geometry.verticesNeedUpdate = true;
 			});
+
+			// Update group's depth
+			group.position.setZ(-maxDepth/2);
 		})
 	}
 
@@ -593,8 +596,9 @@ var GROUPS = (function () {
 	return {
 		DEFAULT: function () {
 			var group = new THREE.Group();
-			group.expandZ = _expandZ;
+			group.expandNetworkDepth = _expandNetworkDepth;
 			group.highlightConnectedNodes = _highlightConnectedNodes;
+
 
 			return group;
 		}
@@ -603,11 +607,7 @@ var GROUPS = (function () {
 
 ;
 /**
- *   File: 
- *         scene/controls.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: scene/controls.js
  */
 
 var CONTROLS = (function () {
@@ -627,11 +627,7 @@ var CONTROLS = (function () {
 })();
 ;
 /**
- *   File: 
- *         views/_base.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: views/base.js
  */
 
 function VIEW(){};
@@ -672,11 +668,7 @@ VIEW.prototype.appendTo = function(group) {
 };
 ;
 /**
- *   File: 
- *         views/circle.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: views/line.js
  */
 
 VIEW.line = function() {  
@@ -722,11 +714,7 @@ VIEW.line = function() {
 }
 ;
 /**
- *   File: 
- *         views/axis.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: views/axis.js
  */
 
 VIEW.axis = function() {  
@@ -762,10 +750,20 @@ VIEW.axis = function() {
 					endX   = startX + tickLine.x,
 					endY   = startY - tickLine.y;
 
+				/**
+				 * Project to Z if this is a depth axis
+				 */ 
+
+				if (axis && axis['depthAxis']){
+
+					// Rotate 90 degrees	
+
+				}
+
 				this.meshes.push(
 					GEOMETRIES.AXIS({ 
-						x1: startX, y1: startY, z1:0,
-						x2: endX  , y2: endY  , z2:0
+						'x1': startX, 'y1': startY, 'z1':0,
+						'x2': endX  , 'y2': endY  , 'z2':0
 					})
 				);
 				
@@ -805,6 +803,19 @@ VIEW.axis = function() {
 						endX   = UNITS.normalizeH(parseInt(points[j].x), this.properties.canvas  ) + transform.x;
 						endY   = UNITS.normalizeV(parseInt(points[j].y), this.properties.canvas  ) - transform.y;
 
+					/**
+					 * Project to Z if this is a depth axis
+					 */ 
+
+					if (axis && axis['depthAxis']){
+
+						// Rotate 90 degrees	
+						var test = GEOMETRIES.AXIS({
+							x1: startX, y1: startY, z1:0,
+							x2: endX,   y2:endY   , z2:0
+						});
+					}
+
 					this.meshes.push(
 						GEOMETRIES.AXIS({
 							x1: startX, y1: startY, z1:0,
@@ -817,11 +828,7 @@ VIEW.axis = function() {
 	}
 };
 /**
- *   File: 
- *         views/text.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: views/text.js
  */
 
 VIEW.text = function() {  
@@ -842,11 +849,7 @@ VIEW.text = function() {
 	}
 };
 /**
- *   File: 
- *         views/circle.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: views/circle.js
  */
 
 VIEW.circle = function() {  
@@ -857,7 +860,7 @@ VIEW.circle = function() {
 	this.load = function(data){
 
 		var that = this;
-
+		
 		data.forEach(function (item) {
 			var radius  = item.r.baseVal.value,
 				offsetX = item.cx.baseVal.value,
@@ -866,7 +869,7 @@ VIEW.circle = function() {
 
 			var x = UNITS.normalizeH(offsetX, that.properties.canvas),
 				y = UNITS.normalizeV(offsetY, that.properties.canvas);
-	
+		
 			if (that.properties['3D']){
 				/*
 				 * 3D View
@@ -885,13 +888,8 @@ VIEW.circle = function() {
 }
 ;
 /**
- *   File: 
- *         scene/lights.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: scene/lights.js
  */
-
 
 var LIGHTS = (function () {
 
@@ -921,13 +919,8 @@ var LIGHTS = (function () {
 
 ;
 /**
- *   File: 
- *         renderer.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: controller.js
  */
-
 
 function Controller() {
 
@@ -981,6 +974,7 @@ function Controller() {
 		mouse     = new THREE.Vector3();
 		raycaster = new THREE.Raycaster();
 
+
 		if (_controller.config.controls){
 			controls = CONTROLS.Orbit(camera);
 			controls.addEventListener( 'change', function(){
@@ -1008,30 +1002,20 @@ function Controller() {
 
 	var setupViews = function () {	
 		
-		// Setup Data View
-
-
-		console.log("SETUP VIEWS");
-
-
-		_controller.model.content.forEach(function(view){
-
-			console.log("View...");
-			console.log(view);
-
+		// Setup Data Views
+		_controller.model.content.forEach(function(model){
 			new VIEW()
-				.type(view.type)
+				.type(model.type)
 				.setProperties({
 					'canvas': _controller.canvas,
 					'3D'    : _controller.config['3D'],
 					'style' : _controller.config.style
 				})
-				.loadData(view.data)
+				.loadData(model.data)
 				.appendTo(group);
 		});
 
-		// Setup Axes View
-
+		// Setup Axes Views
 		_controller.model.axes.forEach(function(axis){
 			new VIEW()
 				.type('axis')
@@ -1043,8 +1027,9 @@ function Controller() {
 				.appendTo(group);
 		})
 
-		// Setup Text View
 
+
+		// Setup Text Views
 		_controller.model.texts.forEach(function(text){
 			new VIEW()
 				.type(text.type)
@@ -1057,7 +1042,6 @@ function Controller() {
 		})
 
 		// Flush Model
-
 		_controller.model.content = [];
 
 		// Flush the SVG tree (If source and targer are the same)
@@ -1068,8 +1052,11 @@ function Controller() {
 
 		// Process network graph (if any)
 
-		if (_controller.config.network && _controller.config['3D']){
-			group.expandZ();
+		if (   _controller.config.network 
+			&& _controller.config.network['zDepth'] 
+			&& _controller.config['3D']){
+			
+			group.expandNetworkDepth(_controller.config.network['zDepth']);
 		}
 
 		// Populate scene 
@@ -1078,8 +1065,6 @@ function Controller() {
 			.add(camera)
 			.add(light)
 			.add(group);
-
-
 	}
 
 	/**
@@ -1087,9 +1072,8 @@ function Controller() {
 	 */ 
 
 	var animate = function () {	
-
-		requestAnimationFrame(animate);
 		render();
+		requestAnimationFrame(animate);
 	}
 
 	/**
@@ -1097,11 +1081,14 @@ function Controller() {
 	 */ 
 
 	var render = function() {	
+		
+
 		if (ENABLE_ANIMATION && _controller.config.orbit ){
 			camera.orbitAroundCenter(scene);
 			light.alignToPosition(camera.position); 
 		}
 		camera.updateProjectionMatrix();
+
 		renderer.render( scene, camera );
 	}
 
@@ -1184,16 +1171,48 @@ function Controller() {
 	 * Public Methods
 	 */ 
 
-	_controller.updateMeshes = function(){
+	_controller.addedMeshes = false;
 
-		console.log("UPDATING MESHES");
-		console.log(_controller.model.content);
+	_controller.updateMeshes = function(data){
 
-        if (group instanceof THREE.Group){
-	        scene.remove(group);
-        }
-        setupViews();
+		if (!_controller.addedMeshes){
+			_controller.model.content.push({ 
+				'data' : data[0],
+				'type' : data[0][0].nodeName
+			});
+			_controller.addedMeshes = true;
+		}  else {
 
+			var dataIndex = 0;
+
+	        if (! group instanceof THREE.Group)
+				return;	
+
+			group.children.forEach(function(mesh, meshIndex){
+				if (mesh.geometry.type == "CircleGeometry" || mesh.geometry.type == "SphereGeometry"){
+
+					var baseX = data[0][dataIndex].cx.baseVal.value;
+					var baseY = data[0][dataIndex].cy.baseVal.value;
+					var baseRadius = data[0][dataIndex].r.baseVal.value;
+					var scaleR = baseRadius / mesh.geometry.boundingSphere.radius;
+
+					var x = UNITS.normalizeH(baseX, _controller.canvas),
+						y = UNITS.normalizeV(baseY, _controller.canvas);
+
+
+					mesh.scale.x = scaleR;
+					mesh.scale.y = scaleR;
+					mesh.scale.z = scaleR;
+
+					mesh.position.setX(x);
+					mesh.position.setX(x);
+					mesh.position.setY(y);
+
+					dataIndex++;
+
+				}
+	        })
+		}
 	}
 
 	_controller.setup = function(){
@@ -1209,7 +1228,7 @@ function Controller() {
 				_controller.config[property] = properties[property];
 			} 
 		} catch (err){
-			LOGGER.report({'message': 'Failed to configure library ', 'error':err });
+			LOGGER.report({'message': 'Configuration failed.', 'error':err });
 		}
 	}
 
@@ -1223,11 +1242,7 @@ function Controller() {
 
 ;
 /**
- *   File: 
- *         utils/colors.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: utils/colors.js
  */
 
 var COLORS = (function () {
@@ -1264,11 +1279,7 @@ var COLORS = (function () {
 })();
 ;
 /**
- *   File: 
- *         utils/logger.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: utils/logger.js
  */
 
 var LOGGER = (function () {
@@ -1286,11 +1297,7 @@ var LOGGER = (function () {
 })();
 ;
 /**
- *   File: 
- *         utils/helpers.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: utils/helpers.js
  */
 
 /**
@@ -1403,11 +1410,7 @@ ObserverFactory.prototype.notify = function(args) {
 
 ;
 /**
- *   File: 
- *         utils/units.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: utils/units.js
  */
 
 var UNITS = (function () {
@@ -1501,15 +1504,9 @@ var UNITS = (function () {
 })();
 ;
 /**
- *   File: 
- *         teardown.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: teardown.js
  */
-		/**
-		 * Expose to global d3
-		 */ 
+		// Expose to global d3
 		window.d3 = _d3;
 
 	}

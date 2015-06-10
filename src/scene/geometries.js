@@ -1,10 +1,6 @@
 
 /**
- *   File: 
- *         scene/geometries.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: scene/geometries.js
  */
 
 var GEOMETRIES = (function () {

@@ -1,14 +1,8 @@
 
 /**
- *   File: 
- *         teardown.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: teardown.js
  */
-		/**
-		 * Expose to global d3
-		 */ 
+		// Expose to global d3
 		window.d3 = _d3;
 
 	}

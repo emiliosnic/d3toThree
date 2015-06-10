@@ -1,24 +1,26 @@
 
 /**
- *   File: 
- *         setup.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: setup.js
  */
 
-/**
- * Extend D3
- */ 
+// Extend D3
 
 extend(d3.selection.prototype, { 
 
 	d3to3: function() {	
-		this.axis = function(){
+		this.axis = function(properties){
+
+			var depthAxis = false; 
+			if (properties && properties['depthAxis']){
+				depthAxis = properties['depthAxis'];
+			}
+
 			_this.instances[_this.currentInstance].model.axes.push({
-				'data'      : this[0].extractNode('g').childNodes,
-				'transform' : this[0].extractNode('g').attributes.extractNode('transform').nodeValue
+				'data'       : this[0].extractNode('g').childNodes,
+				'depthAxis': depthAxis,
+				'transform'  : this[0].extractNode('g').attributes.extractNode('transform').nodeValue
 			})
+
 			return this;
 		}
 		this.data = function(){
@@ -47,10 +49,7 @@ extend(d3.selection.prototype, {
 });
 
 
-/**
- * Setup D3 Hooks
- */ 
-
+// Setup D3 Hooks
 
 _this.setupHooks = ({
 	setup: function () {
@@ -90,7 +89,7 @@ _this.setupHooks = ({
 		_d3.selection.enter.prototype.select = function() { return hook_enter_select.apply(this, arguments); }
 		_d3.selection.enter.prototype.insert = function() { return hook_enter_insert.apply(this, arguments); }
 		_d3.selection.enter.prototype.size   = function() { return hook_enter_size.apply(this, arguments);   }
-		_d3.selection.enter.prototype.append = function() {return hook_append.apply(this, arguments);        }
+		_d3.selection.enter.prototype.append = function() { return hook_append.apply(this, arguments);       }
 		_d3.selection.prototype.selectAll    = function() { return hook_selectAll.apply(this, arguments);    }
 		_d3.selection.prototype.select       = function() { return hook_select.apply(this, arguments);       }
 		_d3.selection.prototype.classed      = function() { return hook_classed.apply(this, arguments);      }
@@ -109,7 +108,7 @@ _this.setupHooks = ({
 		_d3.selection.prototype.size         = function() { return hook_size.apply(this, arguments);         }
 		_d3.selection.prototype.data         = function() { return hook_data.apply(this, arguments);         }
 		_d3.selection.prototype.call         = function() { return hook_call.apply(this, arguments);         }
-		_d3.selection.prototype.each         = function() {  return hook_each.apply(this, arguments);        }
+		_d3.selection.prototype.each         = function() { return hook_each.apply(this, arguments);         }
 
 		_d3.selection.prototype.attr = function()      { 
 			/**
@@ -120,7 +119,6 @@ _this.setupHooks = ({
 			return hook_attr.apply(this, arguments); 
 		}
 		_d3.selection.prototype.append = function(){ 
-
 			observerFactory.notify({'type':'append', 'key':arguments[0], 'value':arguments[1]});
 			
 			/**
@@ -128,7 +126,6 @@ _this.setupHooks = ({
 			 */ 
 
 			if (arguments[0] === 'svg'){
-
 				var svgID = this[0][0].id;
 				
 				/**

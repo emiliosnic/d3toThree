@@ -1,10 +1,6 @@
 
 /**
- *   File: 
- *         scene/cameras.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: scene/cameras.js
  */
  
 var CAMERAS = (function () {
@@ -38,12 +34,13 @@ var CAMERAS = (function () {
 	 * Orbits camera around scene center in linear form
 	 */ 
 	_orbitAroundCenter = function(scene){
-		var orbitAmount = _orbitDelta * 0.0001;
-			_orbitDelta = _orbitDelta + 10;
+
+		var date = new Date(); // for now
+			date =date * 0.0001;
 
 		// Update camera position
-		this.position.x = Math.cos( orbitAmount ) * 500;
-		this.position.z = Math.sin( orbitAmount ) * 500;
+		this.position.x = Math.cos( date ) * 500;
+		this.position.z = Math.sin( date ) * 500;
 
 		// Orient camera to scene center
 		this.lookAt( scene.position );
@@ -56,7 +53,7 @@ var CAMERAS = (function () {
 				zoom   = 0.5,
 				zDepth = 100;
 
-			var camera = new THREE.OrthographicCamera( zoom * -width, zoom * width, zoom * height, zoom * -height, 1, 1000 );
+			var camera = new THREE.OrthographicCamera( zoom * -width, zoom * width, zoom * height, zoom * -height, -10000, 10000 );
 				camera.position.set(0, 0, zDepth);
 				camera.updateZoom = _updateZoom;
 				camera.orbitAroundCenter = _orbitAroundCenter;

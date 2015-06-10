@@ -1,10 +1,6 @@
 
 /**
- *   File: 
- *         utils/logger.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: utils/logger.js
  */
 
 var LOGGER = (function () {

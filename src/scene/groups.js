@@ -1,51 +1,69 @@
 
 /**
- *   File: 
- *         scene/lights.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: scene/groups.js
  */
 
 
 var GROUPS = (function () {
-	
+
+
 	/**
-	 * Determine z offsets for group's meshes and expand
+	 * Find all intersecting lines in a sphere and return an array with the corresponding group-indices of these lines meshes
 	 */ 
 
-	_expandZ = function(){
+	_findIntersectingLines = function(properties){
 
-		var nodeGroups = [];
-			totalConnectedLines = 0;
+		var intersectingObjects = [];
+
+		properties.group.children.forEach(function(line, lineIndex){
 		
-		var that = this;
+			// Find All intersecting Lines 
+			if (line.type == "Line"){
+				for (var vertexIndex = 0; vertexIndex <=1; vertexIndex++) {
+					
+					var xDiff = (Math.abs(line.geometry.vertices[vertexIndex].x) - Math.abs(properties.baseObject.position.x)),
+						yDiff = (Math.abs(line.geometry.vertices[vertexIndex].y) - Math.abs(properties.baseObject.position.y)),
+						zDiff = (Math.abs(line.geometry.vertices[vertexIndex].z) - Math.abs(properties.baseObject.position.z));
 
-		this.children.forEach(function(circle, circleIndex){
-			if (circle.type == "Mesh"){
-
-				var groupConnectedLinesIndices = []; 
-
-				that.children.forEach(function(line, lineIndex){
-				
-					// Find All intersecting Lines 
-					if (line.type == "Line"){
-						for (var vertexIndex = 0; vertexIndex <=1; vertexIndex++) {
-							
-							var xDiff = (Math.abs(line.geometry.vertices[vertexIndex].x) - Math.abs(circle.position.x)),
-								yDiff = (Math.abs(line.geometry.vertices[vertexIndex].y) - Math.abs(circle.position.y)),
-								zDiff = (Math.abs(line.geometry.vertices[vertexIndex].z) - Math.abs(circle.position.z));
-
-							if (Math.abs(xDiff + yDiff + zDiff) < 0.1){
-								totalConnectedLines+=1;
-								groupConnectedLinesIndices.push({
-									'lineIndex':lineIndex,
-									'vertexIndex':vertexIndex
-								});
-							}
-						}
+					if (Math.abs(xDiff + yDiff + zDiff) < 0.1){
+						intersectingObjects.push({
+							'lineIndex':lineIndex,
+							'vertexIndex':vertexIndex
+						});
 					}
-				})
+				}
+			}
+		});
+
+		return intersectingObjects;
+	}
+
+	/**
+	 * Determine z offsets for group's meshes for network graphs
+	 */ 
+
+	_expandNetworkDepth = function(type){
+		switch (type){
+			case 'degree-centrality'     : _expandUsingDegreeCentrality(this);      break;
+			default                      : _expandUsingDegreeCentrality(this);
+		}
+	}
+
+	/**
+	 * Expand graph using degree centrality
+	 */ 
+
+	_expandUsingDegreeCentrality = function(group){
+
+		var nodeGroups = [],
+			that = group;
+		
+		group.children.forEach(function(circle, circleIndex){
+			if (circle.type == "Mesh" && circle.geometry.type == "SphereGeometry"){
+				var groupConnectedLinesIndices =  _findIntersectingLines({
+					'group'      : that,
+					'baseObject' : circle
+				});
 				nodeGroups.push({
 					'circleIndex': circleIndex,
 					'lineIndices': groupConnectedLinesIndices
@@ -53,25 +71,29 @@ var GROUPS = (function () {
 			}
 		});
 
-		var plus = true;
+		var maxDepth = 0,
+			zDepth   = 0;
+
 		nodeGroups.forEach(function(nodeGroup){
 
-			var zDepth = 1;
-
 			if (nodeGroup.lineIndices.length > 0) {
-				zDepth = 5000 * (nodeGroup.lineIndices.length)/ totalConnectedLines; 
-				zDepth = (plus)? -zDepth : zDepth;
+				zDepth = 5 * (nodeGroup.lineIndices.length); 
+				if (zDepth >= maxDepth){
+					maxDepth = zDepth
+				}
 			}
-			plus = !plus;
-			
+
 			// Update node depth
-			that.children[nodeGroup.circleIndex].position.setZ(zDepth);
+			group.children[nodeGroup.circleIndex].position.setZ(zDepth);
 			
 			// Update line depths
 			nodeGroup.lineIndices.forEach(function(line){
 				that.children[line.lineIndex].geometry.vertices[line.vertexIndex].z = zDepth;
 				that.children[line.lineIndex].geometry.verticesNeedUpdate = true;
 			});
+
+			// Update group's depth
+			group.position.setZ(-maxDepth/2);
 		})
 	}
 
@@ -122,8 +144,9 @@ var GROUPS = (function () {
 	return {
 		DEFAULT: function () {
 			var group = new THREE.Group();
-			group.expandZ = _expandZ;
+			group.expandNetworkDepth = _expandNetworkDepth;
 			group.highlightConnectedNodes = _highlightConnectedNodes;
+
 
 			return group;
 		}

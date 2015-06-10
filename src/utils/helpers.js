@@ -1,10 +1,6 @@
 
 /**
- *   File: 
- *         utils/helpers.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: utils/helpers.js
  */
 
 /**

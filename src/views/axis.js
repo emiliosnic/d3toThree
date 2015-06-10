@@ -1,10 +1,6 @@
 
 /**
- *   File: 
- *         views/axis.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: views/axis.js
  */
 
 VIEW.axis = function() {  
@@ -40,10 +36,20 @@ VIEW.axis = function() {
 					endX   = startX + tickLine.x,
 					endY   = startY - tickLine.y;
 
+				/**
+				 * Project to Z if this is a depth axis
+				 */ 
+
+				if (axis && axis['depthAxis']){
+
+					// Rotate 90 degrees	
+
+				}
+
 				this.meshes.push(
 					GEOMETRIES.AXIS({ 
-						x1: startX, y1: startY, z1:0,
-						x2: endX  , y2: endY  , z2:0
+						'x1': startX, 'y1': startY, 'z1':0,
+						'x2': endX  , 'y2': endY  , 'z2':0
 					})
 				);
 				
@@ -82,6 +88,19 @@ VIEW.axis = function() {
 						startX = UNITS.normalizeH(parseInt(points[j-1].x), this.properties.canvas) + transform.x;
 						endX   = UNITS.normalizeH(parseInt(points[j].x), this.properties.canvas  ) + transform.x;
 						endY   = UNITS.normalizeV(parseInt(points[j].y), this.properties.canvas  ) - transform.y;
+
+					/**
+					 * Project to Z if this is a depth axis
+					 */ 
+
+					if (axis && axis['depthAxis']){
+
+						// Rotate 90 degrees	
+						var test = GEOMETRIES.AXIS({
+							x1: startX, y1: startY, z1:0,
+							x2: endX,   y2:endY   , z2:0
+						});
+					}
 
 					this.meshes.push(
 						GEOMETRIES.AXIS({

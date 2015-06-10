@@ -2,135 +2,129 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html lang="en">
 <head>
-	<meta charset="utf-8">
-	<title>D3to3</title>
-	<meta name="description" content="D3to3">
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta charset="utf-8">
+<title>D3to3</title>
+<meta name="description" content="D3to3">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-	<!-- Styles -->
-	<link rel="stylesheet" href="../assets/reset.css">
-	<link rel="stylesheet" href="../assets/style.css">
-	<link rel="stylesheet" href="../assets/style.css">
+<!-- Styles -->
+<link rel="stylesheet" href="../assets/reset.css">
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style.css">
 
-    <!-- Network Style -->
-	<style type="text/css">
-		.link {
-		  stroke: #808080;
-		}
-	</style>
+<!-- Network Style -->
+<style type="text/css">
+.link {
+  stroke: #808080;
+}
+</style>
 
 </head>
 <body>
-	
-	<script src="../lib/d3.js"></script>
-	<script src="../lib/three.min.js"></script>
-	<script src="../dist/d3to3.js"></script>
 
-	<ul class="panels">
-		<li>
-			<h2>D3</h2>
-			<div id="d3_panel">
-		</li>
-		<li>
-			<h2>D3to3</h2>
-			<div id="d3to3_panel"></div>
-		</li>
-	</ul>
+<script src="../lib/d3.js"></script>
+<script src="../lib/three.min.js"></script>
+<script src="../dist/d3to3.js"></script>
 
-    <script src="network_data.js"></script> 
-	<script type="text/javascript">
+<ul class="panels">
+<li>
+	<h2>D3</h2>
+	<div id="d3_panel">
+</li>
+<li>
+	<h2>D3to3</h2>
+	<div id="d3to3_panel"></div>
+</li>
+</ul>
 
-        var width = 500,
-            height = 500;
+<script src="network_data.js"></script> 
+<script type="text/javascript">
 
-        var color = d3.scale.category20();
+var width = 500,
+    height = 500;
 
-        var svg = d3.select("#d3_panel")
-            .append("svg")
-            .attr("width", width)
-            .attr("height", height);
+var color = d3.scale.category20();
 
-        var force = d3.layout.force()
-            .size([width, height])
-            .linkDistance(130)
-            .linkStrength(0.2)
-            .friction(0.1)
-            .linkDistance(200)
-            .charge(-100)
-            .gravity(0.1);
+var svg = d3.select("#d3_panel")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height);
 
-            force
-            .nodes(networkData.nodes)
-            .links(networkData.links)
-            .on('end', function() { 
+var force = d3.layout.force()
+    .linkDistance(30)
+    .linkDistance(200)
+    .charge(-120)
+    .size([width, height]);
 
-                console.log("Rendering d3to3 network...");
+    force
+    .nodes(networkData.nodes)
+    .links(networkData.links)
+    .on('end', function() { 
+        d3to3.render({
+            'source'  : 'd3_panel',
+            'target'  : 'd3to3_panel', 
+            '3D'      : true,
+            'controls': true,
+            'orbit'   : true, 
+            'network' : {
+                'zDepth': 'degree-centrality'
+            }, 
+            'style'   : {
+                'line': { 'color':'#808080' } 
+            }
+        })
+    }); 
 
-                d3to3.render({
-                    'source'  : 'd3_panel',
-                    'target'  : 'd3to3_panel', 
-                    '3D'      : true,
-                    'controls': true, 
-                    'orbit'   : true, 
-                    'network' : true, 
-                    'style'   : {
-                        'line': { 'color':'#808080' } 
-                    }
-                })
-            }); 
+// Apply force to graph
 
-        // Apply force to graph
+var n = networkData.nodes.length;
 
-        var n = networkData.nodes.length;
+force.start();
 
-        force.start();
+for (var i=n; i>0; --i)
+    force.tick();
 
-        for (var i=n; i>0; --i)
-            force.tick();
+force.stop();
 
-        force.stop();
+// Append edges
+var link = svg.selectAll(".link")
+    .data(networkData.links)
+    .enter()
+    .append("line")
+    .attr("class", "link")
+    .attr("x1",function(d){ return d.source.x; })
+    .attr("y1",function(d){ return d.source.y; })
+    .attr("x2",function(d){ return d.target.x; })
+    .attr("y2",function(d){ return d.target.y; })
+    .style("stroke-width", function(d) { return Math.sqrt(d.value); })
+    .d3to3().data();
 
-        // Append edges
-
-        var link = svg.selectAll(".link")
-            .data(networkData.links)
-            .enter()
-            .append("line")
-            .attr("class", "link")
-            .attr("x1",function(d){ return d.source.x; })
-            .attr("y1",function(d){ return d.source.y; })
-            .attr("x2",function(d){ return d.target.x; })
-            .attr("y2",function(d){ return d.target.y; })
-            .style("stroke-width", function(d) { return Math.sqrt(d.value); })
-            .d3to3().data();
-
-        // Append nodes
-
-        var node = svg.selectAll(".node")
-            .data(networkData.nodes)
-            .enter()
-            .append("circle")
-            .attr("class", "node")
-            .attr("cx", function(d){return d.x;})
-            .attr("cy", function(d){return d.y;})
-            .attr("r", function(d) {return 4; }) //return Math.floor(Math.random() * 8) + 4; })
-            .style("fill", function(d) { return color(d.group); })
-            .d3to3().data();
+// Append nodes
+var node = svg.selectAll(".node")
+    .data(networkData.nodes)
+    .enter()
+    .append("circle")
+    .attr("class", "node")
+    .attr("cx", function(d){return d.x;})
+    .attr("cy", function(d){return d.y;})
+    .attr("r", function(d) {return 4; }) //return Math.floor(Math.random() * 8) + 4; })
+    .style("fill", function(d) { return color(d.group); })
+    .d3to3().data();
 
 
-        // Setup ticks for force
+// Setup ticks for force
 
-        force.on("tick", function() {
-            link.attr("x1", function(d) { return d.source.x; })
-                .attr("y1", function(d) { return d.source.y; })
-                .attr("x2", function(d) { return d.target.x; })
-                .attr("y2", function(d) { return d.target.y; });
+force.on("tick", function() {
+    link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
 
-            node.attr("cx", function(d) { return d.x; })
-                .attr("cy", function(d) { return d.y; });
-        });
+    node.attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+});
 
-	</script>
+</script>
 
 </body>
 </html>

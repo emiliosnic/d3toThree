@@ -1,10 +1,6 @@
 
 /**
- *   File: 
- *         utils/units.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: utils/units.js
  */
 
 var UNITS = (function () {

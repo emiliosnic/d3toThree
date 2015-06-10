@@ -1,12 +1,7 @@
 
 /**
- *   File: 
- *         scene/materials.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: scene/materials.js
  */
-
 
 var MATERIALS = (function () {
 

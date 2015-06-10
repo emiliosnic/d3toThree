@@ -1,12 +1,7 @@
 
 /**
- *   File: 
- *         scene/lights.js
- * 	
- * 	 Description:
- * 	       <TODO> 
+ *   File: scene/lights.js
  */
-
 
 var LIGHTS = (function () {
 
