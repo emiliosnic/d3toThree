@@ -1,12 +1,9 @@
 # d3ToThree
 
 
----
+<a href="https://gruntjs.com" target="_blank"><img src="https://gruntjs.com/img/og.png" width ="80"/></a> <a href="https://d3js.org" target="_blank"><img src="https://user-images.githubusercontent.com/1907604/29943790-85a0ce68-8ea3-11e7-9e2e-26803524c759.png" width ="70"/></a>  <a href="https://threejs.org/" target="_blank"><img src="https://user-images.githubusercontent.com/1907604/29943791-85a2cdf8-8ea3-11e7-8044-bd834cf770f3.png" width ="160"/></a>
 
 Transform two-dimension `D3.js` graphs to three-dimensional using `Three.js`
-
-<a href="https://gruntjs.com" target="_blank"><img src="https://gruntjs.com/img/og.png" width ="80"/></a> <a href="https://d3js.org" target="_blank"><img src="https://user-images.githubusercontent.com/1907604/29943790-85a0ce68-8ea3-11e7-9e2e-26803524c759.png" width ="70"/></a>  <a href="https://threejs.org/" target="_blank"><img src="https://user-images.githubusercontent.com/1907604/29943791-85a2cdf8-8ea3-11e7-8044-bd834cf770f3.png" width ="120"/></a>
-
 
 ## Dependencies
 - [D3.js v3.5.5](https://d3js.org/)
