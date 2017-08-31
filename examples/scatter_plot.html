@@ -1,30 +1,22 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html lang="en">
+
 <head>
 	<meta charset="utf-8">
-	<title>D3to3</title>
+	<title>D3to3 - Examples - Scatter Plot </title>
 	<meta name="description" content="D3to3">
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-
-	<!-- Styles -->
-	<link rel="stylesheet" href="../assets/reset.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
 	<link rel="stylesheet" href="../assets/style.css">
-	<link rel="stylesheet" href="../assets/style.css">
-
-	<!-- Animation Style -->
-
 	<style>
-		#chart {
-			margin-left: -40px;
-			height: 506px;
-		}
-
-		.axis path, .axis line {
+		.axis path,
+		.axis line {
 			fill: none;
 			stroke: #000;
 			shape-rendering: crispEdges;
 		}
+
 		.z.axis {
 			display: none;
 		}
@@ -34,12 +26,11 @@
 		}
 
 		.year.label {
-			font: 500 100px "Helvetica Neue";
-			fill: #ddd;
+			fill: #DDD;
 		}
 
 		.year.label.active {
-			fill: #aaa;
+			fill: #AAA;
 		}
 
 		.overlay {
@@ -47,15 +38,10 @@
 			pointer-events: all;
 			cursor: ew-resize;
 		}
-
 	</style>
 </head>
+
 <body>
-	
-	<script src="../lib/d3.js"></script>
-	<script src="../lib/jquery.min.js"></script>
-	<script src="../lib/three.min.js"></script>
-	<script src="../dist/d3to3.js"></script>
 
 	<ul class="panels">
 		<li>
@@ -68,20 +54,44 @@
 		</li>
 	</ul>
 
-	<script type="text/javascript" src="scatter_data.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/70/three.min.js"></script>
+	<script src="../dist/d3to3.js"></script>
+	<script type="text/javascript" src="data/scatter.js"></script>
 	<script type="text/javascript">
 
 		// Various accessors that specify the four dimensions of data to visualize.
+		function x(d) {
+			return d.income;
+		}
 
-		function x(d)      { return d.income;         }
-		function y(d)      { return d.lifeExpectancy; }
-		function z(d)      { return d.unemployment;   }
-		function radius(d) { return d.population;     }
-		function color(d)  { return d.region;         }
-		function key(d)    { return d.name;           }
+		function y(d) {
+			return d.lifeExpectancy;
+		}
+
+		function z(d) {
+			return d.unemployment;
+		}
+
+		function radius(d) {
+			return d.population;
+		}
+
+		function color(d) {
+			return d.region;
+		}
+
+		function key(d) {
+			return d.name;
+		}
 
 		// Chart dimensions.
-		var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5},
+		var margin = {
+				top: 19.5,
+				right: 19.5,
+				bottom: 19.5,
+				left: 39.5
+			},
 			width = 600 - margin.right,
 			height = 350 - margin.top - margin.bottom;
 
@@ -93,24 +103,23 @@
 			colorScale = d3.scale.category10();
 
 		// The x & y axes.
-		var xAxis = 
+		var xAxis =
 			d3.svg.axis()
 			.orient("bottom")
 			.scale(xScale)
 			.ticks(12, d3.format(",d"));
-		
-		var	yAxis = 
+
+		var yAxis =
 			d3.svg.axis()
 			.scale(yScale)
 			.orient("left");
 
-		var	zAxis = 
+		var zAxis =
 			d3.svg.axis()
 			.scale(zScale);
 
-
 		// Create the SVG container and set the origin.
-		var svg = 
+		var svg =
 			d3.select("#d3_panel").append("svg")
 			.attr("width", width + margin.left + margin.right)
 			.attr("height", height + margin.top + margin.bottom)
@@ -150,7 +159,9 @@
 			.d3to3().text();
 
 		// A bisector since many nation's data is sparsely-defined.
-		var bisect = d3.bisector(function(d) { return d[0]; });
+		var bisect = d3.bisector(function(d) {
+			return d[0];
+		});
 
 		// Add a dot per nation. Initialize the data at 1800, and set the colors.
 		var dot = svg.append("g")
@@ -159,7 +170,9 @@
 			.data(interpolateData(2009))
 			.enter().append("circle")
 			.attr("class", "dot")
-			.style("fill", function(d) { return colorScale(color(d)); })
+			.style("fill", function(d) {
+				return colorScale(color(d));
+			})
 			.call(position)
 			.sort(order)
 			.d3to3().data();
@@ -167,15 +180,25 @@
 
 		// Add a title.
 		dot.append("title")
-			.text(function(d) { return d.name; });
+			.text(function(d) {
+				return d.name;
+			});
 
 		// Positions the dots based on data.
 		function position(dot) {
 			dot
-			.attr("cx", function(d) { return xScale(x(d)); })
-			.attr("cy", function(d) { return yScale(y(d)); })
-			.attr("cz", function(d) { return zScale(z(d)); })
-			.attr("r", function(d) { return radiusScale(radius(d)); });
+				.attr("cx", function(d) {
+					return xScale(x(d));
+				})
+				.attr("cy", function(d) {
+					return yScale(y(d));
+				})
+				.attr("cz", function(d) {
+					return zScale(z(d));
+				})
+				.attr("r", function(d) {
+					return radiusScale(radius(d));
+				});
 		}
 
 		// Defines a sort order so that the smallest dots are drawn on top.
@@ -198,21 +221,20 @@
 			});
 		}
 
-
 		// Finds (and possibly interpolates) the value for the specified year.
 		function interpolateValues(values, year) {
-			if (values != undefined && values[0]!= undefined && values[0][1]!= undefined  ){
+			if (values != undefined && values[0] != undefined && values[0][1] != undefined) {
 				return values[0][1];
-		} else {
-			return 0;
-		}
+			} else {
+				return 0;
+			}
 			var i = bisect.left(values, year, 0, values.length - 1),
 				a = values[i];
-				if (i > 0) {
-					var b = values[i - 1],
+			if (i > 0) {
+				var b = values[i - 1],
 					t = (year - a[0]) / (b[0] - a[0]);
-					return a[1] * (1 - t) + b[1] * t;
-				}
+				return a[1] * (1 - t) + b[1] * t;
+			}
 			return a[1];
 		}
 
@@ -223,4 +245,5 @@
 	</script>
 
 </body>
+
 </html>

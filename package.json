@@ -1,7 +1,8 @@
 {
   "name": "d3to3",
-  "version": "0.0.1",
-  "description": "D3 to Three.js",
+  "version": "0.9.0",
+  "description": "Transform two-dimension D3.js graphs to three-dimensional using Three.js",
+  "author": "emiliosnic",
   "scripts": {
     "start": "grunt"
   },

@@ -1,59 +1,48 @@
-
 body {
-	font-size:0.7em;
-	background: #dbdbdb;
-	font-family:  'Lato';
-	text-align: center;
+  font-size: 0.7em;
+  background: #FFF;
+  font-family: 'Lato';
+  text-align: center;
 }
-.axis path,
-.axis line {
-	fill: none;
-	stroke: #000;
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
 }
+
 .panels {
-	display: block;
-	width:100%;
-	height: auto;
-	overflow: auto;
-	padding: 0;
-	margin: 0;
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: auto;
+  padding: 0;
+  margin: 0;
 }
+
 .panels li {
-	display: block;
-	width: 48%;
-	padding:0 20px;
-	min-height: 350px;
-	height: auto;
-	overflow: auto;
-	float: left;
-	text-align: center;
-	-webkit-border-radius: 3px;
-	-moz-border-radius: 3px;
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	box-sizing: border-box;
-	border-radius: 2px;
-	border: 1px solid #ededed;
-	float: left;
-	background: white;
-	box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  display: block;
+  width: 50%;
+  padding: 20px;
+  box-sizing: border-box;
+  min-height: 350px;
+  height: auto;
+  overflow: auto;
+  float: left;
+  text-align: center;
+  background: white;
 }
-.panels li:first-child {
-	margin: 20px 0.5% 20px 1.5%;
-}
-.panels li:last-child {
-	margin: 20px 1.5% 20px 0.5%;
-}
+
 .panels li h2 {
-	font-size: 1.5em;
-	padding: 20px 0;
+  font-size: 1.5em;
+  padding: 20px 0;
 }
+
 #code_panel {
-	width: 90%;
-	height: 400px;
-	overflow: auto;
-	display: inline-block;
-	font-size:0.8em;
-	background: #282828;
-	color: white;
+  width: 90%;
+  height: 400px;
+  overflow: auto;
+  display: inline-block;
+  font-size: 0.8em;
+  background: #282828;
+  color: white;
 }

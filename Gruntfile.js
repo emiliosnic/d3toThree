@@ -5,38 +5,38 @@ module.exports = function(grunt) {
     pkg: grunt.file.readJSON('package.json'),
     concat: {
       options: {
-        separator: ';',
+        separator: ';'
       },
       dist: {
         src: [
-              'src/init.js',
-              'src/setup.js', 
-              'src/scene/materials.js', 
-              'src/scene/geometries.js', 
-              'src/scene/cameras.js', 
-              'src/scene/renderers.js', 
-              'src/scene/groups.js', 
-              'src/scene/controls.js', 
-              'src/views/base.js', 
-              'src/views/line.js', 
-              'src/views/axis.js', 
-              'src/views/text.js', 
-              'src/views/wireframe.js', 
-              'src/views/circle.js', 
-              'src/scene/lights.js', 
-              'src/scene/parser.js', 
-              'src/controller.js', 
-              'src/utils/colors.js',
-              'src/utils/logger.js',
-              'src/utils/helpers.js',
-              'src/utils/units.js',
-              'src/teardown.js',
-              'src/dependencies/OrbitControls.js', 
-              'src/dependencies/helvetiker_regular.typeface.js', 
-              ],
-        dest: 'dist/<%= pkg.name %>.js',
-      },
-    },    
+          'src/init.js',
+          'src/setup.js',
+          'src/scene/materials.js',
+          'src/scene/geometries.js',
+          'src/scene/cameras.js',
+          'src/scene/renderers.js',
+          'src/scene/groups.js',
+          'src/scene/controls.js',
+          'src/views/base.js',
+          'src/views/line.js',
+          'src/views/axis.js',
+          'src/views/text.js',
+          'src/views/wireframe.js',
+          'src/views/circle.js',
+          'src/scene/lights.js',
+          'src/scene/parser.js',
+          'src/controller.js',
+          'src/utils/colors.js',
+          'src/utils/logger.js',
+          'src/utils/helpers.js',
+          'src/utils/units.js',
+          'src/teardown.js',
+          'src/dependencies/OrbitControls.js',
+          'src/dependencies/helvetiker_regular.typeface.js'
+        ],
+        dest: 'dist/<%= pkg.name %>.js'
+      }
+    },
     uglify: {
       options: {
         compress: true,
@@ -50,12 +50,16 @@ module.exports = function(grunt) {
     },
     watch: {
       scripts: {
-        files: ['src/*.js', 'src/**/*.js'],
-        tasks: ['concat', 'uglify'],
+        files: [
+          'src/*.js', 'src/**/*.js'
+        ],
+        tasks: [
+          'concat', 'uglify'
+        ],
         options: {
           livereload: true
-        },
-      },
+        }
+      }
     }
   });
 
@@ -65,5 +69,5 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
 
   // Grunt Tasks
-  grunt.registerTask('default', ['concat', 'uglify','watch']);
+  grunt.registerTask('default', ['concat', 'uglify', 'watch']);
 };
